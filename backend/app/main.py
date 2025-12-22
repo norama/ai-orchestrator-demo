@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import FastAPI
 
 from app.application.commands import (
@@ -49,7 +51,7 @@ def get_workflows():
 
 
 @app.get("/workflows/{workflow_id}")
-def get_workflow(workflow_id: str):
+def get_workflow(workflow_id: UUID):
     logger.info(f"Fetching workflow with ID: {workflow_id}")
     service = WorkflowService(SqliteWorkflowRepository())
     workflow = service.get_workflow(workflow_id)
@@ -61,7 +63,7 @@ def get_workflow(workflow_id: str):
 
 
 @app.post("/workflows/{workflow_id}/change_phase")
-def change_workflow_phase(workflow_id: str, cmd: ChangePhaseCommand):
+def change_workflow_phase(workflow_id: UUID, cmd: ChangePhaseCommand):
     logger.info(f"Changing phase of workflow with ID: {workflow_id} to {cmd.phase}")
     service = WorkflowService(SqliteWorkflowRepository())
     workflow = service.change_phase(workflow_id, cmd)
@@ -73,7 +75,7 @@ def change_workflow_phase(workflow_id: str, cmd: ChangePhaseCommand):
 
 
 @app.post("/workflows/{workflow_id}/add_answer")
-def add_workflow_answer(workflow_id: str, cmd: AddAnswerCommand):
+def add_workflow_answer(workflow_id: UUID, cmd: AddAnswerCommand):
     logger.info(
         f"Adding answer to workflow with ID: {workflow_id} for question {cmd.question_id}"
     )
@@ -87,7 +89,7 @@ def add_workflow_answer(workflow_id: str, cmd: AddAnswerCommand):
 
 
 @app.post("/workflows/{workflow_id}/add_chat_message")
-def add_workflow_chat_message(workflow_id: str, cmd: AddChatMessageCommand):
+def add_workflow_chat_message(workflow_id: UUID, cmd: AddChatMessageCommand):
     logger.info(
         f"Adding chat message to workflow with ID: {workflow_id} from role {cmd.role}"
     )

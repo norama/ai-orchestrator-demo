@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Any
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -9,7 +10,7 @@ class TicketSource(Enum):
 
 
 class Ticket(BaseModel):
-    id: str
+    id: UUID
     title: str
     description: str
     source: TicketSource

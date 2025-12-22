@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from uuid import uuid4
+from uuid import UUID
 
 from app.application.commands import (
     AddAnswerCommand,
@@ -25,7 +25,7 @@ class WorkflowService:
 
     # -------- Queries --------
 
-    def get_workflow(self, workflow_id: str) -> WorkflowState:
+    def get_workflow(self, workflow_id: UUID) -> WorkflowState:
         workflow = self.repo.get(workflow_id)
         if not workflow:
             raise WorkflowNotFound(f"Workflow {workflow_id} not found")
@@ -38,7 +38,7 @@ class WorkflowService:
 
     def change_phase(
         self,
-        workflow_id: str,
+        workflow_id: UUID,
         cmd: ChangePhaseCommand,
     ) -> WorkflowState:
         workflow = self.get_workflow(workflow_id)
@@ -53,7 +53,7 @@ class WorkflowService:
 
     def add_answer(
         self,
-        workflow_id: str,
+        workflow_id: UUID,
         cmd: AddAnswerCommand,
     ) -> WorkflowState:
         workflow = self.get_workflow(workflow_id)
@@ -69,13 +69,15 @@ class WorkflowService:
 
     def add_chat_message(
         self,
-        workflow_id: str,
+        workflow_id: UUID,
         cmd: AddChatMessageCommand,
     ) -> WorkflowState:
         workflow = self.get_workflow(workflow_id)
 
+        if not cmd.content.strip():
+            raise InvalidWorkflowOperation("Chat message content cannot be empty")
+
         message = ChatMessage(
-            id=str(uuid4()),
             role=cmd.role,
             content=cmd.content,
             created_at=datetime.now(timezone.utc),
