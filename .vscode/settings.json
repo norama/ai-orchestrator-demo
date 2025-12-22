@@ -13,17 +13,22 @@
     }
   },
 
+  "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/bin/python",
   "python.createEnvironment.contentButton": "show",
   "python.terminal.activateEnvInCurrentTerminal": true,
-  "python.defaultInterpreterPath": ".venv/bin/python",
   "python.testing.pytestEnabled": true,
   "python.testing.cwd": "${workspaceFolder}",
-  "python.envFile": "${workspaceFolder}/.env",
+  "python.envFile": "${workspaceFolder}/backend/.env",
+  "python.analysis.extraPaths": ["${workspaceFolder}/backend"],
   "python.testing.pytestArgs": ["-s", "."],
 
   // --------------------
   // Frontend / Prettier
   // --------------------
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.preferences.importModuleSpecifierEnding": "minimal",
+  "javascript.preferences.importModuleSpecifier": "non-relative",
+  "javascript.preferences.importModuleSpecifierEnding": "minimal",
   "prettier.configPath": "frontend/.prettierrc",
   "prettier.requireConfig": true,
 

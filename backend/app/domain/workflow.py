@@ -1,9 +1,10 @@
-from datetime import datetime
 from enum import Enum
 
-from backend.app.domain.chat import ChatHistory
-from backend.app.domain.ticket import Ticket
 from pydantic import BaseModel, Field
+
+from app.domain.chat import ChatHistory
+from app.domain.db import DbEntry
+from app.domain.ticket import Ticket
 
 
 class WorkflowPhase(str, Enum):
@@ -13,11 +14,13 @@ class WorkflowPhase(str, Enum):
     DONE = "done"
 
 
-class WorkflowState(BaseModel):
-    workflow_id: str
+class WorkflowStateCreate(BaseModel):
     ticket: Ticket
     phase: WorkflowPhase
     answers: dict[str, str] = Field(default_factory=dict)
     solution: str | None = None
     chat_history: ChatHistory = Field(default_factory=ChatHistory)
-    updated_at: datetime = Field(default_factory=datetime.now())
+
+
+class WorkflowState(WorkflowStateCreate, DbEntry):
+    pass

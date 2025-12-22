@@ -5,11 +5,7 @@ from pydantic import BaseModel, Field
 
 
 class TicketSource(Enum):
-    RESTFUL_API_DEV = ("https://restful-api.dev/", "Demo Ticket API")
-
-    def __init__(self, base_url: str, description: str):
-        self.base_url = base_url
-        self.description = description
+    RESTFUL_API_DEV = "RESTFUL_API_DEV"
 
 
 class Ticket(BaseModel):

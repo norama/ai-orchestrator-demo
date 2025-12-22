@@ -1,0 +1,86 @@
+from datetime import datetime, timezone
+from uuid import uuid4
+
+from app.application.commands import (
+    AddAnswerCommand,
+    AddChatMessageCommand,
+    ChangePhaseCommand,
+)
+from app.domain.chat import ChatMessage
+from app.domain.workflow import WorkflowPhase, WorkflowState
+from app.infrastructure.persistence.workflow_repository import WorkflowRepository
+
+
+class WorkflowNotFound(Exception):
+    pass
+
+
+class InvalidWorkflowOperation(Exception):
+    pass
+
+
+class WorkflowService:
+    def __init__(self, repo: WorkflowRepository):
+        self.repo = repo
+
+    # -------- Queries --------
+
+    def get_workflow(self, workflow_id: str) -> WorkflowState:
+        workflow = self.repo.get(workflow_id)
+        if not workflow:
+            raise WorkflowNotFound(f"Workflow {workflow_id} not found")
+        return workflow
+
+    def list_workflows(self) -> list[WorkflowState]:
+        return self.repo.list()
+
+    # -------- Commands --------
+
+    def change_phase(
+        self,
+        workflow_id: str,
+        cmd: ChangePhaseCommand,
+    ) -> WorkflowState:
+        workflow = self.get_workflow(workflow_id)
+
+        # minimal domain rule (example)
+        if workflow.phase == WorkflowPhase.DONE:
+            raise InvalidWorkflowOperation("Cannot change phase of DONE workflow")
+
+        workflow.phase = cmd.phase
+
+        return self.repo.save(workflow)
+
+    def add_answer(
+        self,
+        workflow_id: str,
+        cmd: AddAnswerCommand,
+    ) -> WorkflowState:
+        workflow = self.get_workflow(workflow_id)
+
+        if workflow.phase != WorkflowPhase.COLLECTING:
+            raise InvalidWorkflowOperation(
+                "Answers can only be added in COLLECTING phase"
+            )
+
+        workflow.answers[cmd.question_id] = cmd.answer
+
+        return self.repo.save(workflow)
+
+    def add_chat_message(
+        self,
+        workflow_id: str,
+        cmd: AddChatMessageCommand,
+    ) -> WorkflowState:
+        workflow = self.get_workflow(workflow_id)
+
+        message = ChatMessage(
+            id=str(uuid4()),
+            role=cmd.role,
+            content=cmd.content,
+            created_at=datetime.now(timezone.utc),
+        )
+
+        workflow.chat_history.add_message(message)
+
+        return self.repo.save(workflow)

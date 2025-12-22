@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 from pydantic import BaseModel, Field
@@ -14,16 +14,16 @@ class ChatMessage(BaseModel):
     id: str
     role: ChatRole
     content: str
-    created_at: datetime
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class ChatHistory(BaseModel):
     messages: list[ChatMessage] = Field(default_factory=list)
-    updated_at: datetime = Field(default_factory=datetime.now())
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     def add_message(self, message: ChatMessage) -> None:
         self.messages.append(message)
-        self.updated_at = datetime.now()
+        self.updated_at = datetime.now(timezone.utc)
 
     def get_messages(self) -> list[ChatMessage]:
         return self.messages
