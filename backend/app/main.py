@@ -3,10 +3,18 @@ from uuid import UUID
 from fastapi import Depends, FastAPI
 
 from app.api.dependencies import get_workflow_service
+from app.api.error_handlers import (
+    invalid_workflow_operation_handler,
+    workflow_not_found_handler,
+)
 from app.application.commands import (
     AddAnswerCommand,
     AddChatMessageCommand,
     ChangePhaseCommand,
+)
+from app.application.exceptions import (
+    InvalidWorkflowOperation,
+    WorkflowNotFound,
 )
 from app.application.workflow_service import WorkflowService
 from app.domain.workflow import WorkflowStateCreate
@@ -15,6 +23,16 @@ from app.logging_utils import get_logger, setup_logging
 setup_logging()
 
 app = FastAPI(title="AI Orchestrator Demo")
+
+app.add_exception_handler(
+    WorkflowNotFound,
+    workflow_not_found_handler,
+)
+
+app.add_exception_handler(
+    InvalidWorkflowOperation,
+    invalid_workflow_operation_handler,
+)
 
 logger = get_logger(__name__)
 

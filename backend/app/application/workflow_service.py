@@ -6,18 +6,11 @@ from app.application.commands import (
     AddChatMessageCommand,
     ChangePhaseCommand,
 )
+from app.application.exceptions import InvalidWorkflowOperation, WorkflowNotFound
 from app.domain.chat import ChatMessage
 from app.domain.qa import Clarification
 from app.domain.workflow import WorkflowPhase, WorkflowState
 from app.infrastructure.persistence.workflow_repository import WorkflowRepository
-
-
-class WorkflowNotFound(Exception):
-    pass
-
-
-class InvalidWorkflowOperation(Exception):
-    pass
 
 
 class WorkflowService:
@@ -63,6 +56,11 @@ class WorkflowService:
         question: str,
     ) -> WorkflowState:
         workflow = self.get_workflow(workflow_id)
+
+        if workflow.phase != WorkflowPhase.COLLECTING:
+            raise InvalidWorkflowOperation(
+                "Questions can only be added in COLLECTING phase"
+            )
 
         qa = Clarification(question=question)
         workflow.clarifications.append(qa)
