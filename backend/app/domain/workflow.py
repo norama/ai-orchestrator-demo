@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 
 from app.domain.chat import ChatHistory
 from app.domain.db import DbEntry
+from app.domain.qa import Clarification
 from app.domain.ticket import Ticket
 
 
@@ -17,7 +18,7 @@ class WorkflowPhase(str, Enum):
 class WorkflowStateCreate(BaseModel):
     ticket: Ticket
     phase: WorkflowPhase
-    answers: dict[str, str] = Field(default_factory=dict)
+    clarifications: list[Clarification] = Field(default_factory=list)
     solution: str | None = None
     chat_history: ChatHistory = Field(default_factory=ChatHistory)
 

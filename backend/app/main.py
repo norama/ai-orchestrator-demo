@@ -74,10 +74,24 @@ def change_workflow_phase(workflow_id: UUID, cmd: ChangePhaseCommand):
     }
 
 
+@app.post("/workflows/{workflow_id}/add_question")
+def add_workflow_question(workflow_id: UUID, question: str):
+    logger.info(
+        f"Adding question to workflow with ID: {workflow_id} with content: {question}"
+    )
+    service = WorkflowService(SqliteWorkflowRepository())
+    workflow = service.add_question(workflow_id, question)
+    return {
+        "workflow_id": workflow.id,
+        "status": "question_added",
+        "state": workflow.model_dump(),
+    }
+
+
 @app.post("/workflows/{workflow_id}/add_answer")
 def add_workflow_answer(workflow_id: UUID, cmd: AddAnswerCommand):
     logger.info(
-        f"Adding answer to workflow with ID: {workflow_id} for question {cmd.question_id}"
+        f"Adding answer to workflow with ID: {workflow_id} for question {cmd.clarification_id}"
     )
     service = WorkflowService(SqliteWorkflowRepository())
     workflow = service.add_answer(workflow_id, cmd)

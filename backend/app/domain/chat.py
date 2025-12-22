@@ -12,7 +12,7 @@ class ChatRole(str, Enum):
 
 
 class ChatMessage(BaseModel):
-    id: UUID = Field(default_factory=lambda: uuid4())
+    id: UUID = Field(default_factory=uuid4)
     role: ChatRole
     content: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

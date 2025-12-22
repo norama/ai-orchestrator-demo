@@ -7,6 +7,7 @@ from app.application.commands import (
     ChangePhaseCommand,
 )
 from app.domain.chat import ChatMessage
+from app.domain.qa import Clarification
 from app.domain.workflow import WorkflowPhase, WorkflowState
 from app.infrastructure.persistence.workflow_repository import WorkflowRepository
 
@@ -51,6 +52,18 @@ class WorkflowService:
 
         return self.repo.save(workflow)
 
+    def add_question(
+        self,
+        workflow_id: UUID,
+        question: str,
+    ) -> WorkflowState:
+        workflow = self.get_workflow(workflow_id)
+
+        qa = Clarification(question=question)
+        workflow.clarifications.append(qa)
+
+        return self.repo.save(workflow)
+
     def add_answer(
         self,
         workflow_id: UUID,
@@ -63,7 +76,8 @@ class WorkflowService:
                 "Answers can only be added in COLLECTING phase"
             )
 
-        workflow.answers[cmd.question_id] = cmd.answer
+        qa = next(q for q in workflow.clarifications if q.id == cmd.clarification_id)
+        qa.answer = cmd.answer
 
         return self.repo.save(workflow)
 

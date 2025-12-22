@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import BaseModel
 
 from app.domain.chat import ChatRole
@@ -13,6 +15,10 @@ class ChangePhaseCommand(BaseModel):
     phase: WorkflowPhase
 
 
+class AddQuestionCommand(BaseModel):
+    question: str
+
+
 class AddAnswerCommand(BaseModel):
-    question_id: str
+    clarification_id: UUID
     answer: str
