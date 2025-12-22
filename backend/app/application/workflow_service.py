@@ -24,6 +24,11 @@ class WorkflowService:
     def __init__(self, repo: WorkflowRepository):
         self.repo = repo
 
+    # ------- Creation --------
+
+    def create(self, workflow_create: WorkflowState) -> WorkflowState:
+        return self.repo.create(workflow_create)
+
     # -------- Queries --------
 
     def get_workflow(self, workflow_id: UUID) -> WorkflowState:

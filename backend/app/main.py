@@ -1,7 +1,8 @@
 from uuid import UUID
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 
+from app.api.dependencies import get_workflow_service
 from app.application.commands import (
     AddAnswerCommand,
     AddChatMessageCommand,
@@ -9,9 +10,6 @@ from app.application.commands import (
 )
 from app.application.workflow_service import WorkflowService
 from app.domain.workflow import WorkflowStateCreate
-from app.infrastructure.persistence.sqlite_workflow_repository import (
-    SqliteWorkflowRepository,
-)
 from app.logging_utils import get_logger, setup_logging
 
 setup_logging()
@@ -28,10 +26,12 @@ def health():
 
 
 @app.post("/workflows/")
-def create_workflow(workflow_state_create: WorkflowStateCreate):
+def create_workflow(
+    workflow_state_create: WorkflowStateCreate,
+    service: WorkflowService = Depends(get_workflow_service),
+):
     logger.info("Creating a new workflow")
-    repo = SqliteWorkflowRepository()
-    workflow = repo.create(workflow_state_create)
+    workflow = service.create(workflow_state_create)
     return {
         "workflow_id": workflow.id,
         "status": "created",
@@ -40,9 +40,8 @@ def create_workflow(workflow_state_create: WorkflowStateCreate):
 
 
 @app.get("/workflows")
-def get_workflows():
+def get_workflows(service: WorkflowService = Depends(get_workflow_service)):
     logger.info("Fetching all workflows")
-    service = WorkflowService(SqliteWorkflowRepository())
     workflows = service.list_workflows()
     return {
         "workflows": [workflow.model_dump() for workflow in workflows],
@@ -51,9 +50,10 @@ def get_workflows():
 
 
 @app.get("/workflows/{workflow_id}")
-def get_workflow(workflow_id: UUID):
+def get_workflow(
+    workflow_id: UUID, service: WorkflowService = Depends(get_workflow_service)
+):
     logger.info(f"Fetching workflow with ID: {workflow_id}")
-    service = WorkflowService(SqliteWorkflowRepository())
     workflow = service.get_workflow(workflow_id)
     return {
         "workflow_id": workflow.id,
@@ -63,9 +63,12 @@ def get_workflow(workflow_id: UUID):
 
 
 @app.post("/workflows/{workflow_id}/change_phase")
-def change_workflow_phase(workflow_id: UUID, cmd: ChangePhaseCommand):
+def change_workflow_phase(
+    workflow_id: UUID,
+    cmd: ChangePhaseCommand,
+    service: WorkflowService = Depends(get_workflow_service),
+):
     logger.info(f"Changing phase of workflow with ID: {workflow_id} to {cmd.phase}")
-    service = WorkflowService(SqliteWorkflowRepository())
     workflow = service.change_phase(workflow_id, cmd)
     return {
         "workflow_id": workflow.id,
@@ -75,11 +78,14 @@ def change_workflow_phase(workflow_id: UUID, cmd: ChangePhaseCommand):
 
 
 @app.post("/workflows/{workflow_id}/add_question")
-def add_workflow_question(workflow_id: UUID, question: str):
+def add_workflow_question(
+    workflow_id: UUID,
+    question: str,
+    service: WorkflowService = Depends(get_workflow_service),
+):
     logger.info(
         f"Adding question to workflow with ID: {workflow_id} with content: {question}"
     )
-    service = WorkflowService(SqliteWorkflowRepository())
     workflow = service.add_question(workflow_id, question)
     return {
         "workflow_id": workflow.id,
@@ -89,11 +95,14 @@ def add_workflow_question(workflow_id: UUID, question: str):
 
 
 @app.post("/workflows/{workflow_id}/add_answer")
-def add_workflow_answer(workflow_id: UUID, cmd: AddAnswerCommand):
+def add_workflow_answer(
+    workflow_id: UUID,
+    cmd: AddAnswerCommand,
+    service: WorkflowService = Depends(get_workflow_service),
+):
     logger.info(
         f"Adding answer to workflow with ID: {workflow_id} for question {cmd.clarification_id}"
     )
-    service = WorkflowService(SqliteWorkflowRepository())
     workflow = service.add_answer(workflow_id, cmd)
     return {
         "workflow_id": workflow.id,
@@ -103,11 +112,14 @@ def add_workflow_answer(workflow_id: UUID, cmd: AddAnswerCommand):
 
 
 @app.post("/workflows/{workflow_id}/add_chat_message")
-def add_workflow_chat_message(workflow_id: UUID, cmd: AddChatMessageCommand):
+def add_workflow_chat_message(
+    workflow_id: UUID,
+    cmd: AddChatMessageCommand,
+    service: WorkflowService = Depends(get_workflow_service),
+):
     logger.info(
         f"Adding chat message to workflow with ID: {workflow_id} from role {cmd.role}"
     )
-    service = WorkflowService(SqliteWorkflowRepository())
     workflow = service.add_chat_message(workflow_id, cmd)
     return {
         "workflow_id": workflow.id,

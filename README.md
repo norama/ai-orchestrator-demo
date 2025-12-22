@@ -19,3 +19,11 @@ integrating external ticket systems and knowledge bases.
 - ❌ No background workers (yet)
 - ❌ No performance optimization
 - ❌ No pixel-perfect UI
+
+## Persistence - database
+
+SQLite is used in this demo.
+
+Persistence is currently synchronous.
+The repository interface is intentionally sync to keep the domain and service layers free of event-loop concerns.
+An async repository implementation can be introduced later when switching to an async DB driver.
