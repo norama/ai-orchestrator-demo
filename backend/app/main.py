@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.dependencies import get_workflow_service
 from app.api.error_handlers import (
@@ -17,12 +18,24 @@ from app.application.exceptions import (
     WorkflowNotFound,
 )
 from app.application.workflow_service import WorkflowService
+from app.domain.response import WorkflowDetailResponse, WorkflowListResponse
 from app.domain.workflow import WorkflowStateCreate
 from app.logging_utils import get_logger, setup_logging
 
 setup_logging()
 
 app = FastAPI(title="AI Orchestrator Demo")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.add_exception_handler(
     WorkflowNotFound,
@@ -43,7 +56,7 @@ def health():
     return {"status": "ok"}
 
 
-@app.post("/workflows/")
+@app.post("/workflows/", response_model=WorkflowDetailResponse)
 def create_workflow(
     workflow_state_create: WorkflowStateCreate,
     service: WorkflowService = Depends(get_workflow_service),
@@ -57,7 +70,7 @@ def create_workflow(
     }
 
 
-@app.get("/workflows")
+@app.get("/workflows", response_model=WorkflowListResponse)
 def get_workflows(service: WorkflowService = Depends(get_workflow_service)):
     logger.info("Fetching all workflows")
     workflows = service.list_workflows()
@@ -67,7 +80,7 @@ def get_workflows(service: WorkflowService = Depends(get_workflow_service)):
     }
 
 
-@app.get("/workflows/{workflow_id}")
+@app.get("/workflows/{workflow_id}", response_model=WorkflowDetailResponse)
 def get_workflow(
     workflow_id: UUID, service: WorkflowService = Depends(get_workflow_service)
 ):
@@ -80,7 +93,9 @@ def get_workflow(
     }
 
 
-@app.post("/workflows/{workflow_id}/change_phase")
+@app.post(
+    "/workflows/{workflow_id}/change_phase", response_model=WorkflowDetailResponse
+)
 def change_workflow_phase(
     workflow_id: UUID,
     cmd: ChangePhaseCommand,
@@ -95,7 +110,9 @@ def change_workflow_phase(
     }
 
 
-@app.post("/workflows/{workflow_id}/add_question")
+@app.post(
+    "/workflows/{workflow_id}/add_question", response_model=WorkflowDetailResponse
+)
 def add_workflow_question(
     workflow_id: UUID,
     question: str,
@@ -112,7 +129,7 @@ def add_workflow_question(
     }
 
 
-@app.post("/workflows/{workflow_id}/add_answer")
+@app.post("/workflows/{workflow_id}/add_answer", response_model=WorkflowDetailResponse)
 def add_workflow_answer(
     workflow_id: UUID,
     cmd: AddAnswerCommand,
@@ -129,7 +146,9 @@ def add_workflow_answer(
     }
 
 
-@app.post("/workflows/{workflow_id}/add_chat_message")
+@app.post(
+    "/workflows/{workflow_id}/add_chat_message", response_model=WorkflowDetailResponse
+)
 def add_workflow_chat_message(
     workflow_id: UUID,
     cmd: AddChatMessageCommand,

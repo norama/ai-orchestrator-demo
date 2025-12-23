@@ -22,13 +22,14 @@ export default defineConfig([
     settings: {
       'import/resolver': {
         typescript: {
-          project: './tsconfig.app.json',
+          project: ['./tsconfig.json', './tsconfig.app.json'],
         },
       },
     },
     rules: {
       'import/no-unresolved': 'error',
-      'import/no-relative-parent-imports': 'error',
+      // Disabled: conflicts with TS path aliases in monorepo + flat config
+      // 'import/no-relative-parent-imports': 'error',
     },
     languageOptions: {
       ecmaVersion: 2020,
