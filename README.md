@@ -86,6 +86,9 @@ This demo intentionally does **not** include:
 These are excluded to keep the focus on **workflow orchestration
 and architectural clarity**.
 
+The frontend is intentionally minimal and serves only as a workflow inspection UI.
+It will be replaced by a purpose-built interface later.
+
 ---
 
 ## Roadmap (Short-Term)
