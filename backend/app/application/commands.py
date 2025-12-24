@@ -15,8 +15,8 @@ class ChangePhaseCommand(BaseModel):
     phase: WorkflowPhase
 
 
-class AddQuestionCommand(BaseModel):
-    question: str
+class AddStepCommand(BaseModel):
+    prompt: str
 
 
 class AddAnswerCommand(BaseModel):

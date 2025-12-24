@@ -14,4 +14,5 @@ class Ticket(BaseModel):
     title: str
     description: str
     source: TicketSource
+    category: str | None = None
     source_dump: dict[str, Any] = Field(default_factory=dict)

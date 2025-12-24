@@ -121,7 +121,7 @@ def add_workflow_question(
     logger.info(
         f"Adding question to workflow with ID: {workflow_id} with content: {question}"
     )
-    workflow = service.add_question(workflow_id, question)
+    workflow = service.add_step(workflow_id, question)
     return {
         "workflow_id": workflow.id,
         "status": "question_added",

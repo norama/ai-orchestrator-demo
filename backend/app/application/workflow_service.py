@@ -4,18 +4,55 @@ from uuid import UUID
 from app.application.commands import (
     AddAnswerCommand,
     AddChatMessageCommand,
+    AddStepCommand,
     ChangePhaseCommand,
 )
 from app.application.exceptions import InvalidWorkflowOperation, WorkflowNotFound
+from app.application.solve_service import SolveService
+from app.application.step_generator import StepGenerator
 from app.domain.chat import ChatMessage
-from app.domain.qa import Clarification
-from app.domain.workflow import WorkflowPhase, WorkflowState
+from app.domain.workflow import (
+    ClarificationStep,
+    WorkflowContext,
+    WorkflowPhase,
+    WorkflowState,
+)
 from app.infrastructure.persistence.workflow_repository import WorkflowRepository
+
+#  ------------- Behavior / Use Cases ----------------
+#
+# COLLECTING
+# - steps allowed
+# - chat_history ignored
+# SOLVING
+# - no new steps
+# - solution generated
+# DISCUSSION
+# - chat_history active
+# - no new steps
+# - solution immutable (for now)
 
 
 class WorkflowService:
-    def __init__(self, repo: WorkflowRepository):
+    def __init__(
+        self,
+        repo: WorkflowRepository,
+        step_generator: StepGenerator,
+        solve_service: SolveService,
+    ):
         self.repo = repo
+        self.step_generator = step_generator
+        self.solve_service = solve_service
+
+    def _build_context(self, wf: WorkflowState) -> WorkflowContext:
+        return WorkflowContext(
+            workflow_id=wf.id,
+            ticket=wf.ticket,
+            steps=wf.steps,
+            skipped=wf.skipped,
+            max_steps=wf.max_steps,
+            phase=wf.phase,
+        )
 
     # ------- Creation --------
 
@@ -50,20 +87,20 @@ class WorkflowService:
 
         return self.repo.save(workflow)
 
-    def add_question(
+    def add_step(
         self,
         workflow_id: UUID,
-        question: str,
+        cmd: AddStepCommand,
     ) -> WorkflowState:
         workflow = self.get_workflow(workflow_id)
 
         if workflow.phase != WorkflowPhase.COLLECTING:
             raise InvalidWorkflowOperation(
-                "Questions can only be added in COLLECTING phase"
+                "Steps can only be added in COLLECTING phase"
             )
 
-        qa = Clarification(question=question)
-        workflow.clarifications.append(qa)
+        step = ClarificationStep(prompt=cmd.prompt)
+        workflow.steps.append(step)
 
         return self.repo.save(workflow)
 
@@ -79,8 +116,8 @@ class WorkflowService:
                 "Answers can only be added in COLLECTING phase"
             )
 
-        qa = next(q for q in workflow.clarifications if q.id == cmd.clarification_id)
-        qa.answer = cmd.answer
+        step = next(step for step in workflow.steps if step.id == cmd.clarification_id)
+        step.answer = cmd.answer
 
         return self.repo.save(workflow)
 
