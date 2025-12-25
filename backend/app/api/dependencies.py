@@ -1,12 +1,11 @@
+from uuid import UUID
+
 from fastapi import Depends
 
-from app.application.answer_parser import AnswerParser
-from app.application.services.deterministic.printer.printer_answer_parser import PrinterAnswerParser
-from app.application.services.deterministic.printer.printer_solution_service import PrinterSolutionService
-from app.application.services.deterministic.printer.printer_step_generator import PrinterStepGenerator
-from app.application.solution_service import SolutionService
-from app.application.step_generator import StepGenerator
+from app.application.exceptions import WorkflowNotFound
+from app.application.registry import domain_registry
 from app.application.workflow_service import WorkflowService
+from app.domain.workflow import WorkflowStateCreate
 from app.infrastructure.persistence.sqlite_workflow_repository import (
     SqliteWorkflowRepository,
 )
@@ -20,27 +19,33 @@ def get_workflow_repository() -> WorkflowRepository:
     return _repo
 
 
-def get_step_generator() -> StepGenerator:
-    return PrinterStepGenerator()
-
-
-def get_solution_service() -> SolutionService:
-    return PrinterSolutionService()
-
-
-def get_answer_parser() -> AnswerParser:
-    return PrinterAnswerParser()
-
-
 def get_workflow_service(
+    workflow_id: UUID,
     repo: WorkflowRepository = Depends(get_workflow_repository),
-    step_generator: StepGenerator = Depends(get_step_generator),
-    solution_service: SolutionService = Depends(get_solution_service),
-    answer_parser: AnswerParser = Depends(get_answer_parser),
 ) -> WorkflowService:
+    workflow = repo.get(workflow_id)
+    if not workflow:
+        raise WorkflowNotFound(f"Workflow {workflow_id} not found")
+
+    bundle = domain_registry.get(workflow.domain)
+
     return WorkflowService(
         repo=repo,
-        step_generator=step_generator,
-        solution_service=solution_service,
-        answer_parser=answer_parser,
+        step_generator=bundle.step_generator,
+        answer_parser=bundle.answer_parser,
+        solution_service=bundle.solution_service,
+    )
+
+
+def get_workflow_service_for_creation(
+    req: WorkflowStateCreate,
+    repo: WorkflowRepository = Depends(get_workflow_repository),
+) -> WorkflowService:
+    bundle = domain_registry.get(req.domain)
+
+    return WorkflowService(
+        repo=repo,
+        step_generator=bundle.step_generator,
+        answer_parser=bundle.answer_parser,
+        solution_service=bundle.solution_service,
     )

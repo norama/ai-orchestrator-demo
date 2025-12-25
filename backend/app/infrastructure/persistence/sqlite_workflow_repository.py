@@ -28,7 +28,8 @@ class SqliteWorkflowRepository(WorkflowRepository):
                     id TEXT PRIMARY KEY,
                     name TEXT,
                     description TEXT,
-                    phase TEXT NOT NULL,
+                    domain TEXT NOT NULL CHECK (domain IN ('PARROT', 'PRINTER')),
+                    phase TEXT NOT NULL CHECK (phase IN ('COLLECTING', 'SOLVING', 'DISCUSSION', 'DONE')),
                     state_json TEXT NOT NULL,
                     updated_at TEXT NOT NULL
                 )
@@ -40,13 +41,14 @@ class SqliteWorkflowRepository(WorkflowRepository):
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 """
-                INSERT INTO workflows (id, name, description, phase, state_json, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO workflows (id, name, description, domain, phase, state_json, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     str(workflow.id),
                     workflow.name,
                     workflow.description,
+                    workflow.domain.value,
                     workflow.phase.value,
                     workflow.model_dump_json(),
                     workflow.updated_at.isoformat(),
@@ -109,12 +111,13 @@ class SqliteWorkflowRepository(WorkflowRepository):
             conn.execute(
                 """
                 UPDATE workflows
-                SET name = ?, description = ?, phase = ?, state_json = ?, updated_at = ?
+                SET name = ?, description = ?, domain = ?, phase = ?, state_json = ?, updated_at = ?
                 WHERE id = ?
                 """,
                 (
                     workflow.name,
                     workflow.description,
+                    workflow.domain.value,
                     workflow.phase.value,
                     workflow.model_dump_json(),
                     workflow.updated_at.isoformat(),

@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.domain.chat import ChatHistory
+from app.domain.config import DomainType
 from app.domain.db import DbEntry
 from app.domain.ticket import Ticket
 
@@ -42,6 +43,7 @@ class Solution(BaseModel):
 
 class WorkflowStateCreate(BaseModel):
     ticket: Ticket
+    domain: DomainType = DomainType.PARROT
     name: str | None = None
     description: str | None = None
     max_steps: int = 8

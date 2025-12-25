@@ -2,7 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from app.api.dependencies import get_workflow_service
+from app.api.dependencies import get_workflow_service, get_workflow_service_for_creation
 from app.application.commands import AddChatMessageCommand, AnswerStepCommand
 from app.application.workflow_service import WorkflowService
 from app.domain.response import WorkflowDetailResponse, WorkflowListResponse
@@ -39,7 +39,7 @@ def get_workflow(
 @workflows_router.post("", response_model=WorkflowDetailResponse)
 def create_workflow(
     req: WorkflowStateCreate,
-    service: WorkflowService = Depends(get_workflow_service),
+    service: WorkflowService = Depends(get_workflow_service_for_creation),
 ):
     workflow = service.create(req)
 
