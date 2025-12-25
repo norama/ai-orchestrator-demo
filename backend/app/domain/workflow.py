@@ -15,13 +15,18 @@ class WorkflowPhase(str, Enum):
     DONE = "DONE"
 
 
+class WaitingReason(str, Enum):
+    ANSWER_NEEDED = "ANSWER_NEEDED"
+    CHAT = "CHAT"
+
+
 class ClarificationStep(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     prompt: str
     answer: str | None = None
 
 
-class NextQuestionDecision(BaseModel):
+class NextStepDecision(BaseModel):
     next_step: ClarificationStep | None
     confidence: float
     reason: str
@@ -39,8 +44,9 @@ class WorkflowStateCreate(BaseModel):
 
 
 class WorkflowState(WorkflowStateCreate, DbEntry):
-    phase: WorkflowPhase
+    phase: WorkflowPhase = WorkflowPhase.COLLECTING
     steps: list[ClarificationStep] = Field(default_factory=list)
+    last_decision: NextStepDecision | None = None
     solution: Solution | None = None
     chat_history: ChatHistory = Field(default_factory=ChatHistory)
     skipped: bool = False
@@ -50,6 +56,7 @@ class WorkflowContext(BaseModel):
     workflow_id: UUID
     ticket: Ticket
     steps: list[ClarificationStep]
+    last_decision: NextStepDecision | None = None
     skipped: bool
     max_steps: int
     phase: WorkflowPhase

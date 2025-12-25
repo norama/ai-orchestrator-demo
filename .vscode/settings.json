@@ -21,6 +21,8 @@
   "python.envFile": "${workspaceFolder}/backend/.env",
   "python.analysis.extraPaths": ["${workspaceFolder}/backend"],
   "python.testing.pytestArgs": ["-s", "."],
+  "python.languageServer": "Pylance",
+  "python.analysis.typeCheckingMode": "strict",
 
   // --------------------
   // Frontend / Prettier

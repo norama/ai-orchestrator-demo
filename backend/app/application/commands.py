@@ -19,6 +19,6 @@ class AddStepCommand(BaseModel):
     prompt: str
 
 
-class AddAnswerCommand(BaseModel):
-    clarification_id: UUID
+class AnswerStepCommand(BaseModel):
+    step_id: UUID
     answer: str

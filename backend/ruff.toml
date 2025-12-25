@@ -1,0 +1,42 @@
+target-version = "py313"
+line-length = 120
+
+
+format.quote-style = "double"
+format.indent-style = "space"
+format.line-ending = "lf"
+
+fix = true
+extend-exclude = ["backend/**/tests","backend/services/database/alembic/*"]
+
+lint.select = ["E", "F", "W", "I", "PT", "D"]
+lint.fixable = ["ALL"]
+lint.extend-ignore =  ["COM812", "ISC001"]
+lint.ignore = [
+  "PLR2004",  # magic numbers (okay for your code/tests)
+  "E501",     # long lines
+  "EM101",    # direct string in Exception
+  "PT009",    # strict raises pattern
+  "TRY003",   # overly broad except
+  "S101",     # assert used
+  "RUF012",   # ClassVar requirement for mutable class attrs
+  "SIM102",   # allow nested ifs
+  "UP038",    # isinstance tuple optimization (perf concerns)
+  "PGH004",   # allow generic noqa
+  "D200",     # one-line docstring should fit into one line
+  "D212",     # multiline docstring should start at the first line
+  "D413",     # blank line in docstring
+  "D101",     # docstring fot classes
+  "D102",     # docstring for functions
+  "D103",     # docstring for FastAPI
+  "D107",     # docstring for __init__
+  "D100",
+    "D104",
+    "D401",  # docstring rules you want off
+]
+
+# The fixes in extend-unsafe-fixes will require
+# providing the `--unsafe-fixes` flag when fixing.
+lint.extend-unsafe-fixes = ["UP038"]
+lint.isort.combine-as-imports = true
+lint.isort.force-single-line = false
