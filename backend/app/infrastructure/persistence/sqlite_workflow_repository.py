@@ -2,7 +2,7 @@ import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import override
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from app.domain.workflow import WorkflowState, WorkflowStateCreate
 from app.infrastructure.persistence.workflow_repository import (
@@ -60,8 +60,7 @@ class SqliteWorkflowRepository(WorkflowRepository):
 
     @override
     def create(self, workflow_create: WorkflowStateCreate) -> WorkflowState:
-        workflow_id = uuid4()
-        workflow = WorkflowState(id=workflow_id, **workflow_create.model_dump())
+        workflow = WorkflowState(**workflow_create.model_dump())
 
         return self.persist(workflow)
 
