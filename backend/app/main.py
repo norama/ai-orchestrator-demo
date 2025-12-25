@@ -5,7 +5,7 @@ from app.api.error_handlers import (
     invalid_workflow_operation_handler,
     workflow_not_found_handler,
 )
-from app.api.workflows import workflows_router
+from app.api.workflows_router import workflows_router
 from app.application.exceptions import (
     InvalidWorkflowOperation,
     WorkflowNotFound,

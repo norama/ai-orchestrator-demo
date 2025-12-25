@@ -26,6 +26,8 @@ class SqliteWorkflowRepository(WorkflowRepository):
                 """
                 CREATE TABLE IF NOT EXISTS workflows (
                     id TEXT PRIMARY KEY,
+                    name TEXT,
+                    description TEXT,
                     phase TEXT NOT NULL,
                     state_json TEXT NOT NULL,
                     updated_at TEXT NOT NULL
@@ -34,16 +36,17 @@ class SqliteWorkflowRepository(WorkflowRepository):
             )
             conn.commit()
 
-    @override
     def persist(self, workflow: WorkflowState) -> WorkflowState:
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 """
-                INSERT INTO workflows (id, phase, state_json, updated_at)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO workflows (id, name, description, phase, state_json, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?)
                 """,
                 (
                     str(workflow.id),
+                    workflow.name,
+                    workflow.description,
                     workflow.phase.value,
                     workflow.model_dump_json(),
                     workflow.updated_at.isoformat(),
@@ -56,7 +59,7 @@ class SqliteWorkflowRepository(WorkflowRepository):
     @override
     def create(self, workflow_create: WorkflowStateCreate) -> WorkflowState:
         workflow_id = uuid4()
-        workflow = WorkflowState(id=str(workflow_id), **workflow_create.model_dump())
+        workflow = WorkflowState(id=workflow_id, **workflow_create.model_dump())
 
         return self.persist(workflow)
 
@@ -79,7 +82,7 @@ class SqliteWorkflowRepository(WorkflowRepository):
 
     @override
     def list(self) -> list[WorkflowState]:
-        workflows = []
+        workflows: list[WorkflowState] = []
 
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(
@@ -106,10 +109,12 @@ class SqliteWorkflowRepository(WorkflowRepository):
             conn.execute(
                 """
                 UPDATE workflows
-                SET phase = ?, state_json = ?, updated_at = ?
+                SET name = ?, description = ?, phase = ?, state_json = ?, updated_at = ?
                 WHERE id = ?
                 """,
                 (
+                    workflow.name,
+                    workflow.description,
                     workflow.phase.value,
                     workflow.model_dump_json(),
                     workflow.updated_at.isoformat(),

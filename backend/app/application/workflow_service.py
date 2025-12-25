@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
+from app.application.answer_parser import AnswerParser
 from app.application.commands import (
     AddChatMessageCommand,
     AnswerStepCommand,
@@ -38,10 +39,12 @@ class WorkflowService:
         repo: WorkflowRepository,
         step_generator: StepGenerator,
         solution_service: SolutionService,
+        answer_parser: AnswerParser,
     ):
         self.repo = repo
         self.step_generator = step_generator
         self.solution_service = solution_service
+        self.answer_parser = answer_parser
 
     def _build_context(self, wf: WorkflowState) -> WorkflowContext:
         return WorkflowContext(
@@ -105,6 +108,13 @@ class WorkflowService:
             return WaitingReason.CHAT
         return None
 
+    def get_confidence(self, workflow: WorkflowState) -> float | None:
+        if workflow.solution:
+            return workflow.solution.confidence
+        if workflow.last_decision:
+            return workflow.last_decision.confidence
+        return None
+
     def _is_waiting_for_user(self, workflow: WorkflowState) -> bool:
         return self.get_waiting_reason(workflow) is not None
 
@@ -132,6 +142,9 @@ class WorkflowService:
             raise InvalidWorkflowOperation("Step already answered")
 
         step.answer = cmd.answer
+
+        # domain-specific interpretation hook
+        self.answer_parser.parse_answer(step)
 
         workflow = self._process_until_waiting(workflow)
         return self.repo.save(workflow)

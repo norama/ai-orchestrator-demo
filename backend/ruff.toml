@@ -24,6 +24,7 @@ lint.ignore = [
   "UP038",    # isinstance tuple optimization (perf concerns)
   "PGH004",   # allow generic noqa
   "D200",     # one-line docstring should fit into one line
+  "D205",     # blank line requirement
   "D212",     # multiline docstring should start at the first line
   "D413",     # blank line in docstring
   "D101",     # docstring fot classes

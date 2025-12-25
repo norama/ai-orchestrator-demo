@@ -15,3 +15,4 @@ class WorkflowDetailResponse(BaseModel):
     status: str
     state: WorkflowState
     waiting_reason: WaitingReason | None = None
+    confidence: float | None = None
