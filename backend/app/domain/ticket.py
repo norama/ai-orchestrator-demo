@@ -13,6 +13,6 @@ class Ticket(BaseModel):
     id: UUID
     title: str
     description: str
-    source: TicketSource
+    source: TicketSource = TicketSource.RESTFUL_API_DEV
     category: str | None = None
     source_dump: dict[str, Any] = Field(default_factory=dict)

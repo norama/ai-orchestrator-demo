@@ -1,13 +1,54 @@
-import { WorkflowDetail } from '@/pages/WorkflowDetail'
-import { WorkflowList } from '@/pages/WorkflowList'
-import { useState } from 'react'
+import { WorkflowView } from '@/components/WorkflowView'
+import { Button } from '@/components/ui/Button'
+import { useWorkflowController } from '@/data/workflowController'
 
-export default function App() {
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+function App() {
+  const controller = useWorkflowController()
+
+  /* ---------- initial screen ---------- */
+
+  if (!controller.workflow) {
+    return (
+      <div className='min-h-screen flex items-center justify-center bg-gray-50'>
+        <div className='space-y-4 p-6 bg-white rounded shadow max-w-sm w-full text-center'>
+          <h1 className='text-xl font-semibold'>AI Orchestrator Demo</h1>
+
+          <p className='text-sm text-gray-600'>Choose a demo workflow to start</p>
+
+          <div className='flex gap-4 justify-center'>
+            <Button onClick={() => controller.start('PRINTER')} disabled={controller.loading}>
+              Printer demo
+            </Button>
+
+            <Button onClick={() => controller.start('PARROT')} disabled={controller.loading}>
+              Parrot demo
+            </Button>
+          </div>
+
+          {controller.error && <div className='text-sm text-red-600'>{controller.error}</div>}
+        </div>
+      </div>
+    )
+  }
+
+  /* ---------- workflow screen ---------- */
 
   return (
-    <div className='p-4'>
-      {!selectedId ? <WorkflowList onSelect={setSelectedId} /> : <WorkflowDetail id={selectedId} />}
+    <div className='min-h-screen bg-gray-50 py-8'>
+      <WorkflowView
+        workflow={controller.workflow}
+        loading={controller.loading}
+        confidence={controller.confidence}
+        onAnswer={controller.answer}
+        onSkip={controller.skip}
+        onReset={controller.reset}
+      />
+
+      {controller.error && (
+        <div className='mt-4 text-center text-sm text-red-600'>{controller.error}</div>
+      )}
     </div>
   )
 }
+
+export default App
