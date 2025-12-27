@@ -49,6 +49,7 @@ class WorkflowService:
     def _build_context(self, wf: WorkflowState) -> WorkflowContext:
         return WorkflowContext(
             workflow_id=wf.id,
+            domain=wf.domain,
             ticket=wf.ticket,
             steps=wf.steps,
             last_decision=wf.last_decision,

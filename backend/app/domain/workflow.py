@@ -60,6 +60,7 @@ class WorkflowState(WorkflowStateCreate, DbEntry):
 
 class WorkflowContext(BaseModel):
     workflow_id: UUID
+    domain: DomainType
     ticket: Ticket
     steps: list[ClarificationStep]
     last_decision: NextStepDecision | None = None

@@ -17,6 +17,7 @@ export type WaitingReasonEnum = (typeof WaitingReasonEnum)[keyof typeof WaitingR
 export const DomainTypeEnum = {
   PARROT: 'PARROT',
   PRINTER: 'PRINTER',
+  LLM_SUPPORT: 'LLM_SUPPORT',
 } as const
 
 export type DomainTypeEnum = (typeof DomainTypeEnum)[keyof typeof DomainTypeEnum]

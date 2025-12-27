@@ -7,6 +7,9 @@ from app.application.services.deterministic.parrot.parrot_step_generator import 
 from app.application.services.deterministic.printer.printer_answer_parser import PrinterAnswerParser
 from app.application.services.deterministic.printer.printer_solution_service import PrinterSolutionService
 from app.application.services.deterministic.printer.printer_step_generator import PrinterStepGenerator
+from app.application.services.probabilistic.llm.llm_answer_parser import LLMAnswerParser
+from app.application.services.probabilistic.llm.llm_solution_service import LLMSolutionService
+from app.application.services.probabilistic.llm.llm_step_generator import LLMStepGenerator
 from app.application.solution_service import SolutionService
 from app.application.step_generator import StepGenerator
 from app.domain.config import DomainType
@@ -48,5 +51,14 @@ domain_registry.register(
         step_generator=PrinterStepGenerator(),
         answer_parser=PrinterAnswerParser(),
         solution_service=PrinterSolutionService(),
+    ),
+)
+
+domain_registry.register(
+    DomainType.LLM_SUPPORT,
+    DomainBundle(
+        step_generator=LLMStepGenerator(),
+        answer_parser=LLMAnswerParser(),
+        solution_service=LLMSolutionService(),
     ),
 )

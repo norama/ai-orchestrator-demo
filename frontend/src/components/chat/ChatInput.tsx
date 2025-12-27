@@ -26,7 +26,7 @@ export function ChatInput({ disabled, onSend, placeholder }: Props) {
         onChange={(e) => setText(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && submit()}
       />
-      <Button disabled={disabled} onClick={submit}>
+      <Button disabled={disabled || !text.trim()} onClick={submit}>
         Send
       </Button>
     </div>

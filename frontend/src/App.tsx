@@ -17,6 +17,16 @@ function App() {
   const [description, setDescription] = useState('')
   const [maxSteps, setMaxSteps] = useState(8)
 
+  /* ----------- reset handler ---------- */
+
+  const reset = () => {
+    setDomain(DomainTypeEnum.PRINTER)
+    setName('')
+    setDescription('')
+    setMaxSteps(8)
+    controller.reset()
+  }
+
   /* ---------- initial screen ---------- */
 
   if (!controller.chatHistory || !controller.workflowData) {
@@ -33,6 +43,7 @@ function App() {
             <Select value={domain} onChange={(e) => setDomain(e.target.value as DomainTypeEnum)}>
               <option value={DomainTypeEnum.PRINTER}>Printer</option>
               <option value={DomainTypeEnum.PARROT}>Parrot</option>
+              <option value={DomainTypeEnum.LLM_SUPPORT}>LLM Support</option>
             </Select>
           </div>
 
@@ -98,7 +109,7 @@ function App() {
         onAnswer={controller.answer}
         onSkip={controller.skip}
         onSendChatMessage={controller.chat}
-        onReset={controller.reset}
+        onReset={reset}
       />
 
       {controller.error && (
