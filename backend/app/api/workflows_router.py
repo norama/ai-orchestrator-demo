@@ -86,7 +86,7 @@ def skip_to_solution(
 
 
 @workflows_router.post("/{workflow_id}/chat", response_model=WorkflowDetailResponse)
-def post_chat_message(
+def send_chat_message(
     workflow_id: UUID,
     cmd: AddChatMessageCommand,
     service: WorkflowService = Depends(get_workflow_service),
@@ -98,4 +98,5 @@ def post_chat_message(
         status="chat_added",
         state=workflow,
         waiting_reason=service.get_waiting_reason(workflow),
+        confidence=service.get_confidence(workflow),
     )

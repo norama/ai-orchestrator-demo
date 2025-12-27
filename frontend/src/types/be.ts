@@ -1,8 +1,9 @@
-export type WorkflowPhase = 'COLLECTING' | 'SOLVING' | 'DISCUSSION' | 'DONE'
-
-export type WaitingReason = 'ANSWER_NEEDED' | 'CHAT'
-
-export type DomainType = 'PARROT' | 'PRINTER'
+import type {
+  ChatRoleEnum,
+  DomainTypeEnum,
+  WaitingReasonEnum,
+  WorkflowPhaseEnum,
+} from '@/types/enums'
 
 export interface ClarificationStep {
   id: string
@@ -17,12 +18,25 @@ export interface Solution {
   rationale?: string
 }
 
+export interface ChatMessage {
+  role: ChatRoleEnum
+  content: string
+}
+
+export interface ChatHistory {
+  messages: ChatMessage[]
+}
+
 export interface WorkflowState {
   id: string
-  phase: WorkflowPhase
+  domain: DomainTypeEnum
+  name: string
+  description: string
+  phase: WorkflowPhaseEnum
   steps: ClarificationStep[]
   solution: Solution | null
   skipped: boolean
+  chat_history: ChatHistory
 }
 
 /* ---------- API envelope ---------- */
@@ -31,14 +45,14 @@ export interface WorkflowResponse {
   workflow_id: string
   status: string
   state: WorkflowState
-  waiting_reason?: WaitingReason | null
+  waiting_reason?: WaitingReasonEnum | null
   confidence?: number | null
 }
 
 /* ---------- request payloads ---------- */
 
 export interface CreateWorkflowRequest {
-  domain: DomainType
+  domain: DomainTypeEnum
   ticket: {
     id: string
     title: string
@@ -49,4 +63,9 @@ export interface CreateWorkflowRequest {
 export interface AnswerStepRequest {
   step_id: string
   answer: string
+}
+
+export interface ChatMessageRequest {
+  role: ChatRoleEnum
+  content: string
 }

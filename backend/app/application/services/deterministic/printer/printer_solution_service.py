@@ -73,7 +73,7 @@ class PrinterSolutionService(SolutionService):
             {additional_info}
         """
 
-        confidence = 0.9 if yes_no_step else 0.6
+        confidence = 0.9 if yes_no_step and yes_no_step.answer else 0.6
 
         return Solution(
             content=content.strip(),

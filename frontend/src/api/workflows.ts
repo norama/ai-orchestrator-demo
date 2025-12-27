@@ -1,4 +1,9 @@
-import type { AnswerStepRequest, CreateWorkflowRequest, WorkflowResponse } from '@/types/workflow'
+import type {
+  AnswerStepRequest,
+  ChatMessageRequest,
+  CreateWorkflowRequest,
+  WorkflowResponse,
+} from '@/types/be'
 
 const API_BASE_URL = 'http://localhost:8000'
 
@@ -68,6 +73,24 @@ export async function skipToSolution(workflowId: string): Promise<WorkflowRespon
     headers: {
       'Content-Type': 'application/json',
     },
+  })
+
+  return handleResponse<WorkflowResponse>(res)
+}
+
+/**
+ * Send chat message
+ */
+export async function sendChatMessage(
+  workflowId: string,
+  req: ChatMessageRequest,
+): Promise<WorkflowResponse> {
+  const res = await fetch(`${API_BASE_URL}/workflows/${workflowId}/chat`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(req),
   })
 
   return handleResponse<WorkflowResponse>(res)

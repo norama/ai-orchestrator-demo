@@ -1,68 +1,73 @@
-import { StepInput } from '@/components/StepInput'
+import { ChatInput } from '@/components/chat/ChatInput'
+import { ChatMessageView } from '@/components/chat/ChatMessageView'
+import { SolutionView } from '@/components/chat/SolutionView'
+import { StepInput } from '@/components/chat/StepInput'
 import { Button } from '@/components/ui/Button'
-import type { WorkflowState } from '@/types/workflow'
+import { UIHistoryItemTypeEnum } from '@/types/enums'
+import type { UIChatHistory, UICurrentStep, UIWorkflowData } from '@/types/fe'
 
 interface WorkflowViewProps {
-  workflow: WorkflowState
+  workflowData: UIWorkflowData
+  currentStep: UICurrentStep | null
+  chatHistory: UIChatHistory
   loading: boolean
   confidence: number | null
   onAnswer(stepId: string, answer: string): void
+  onSendChatMessage(message: string): void
   onSkip(): void
   onReset(): void
 }
 
 export function WorkflowView({
-  workflow,
+  workflowData,
+  currentStep,
+  chatHistory,
   loading,
   confidence,
   onAnswer,
+  onSendChatMessage,
   onSkip,
   onReset,
 }: WorkflowViewProps) {
-  const openStep = workflow.steps.find((step) => step.answer === null)
+  return (
+    <div className='space-y-4 p-4 max-w-2xl mx-auto'>
+      <h1 className='text-2xl font-bold'>
+        Workflow: {workflowData.name} ({workflowData.domain})
+      </h1>
+      <p className='text-gray-700'>{workflowData.description}</p>
 
-  /* ---------- solution view ---------- */
+      {chatHistory.items.map((item, index) => {
+        switch (item.type) {
+          case UIHistoryItemTypeEnum.MESSAGE:
+            return <ChatMessageView key={item.message.id} message={item.message} />
+          case UIHistoryItemTypeEnum.SOLUTION:
+            return <SolutionView key={index} solution={item.solution} />
+          default:
+            return null
+        }
+      })}
 
-  if (workflow.solution) {
-    return (
-      <div className='space-y-4 p-4 max-w-2xl mx-auto'>
-        <h2 className='text-xl font-semibold'>Solution</h2>
-
-        <pre className='whitespace-pre-wrap bg-gray-100 p-4 rounded'>
-          {workflow.solution.content}
-        </pre>
-
-        <div className='flex justify-between items-center'>
-          {confidence !== null && (
-            <div className='text-sm text-gray-600'>Confidence: {Math.round(confidence * 100)}%</div>
-          )}
-
-          <Button onClick={onReset}>Start new workflow</Button>
-        </div>
-      </div>
-    )
-  }
-
-  /* ---------- clarification input ---------- */
-
-  if (openStep) {
-    return (
-      <div className='max-w-xl mx-auto'>
+      {currentStep && (
         <StepInput
-          step={openStep}
-          onAnswer={(answer) => onAnswer(openStep.id, answer)}
+          step={currentStep}
+          onAnswer={(text) => onAnswer(currentStep.step_id, text)}
           onSkip={onSkip}
+          confidence={confidence}
           disabled={loading}
         />
+      )}
+
+      {workflowData.phase === 'DISCUSSION' && (
+        <ChatInput
+          placeholder='Enter your message...'
+          onSend={onSendChatMessage}
+          disabled={loading}
+        />
+      )}
+
+      <div className='flex justify-end items-center max-w-xl mx-auto'>
+        <Button onClick={onReset}>Start new workflow</Button>
       </div>
-    )
-  }
-
-  /* ---------- transitional / waiting ---------- */
-
-  return (
-    <div className='p-4 text-center text-gray-500'>
-      <p>Processing…</p>
     </div>
   )
 }

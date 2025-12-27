@@ -1,16 +1,24 @@
+import { Confidence } from '@/components/chat/Confidence'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import type { ClarificationStep } from '@/types/workflow'
+import type { UICurrentStep } from '@/types/fe'
 import { useState } from 'react'
 
 interface StepInputProps {
-  step: ClarificationStep
+  step: UICurrentStep
   onAnswer(answer: string): void
   onSkip(): void
+  confidence: number | null
   disabled?: boolean
 }
 
-export function StepInput({ step, onAnswer, onSkip, disabled = false }: StepInputProps) {
+export function StepInput({
+  step,
+  onAnswer,
+  onSkip,
+  confidence,
+  disabled = false,
+}: StepInputProps) {
   const [value, setValue] = useState('')
 
   function submit() {
@@ -34,6 +42,7 @@ export function StepInput({ step, onAnswer, onSkip, disabled = false }: StepInpu
           if (e.key === 'Enter') submit()
         }}
       />
+      <Confidence confidence={confidence} />
 
       {/* Actions */}
       <div className='flex gap-2'>

@@ -6,9 +6,9 @@ from pydantic import BaseModel, Field
 
 
 class ChatRole(str, Enum):
-    USER = "user"
-    AI = "ai"
-    SYSTEM = "system"
+    USER = "USER"
+    AI = "AI"
+    SYSTEM = "SYSTEM"
 
 
 class ChatMessage(BaseModel):

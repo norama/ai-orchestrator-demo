@@ -7,7 +7,7 @@ function App() {
 
   /* ---------- initial screen ---------- */
 
-  if (!controller.workflow) {
+  if (!controller.chatHistory || !controller.workflowData) {
     return (
       <div className='min-h-screen flex items-center justify-center bg-gray-50'>
         <div className='space-y-4 p-6 bg-white rounded shadow max-w-sm w-full text-center'>
@@ -36,11 +36,14 @@ function App() {
   return (
     <div className='min-h-screen bg-gray-50 py-8'>
       <WorkflowView
-        workflow={controller.workflow}
+        workflowData={controller.workflowData}
+        currentStep={controller.currentStep}
+        chatHistory={controller.chatHistory}
         loading={controller.loading}
         confidence={controller.confidence}
         onAnswer={controller.answer}
         onSkip={controller.skip}
+        onSendChatMessage={controller.chat}
         onReset={controller.reset}
       />
 
