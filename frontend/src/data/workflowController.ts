@@ -9,8 +9,8 @@ import {
 } from '@/api/workflows'
 import { workflowToChatHistory, workflowToOpenStep } from '@/data/workflowProjector'
 import type { WorkflowResponse, WorkflowState } from '@/types/be'
-import { ChatRoleEnum, type DomainTypeEnum, type WaitingReasonEnum } from '@/types/enums'
-import type { UIChatHistory, UICurrentStep, UIWorkflowData } from '@/types/fe'
+import { ChatRoleEnum, type WaitingReasonEnum } from '@/types/enums'
+import type { UIChatHistory, UICurrentStep, UIWorkflowCreateForm, UIWorkflowData } from '@/types/fe'
 
 /* ---------- controller API ---------- */
 
@@ -23,7 +23,7 @@ export interface WorkflowController {
   loading: boolean
   error: string | null
 
-  start(domain: DomainTypeEnum): Promise<void>
+  start(req: UIWorkflowCreateForm): Promise<void>
   answer(stepId: string, answer: string): Promise<void>
   chat(content: string): Promise<void>
   skip(): Promise<void>
@@ -50,13 +50,16 @@ export function useWorkflowController(): WorkflowController {
 
   /* ----- actions ----- */
 
-  async function start(domain: DomainTypeEnum): Promise<void> {
+  async function start(req: UIWorkflowCreateForm): Promise<void> {
     setLoading(true)
     setError(null)
 
     try {
       const res = await createWorkflow({
-        domain,
+        domain: req.domain,
+        name: req.name,
+        description: req.description,
+        max_steps: req.maxSteps,
         ticket: {
           id: crypto.randomUUID(),
           title: 'Demo ticket',
@@ -163,6 +166,7 @@ export function useWorkflowController(): WorkflowController {
         domain: workflow.domain,
         name: workflow.name,
         description: workflow.description,
+        maxSteps: workflow.max_steps,
         phase: workflow.phase,
       }
     : null

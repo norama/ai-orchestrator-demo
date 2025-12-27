@@ -35,17 +35,21 @@ export function WorkflowView({
         Workflow: {workflowData.name} ({workflowData.domain})
       </h1>
       <p className='text-gray-700'>{workflowData.description}</p>
+      <p className='text-sm text-gray-500'>Max steps: {workflowData.maxSteps}</p>
+      <p className='text-sm text-blue-500'>Phase: {workflowData.phase}</p>
 
-      {chatHistory.items.map((item, index) => {
-        switch (item.type) {
-          case UIHistoryItemTypeEnum.MESSAGE:
-            return <ChatMessageView key={item.message.id} message={item.message} />
-          case UIHistoryItemTypeEnum.SOLUTION:
-            return <SolutionView key={index} solution={item.solution} />
-          default:
-            return null
-        }
-      })}
+      <div className='flex flex-col gap-3'>
+        {chatHistory.items.map((item, index) => {
+          switch (item.type) {
+            case UIHistoryItemTypeEnum.MESSAGE:
+              return <ChatMessageView key={item.message.id} message={item.message} />
+            case UIHistoryItemTypeEnum.SOLUTION:
+              return <SolutionView key={index} solution={item.solution} />
+            default:
+              return null
+          }
+        })}
+      </div>
 
       {currentStep && (
         <StepInput

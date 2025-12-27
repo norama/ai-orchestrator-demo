@@ -28,6 +28,7 @@ export interface UIWorkflowData {
   domain: DomainTypeEnum
   name: string
   description: string
+  maxSteps: number
   phase: WorkflowPhaseEnum
 }
 
@@ -38,4 +39,11 @@ export interface UIChatHistory {
 export interface UICurrentStep {
   step_id: string
   prompt: string
+}
+
+export interface UIWorkflowCreateForm {
+  domain: DomainTypeEnum
+  name?: string
+  description?: string
+  maxSteps?: number
 }

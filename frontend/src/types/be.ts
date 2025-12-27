@@ -32,6 +32,7 @@ export interface WorkflowState {
   domain: DomainTypeEnum
   name: string
   description: string
+  max_steps: number
   phase: WorkflowPhaseEnum
   steps: ClarificationStep[]
   solution: Solution | null
@@ -53,6 +54,9 @@ export interface WorkflowResponse {
 
 export interface CreateWorkflowRequest {
   domain: DomainTypeEnum
+  name?: string
+  description?: string
+  max_steps?: number
   ticket: {
     id: string
     title: string
