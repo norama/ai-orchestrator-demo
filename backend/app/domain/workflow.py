@@ -31,7 +31,7 @@ class ClarificationStep(BaseModel):
 
 class NextStepDecision(BaseModel):
     next_step: ClarificationStep | None
-    confidence: float
+    workflow_confidence: float
     reason: str
 
 

@@ -8,7 +8,7 @@ interface StepInputProps {
   step: UICurrentStep
   onAnswer(answer: string): void
   onSkip(): void
-  confidence: number | null
+  workflowConfidence: number | null
   disabled?: boolean
 }
 
@@ -16,7 +16,7 @@ export function StepInput({
   step,
   onAnswer,
   onSkip,
-  confidence,
+  workflowConfidence,
   disabled = false,
 }: StepInputProps) {
   const [value, setValue] = useState('')
@@ -42,7 +42,7 @@ export function StepInput({
           if (e.key === 'Enter') submit()
         }}
       />
-      <Confidence confidence={confidence} />
+      <Confidence label='Workflow confidence' confidence={workflowConfidence} />
 
       {/* Actions */}
       <div className='flex gap-2'>

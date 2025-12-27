@@ -10,5 +10,5 @@ class ParrotSolutionService(SolutionService):
         # A deterministic solution generation for testing purposes
         steps = "\n".join(str(step) for step in ctx.steps)
         answer = f"Deterministic solution based on answers:\n{steps}"
-        confidence = ctx.last_decision.confidence if ctx.last_decision else 0.5
+        confidence = ctx.last_decision.workflow_confidence if ctx.last_decision else 0.5
         return Solution(content=answer, confidence=confidence, rationale="ParrotSolutionService rationale.")

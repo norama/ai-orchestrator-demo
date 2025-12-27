@@ -10,7 +10,7 @@ export function SolutionView({ solution }: Props) {
     <div className='p-4 bg-green-50 border border-green-200 rounded-lg'>
       <h3 className='text-lg font-medium mb-2'>Proposed Solution</h3>
       <p className='whitespace-pre-wrap mb-2'>{solution.content}</p>
-      <Confidence confidence={solution.confidence} />
+      <Confidence label='Solution confidence' confidence={solution.confidence} />
       {solution.rationale && (
         <div className='mt-2 p-2 bg-green-100 border border-green-200 rounded'>
           <h4 className='font-medium mb-1'>Rationale:</h4>

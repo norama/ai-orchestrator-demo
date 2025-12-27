@@ -8,11 +8,11 @@ class ParrotStepGenerator(StepGenerator):
         ctx: WorkflowContext,
     ) -> NextStepDecision:
         n = len(ctx.steps)
-        c = ctx.last_decision.confidence if ctx.last_decision else 0.0
+        c = ctx.last_decision.workflow_confidence if ctx.last_decision else 0.0
         return NextStepDecision(
             next_step=ClarificationStep(
                 prompt=f"Parrot step {n + 1}: Please provide more information.",
             ),
-            confidence=(1.0 + c) / 2.0,
+            workflow_confidence=(1.0 + c) / 2.0,
             reason="ParrotStepGenerator always opts to add more steps.",
         )

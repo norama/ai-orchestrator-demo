@@ -19,7 +19,7 @@ export interface WorkflowController {
   currentStep: UICurrentStep | null
   chatHistory: UIChatHistory | null
   waitingReason: WaitingReasonEnum | null
-  confidence: number | null
+  workflowConfidence: number | null
   loading: boolean
   error: string | null
 
@@ -36,7 +36,7 @@ export interface WorkflowController {
 export function useWorkflowController(): WorkflowController {
   const [workflow, setWorkflow] = useState<WorkflowState | null>(null)
   const [waitingReason, setWaitingReason] = useState<WaitingReasonEnum | null>(null)
-  const [confidence, setConfidence] = useState<number | null>(null)
+  const [workflowConfidence, setWorkflowConfidence] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -45,7 +45,7 @@ export function useWorkflowController(): WorkflowController {
   function applyResponse(res: WorkflowResponse) {
     setWorkflow(res.state)
     setWaitingReason(res.waiting_reason ?? null)
-    setConfidence(res.confidence ?? null)
+    setWorkflowConfidence(res.workflow_confidence ?? null)
   }
 
   /* ----- actions ----- */
@@ -148,7 +148,7 @@ export function useWorkflowController(): WorkflowController {
   function reset(): void {
     setWorkflow(null)
     setWaitingReason(null)
-    setConfidence(null)
+    setWorkflowConfidence(null)
     setError(null)
     setLoading(false)
   }
@@ -174,7 +174,7 @@ export function useWorkflowController(): WorkflowController {
     currentStep,
     chatHistory,
     waitingReason,
-    confidence,
+    workflowConfidence,
     loading,
     error,
     start,

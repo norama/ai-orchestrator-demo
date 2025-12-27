@@ -14,12 +14,12 @@ class FakeStepGenerator(StepGenerator):
         if not ctx.steps:
             return NextStepDecision(
                 next_step=ClarificationStep(prompt="Q1"),
-                confidence=0.1,
+                workflow_confidence=0.1,
                 reason="initial",
             )
         return NextStepDecision(
             next_step=None,
-            confidence=1.0,
+            workflow_confidence=1.0,
             reason="done",
         )
 

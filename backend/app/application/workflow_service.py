@@ -108,11 +108,9 @@ class WorkflowService:
             return WaitingReason.CHAT
         return None
 
-    def get_confidence(self, workflow: WorkflowState) -> float | None:
-        if workflow.solution:
-            return workflow.solution.confidence
+    def get_workflow_confidence(self, workflow: WorkflowState) -> float | None:
         if workflow.last_decision:
-            return workflow.last_decision.confidence
+            return workflow.last_decision.workflow_confidence
         return None
 
     def _is_waiting_for_user(self, workflow: WorkflowState) -> bool:

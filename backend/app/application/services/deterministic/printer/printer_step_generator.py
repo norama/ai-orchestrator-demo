@@ -21,7 +21,7 @@ class PrinterStepGenerator(StepGenerator):
                         phase=PrinterStepPhase.INITIAL, expected_answer=PrinterExpectedAnswer.YES_NO
                     ).model_dump(),
                 ),
-                confidence=0.2,
+                workflow_confidence=0.2,
                 reason="Initial observation required.",
             )
 
@@ -44,7 +44,7 @@ class PrinterStepGenerator(StepGenerator):
                             phase=PrinterStepPhase.IN_PROGRESS, expected_answer=PrinterExpectedAnswer.FREE_TEXT
                         ).model_dump(),
                     ),
-                    confidence=0.6,
+                    workflow_confidence=0.6,
                     reason="Queue blockage suspected.",
                 )
 
@@ -57,7 +57,7 @@ class PrinterStepGenerator(StepGenerator):
                             phase=PrinterStepPhase.IN_PROGRESS, expected_answer=PrinterExpectedAnswer.FREE_TEXT
                         ).model_dump(),
                     ),
-                    confidence=0.6,
+                    workflow_confidence=0.6,
                     reason="Connection or spooler issue suspected.",
                 )
 
@@ -69,12 +69,12 @@ class PrinterStepGenerator(StepGenerator):
                         phase=PrinterStepPhase.IN_PROGRESS, expected_answer=PrinterExpectedAnswer.YES_NO
                     ).model_dump(),
                 ),
-                confidence=0.3,
+                workflow_confidence=0.3,
                 reason="Initial answer unclear.",
             )
 
         if metadata.expected_answer == PrinterExpectedAnswer.FREE_TEXT:
-            return NextStepDecision(next_step=None, confidence=0.9, reason="Sufficient information collected.")
+            return NextStepDecision(next_step=None, workflow_confidence=0.9, reason="Sufficient information collected.")
 
         # Safety fallback (should not normally happen)
         raise RuntimeError("Unhandled printer troubleshooting state.")

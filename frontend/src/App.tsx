@@ -40,7 +40,7 @@ function App() {
         currentStep={controller.currentStep}
         chatHistory={controller.chatHistory}
         loading={controller.loading}
-        confidence={controller.confidence}
+        confidence={controller.workflowConfidence}
         onAnswer={controller.answer}
         onSkip={controller.skip}
         onSendChatMessage={controller.chat}

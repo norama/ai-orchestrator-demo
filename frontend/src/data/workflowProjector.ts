@@ -16,6 +16,7 @@ export function workflowToOpenStep(state: WorkflowState): UICurrentStep | null {
   return null
 }
 
+// Assumption: discussion messages only appear after solution
 export function workflowToChatHistory(state: WorkflowState): UIChatHistory {
   const items: UIChatHistoryItem[] = []
 

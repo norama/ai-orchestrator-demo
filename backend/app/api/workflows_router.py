@@ -48,7 +48,7 @@ def create_workflow(
         status="created",
         state=workflow,
         waiting_reason=service.get_waiting_reason(workflow),
-        confidence=service.get_confidence(workflow),
+        workflow_confidence=service.get_workflow_confidence(workflow),
     )
 
 
@@ -65,7 +65,7 @@ def answer_step(
         status="updated",
         state=workflow,
         waiting_reason=service.get_waiting_reason(workflow),
-        confidence=service.get_confidence(workflow),
+        workflow_confidence=service.get_workflow_confidence(workflow),
     )
 
 
@@ -81,7 +81,7 @@ def skip_to_solution(
         status="skipped",
         state=workflow,
         waiting_reason=service.get_waiting_reason(workflow),
-        confidence=service.get_confidence(workflow),
+        workflow_confidence=service.get_workflow_confidence(workflow),
     )
 
 
@@ -98,5 +98,5 @@ def send_chat_message(
         status="chat_added",
         state=workflow,
         waiting_reason=service.get_waiting_reason(workflow),
-        confidence=service.get_confidence(workflow),
+        workflow_confidence=service.get_workflow_confidence(workflow),
     )

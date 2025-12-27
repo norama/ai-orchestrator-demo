@@ -52,7 +52,7 @@ export function WorkflowView({
           step={currentStep}
           onAnswer={(text) => onAnswer(currentStep.step_id, text)}
           onSkip={onSkip}
-          confidence={confidence}
+          workflowConfidence={confidence}
           disabled={loading}
         />
       )}
@@ -65,7 +65,7 @@ export function WorkflowView({
         />
       )}
 
-      <div className='flex justify-end items-center max-w-xl mx-auto'>
+      <div className='flex justify-end items-center'>
         <Button onClick={onReset}>Start new workflow</Button>
       </div>
     </div>

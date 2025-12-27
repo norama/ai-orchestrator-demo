@@ -46,7 +46,7 @@ export interface WorkflowResponse {
   status: string
   state: WorkflowState
   waiting_reason?: WaitingReasonEnum | null
-  confidence?: number | null
+  workflow_confidence?: number | null
 }
 
 /* ---------- request payloads ---------- */
