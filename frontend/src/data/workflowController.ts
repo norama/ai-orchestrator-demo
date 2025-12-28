@@ -63,7 +63,7 @@ export function useWorkflowController(): WorkflowController {
         ticket: {
           id: crypto.randomUUID(),
           title: 'Demo ticket',
-          description: 'Printer problem',
+          description: 'Printer problem: cannot print documents.',
         },
       })
 

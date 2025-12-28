@@ -7,6 +7,7 @@ from app.application.services.deterministic.parrot.parrot_step_generator import 
 from app.application.services.deterministic.printer.printer_answer_parser import PrinterAnswerParser
 from app.application.services.deterministic.printer.printer_solution_service import PrinterSolutionService
 from app.application.services.deterministic.printer.printer_step_generator import PrinterStepGenerator
+from app.application.services.probabilistic.llm.client.openai_client import OpenAIClient
 from app.application.services.probabilistic.llm.llm_answer_parser import LLMAnswerParser
 from app.application.services.probabilistic.llm.llm_solution_service import LLMSolutionService
 from app.application.services.probabilistic.llm.llm_step_generator import LLMStepGenerator
@@ -54,11 +55,13 @@ domain_registry.register(
     ),
 )
 
+llm_client = OpenAIClient()
+
 domain_registry.register(
     DomainType.LLM_SUPPORT,
     DomainBundle(
-        step_generator=LLMStepGenerator(),
+        step_generator=LLMStepGenerator(llm_client),
         answer_parser=LLMAnswerParser(),
-        solution_service=LLMSolutionService(),
+        solution_service=LLMSolutionService(llm_client),
     ),
 )

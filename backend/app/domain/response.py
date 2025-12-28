@@ -1,3 +1,4 @@
+from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -16,3 +17,8 @@ class WorkflowDetailResponse(BaseModel):
     state: WorkflowState
     waiting_reason: WaitingReason | None = None
     workflow_confidence: float | None = None
+
+
+class LLMResponse(BaseModel):
+    response_json: dict[str, Any]
+    status: str

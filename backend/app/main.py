@@ -5,6 +5,7 @@ from app.api.error_handlers import (
     invalid_workflow_operation_handler,
     workflow_not_found_handler,
 )
+from app.api.llm_router import llm_router
 from app.api.workflows_router import workflows_router
 from app.application.exceptions import (
     InvalidWorkflowOperation,
@@ -47,3 +48,4 @@ def health():
 
 
 app.include_router(workflows_router)
+app.include_router(llm_router)
