@@ -1,7 +1,7 @@
+from app.application.registry import create_llm_client
 from app.application.services.probabilistic.llm.client.llm_client import LLMClient
-from app.application.services.probabilistic.llm.client.openai_client import OpenAIClient
 
-_client = OpenAIClient()
+_client = create_llm_client()
 
 
 def get_llm_client() -> LLMClient:

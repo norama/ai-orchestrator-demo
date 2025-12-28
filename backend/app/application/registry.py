@@ -1,3 +1,4 @@
+import logging
 from typing import NamedTuple
 
 from app.application.answer_parser import AnswerParser
@@ -7,13 +8,16 @@ from app.application.services.deterministic.parrot.parrot_step_generator import 
 from app.application.services.deterministic.printer.printer_answer_parser import PrinterAnswerParser
 from app.application.services.deterministic.printer.printer_solution_service import PrinterSolutionService
 from app.application.services.deterministic.printer.printer_step_generator import PrinterStepGenerator
-from app.application.services.probabilistic.llm.client.openai_client import OpenAIClient
+from app.application.services.probabilistic.llm.client.openai.openai_client import OpenAIClient
+from app.application.services.probabilistic.llm.domain.llm_stats import LLMUsage
 from app.application.services.probabilistic.llm.llm_answer_parser import LLMAnswerParser
 from app.application.services.probabilistic.llm.llm_solution_service import LLMSolutionService
 from app.application.services.probabilistic.llm.llm_step_generator import LLMStepGenerator
 from app.application.solution_service import SolutionService
 from app.application.step_generator import StepGenerator
 from app.domain.config import DomainType
+
+logger = logging.getLogger(__name__)
 
 
 class DomainBundle(NamedTuple):
@@ -55,7 +59,19 @@ domain_registry.register(
     ),
 )
 
-llm_client = OpenAIClient()
+
+def create_llm_client() -> OpenAIClient:
+    def log_usage(usage: LLMUsage):
+        logger.info(
+            "model=%s tokens=%s",
+            usage.model,
+            usage.total_tokens,
+        )
+
+    return OpenAIClient(on_usage=log_usage)
+
+
+llm_client = create_llm_client()
 
 domain_registry.register(
     DomainType.LLM_SUPPORT,
