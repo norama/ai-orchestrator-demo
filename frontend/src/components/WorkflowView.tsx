@@ -2,11 +2,13 @@ import { ChatInput } from '@/components/chat/ChatInput'
 import { ChatMessageView } from '@/components/chat/ChatMessageView'
 import { SolutionView } from '@/components/chat/SolutionView'
 import { StepInput } from '@/components/chat/StepInput'
+import { TicketView } from '@/components/TicketView'
 import { Button } from '@/components/ui/Button'
 import { UIHistoryItemTypeEnum } from '@/types/enums'
-import type { UIChatHistory, UICurrentStep, UIWorkflowData } from '@/types/fe'
+import type { UIChatHistory, UICurrentStep, UITicket, UIWorkflowData } from '@/types/fe'
 
 interface WorkflowViewProps {
+  ticket: UITicket
   workflowData: UIWorkflowData
   currentStep: UICurrentStep | null
   chatHistory: UIChatHistory
@@ -19,6 +21,7 @@ interface WorkflowViewProps {
 }
 
 export function WorkflowView({
+  ticket,
   workflowData,
   currentStep,
   chatHistory,
@@ -37,6 +40,7 @@ export function WorkflowView({
       <p className='text-gray-700'>{workflowData.description}</p>
       <p className='text-sm text-gray-500'>Max steps: {workflowData.maxSteps}</p>
       <p className='text-sm text-blue-500'>Phase: {workflowData.phase}</p>
+      <TicketView ticket={ticket} />
 
       <div className='flex flex-col gap-3'>
         {chatHistory.items.map((item, index) => {

@@ -23,6 +23,12 @@ export type UIChatHistoryItem =
       solution: UISolution
     }
 
+export interface UITicket {
+  id: string
+  title: string
+  description: string
+}
+
 export interface UIWorkflowData {
   id: string
   domain: DomainTypeEnum

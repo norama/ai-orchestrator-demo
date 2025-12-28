@@ -27,8 +27,15 @@ export interface ChatHistory {
   messages: ChatMessage[]
 }
 
+export interface Ticket {
+  id: string
+  title: string
+  description: string
+}
+
 export interface WorkflowState {
   id: string
+  ticket: Ticket
   domain: DomainTypeEnum
   name: string
   description: string

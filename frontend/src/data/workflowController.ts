@@ -10,11 +10,18 @@ import {
 import { workflowToChatHistory, workflowToOpenStep } from '@/data/workflowProjector'
 import type { WorkflowResponse, WorkflowState } from '@/types/be'
 import { ChatRoleEnum, type WaitingReasonEnum } from '@/types/enums'
-import type { UIChatHistory, UICurrentStep, UIWorkflowCreateForm, UIWorkflowData } from '@/types/fe'
+import type {
+  UIChatHistory,
+  UICurrentStep,
+  UITicket,
+  UIWorkflowCreateForm,
+  UIWorkflowData,
+} from '@/types/fe'
 
 /* ---------- controller API ---------- */
 
 export interface WorkflowController {
+  ticket: UITicket | null
   workflowData: UIWorkflowData | null
   currentStep: UICurrentStep | null
   chatHistory: UIChatHistory | null
@@ -160,6 +167,13 @@ export function useWorkflowController(): WorkflowController {
 
   const currentStep = workflow ? workflowToOpenStep(workflow) : null
   const chatHistory = workflow ? workflowToChatHistory(workflow) : null
+  const ticket = workflow
+    ? {
+        id: workflow.ticket.id,
+        title: workflow.ticket.title,
+        description: workflow.ticket.description,
+      }
+    : null
   const workflowData = workflow
     ? {
         id: workflow.id,
@@ -174,6 +188,7 @@ export function useWorkflowController(): WorkflowController {
   /* ----- exposed controller ----- */
 
   return {
+    ticket,
     workflowData,
     currentStep,
     chatHistory,
