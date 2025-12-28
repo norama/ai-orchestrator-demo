@@ -1,6 +1,6 @@
-from app.application.services.probabilistic.llm.client.json_utils import extract_json
 from app.application.services.probabilistic.llm.client.llm_client import LLMClient
 from app.application.services.probabilistic.llm.domain.llm import LLMAction, LLMNextStep
+from app.application.services.probabilistic.llm.utils.llm_call import call_llm_json
 from app.application.step_generator import StepGenerator
 from app.domain.workflow import ClarificationStep, NextStepDecision, WorkflowContext
 
@@ -22,6 +22,17 @@ class LLMStepGenerator(StepGenerator):
             - Decide whether another clarification question is needed.
             - Ask AT MOST one clarification question.
             - If enough information is available, stop asking questions.
+
+            When deciding whether to ask another question:
+            - Consider how many steps are still available.
+            - If you are unsure whether another question will materially improve the solution,
+              prefer returning action = "DONE" with lower confidence.
+
+            Guidance for workflow_confidence:
+            - 1.0 = complete certainty
+            - 0.5 = partial confidence
+            - <0.3 = weak confidence
+
 
             Return ONLY valid JSON matching this schema:
 
@@ -54,19 +65,10 @@ class LLMStepGenerator(StepGenerator):
         """.strip()
 
     def propose_next(self, ctx: WorkflowContext) -> NextStepDecision:
-        if any(step.answer is None for step in ctx.steps):
-            last_conf = ctx.last_decision.workflow_confidence if ctx.last_decision else 1.0
-            return NextStepDecision(
-                next_step=None,
-                workflow_confidence=last_conf,
-                reason="Waiting for user to answer the current question",
-            )
-
         prompt = self._build_prompt(ctx)
 
         try:
-            raw = self.llm.complete(prompt)
-            data = extract_json(raw)
+            data = call_llm_json(self.llm, prompt)
             next_llm_step = LLMNextStep.model_validate(data)
             next_llm_step = LLMNextStep.validate_semantics(next_llm_step)
 

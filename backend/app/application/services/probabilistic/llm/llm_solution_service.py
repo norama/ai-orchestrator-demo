@@ -1,6 +1,6 @@
-from app.application.services.probabilistic.llm.client.json_utils import extract_json
 from app.application.services.probabilistic.llm.client.llm_client import LLMClient
 from app.application.services.probabilistic.llm.domain.llm import LLMSolution
+from app.application.services.probabilistic.llm.utils.llm_call import call_llm_json
 from app.application.solution_service import SolutionService
 from app.domain.workflow import Solution, WorkflowContext
 
@@ -25,6 +25,14 @@ class LLMSolutionService(SolutionService):
             - Specify a confidence level between 0.0 and 1.0 for your solution.
             - Provide a brief rationale for your solution.
               This field can be null if not applicable.
+
+            Provide the best possible solution based on available information.
+            If information is incomplete, state assumptions explicitly.
+
+            Guidance for solution_confidence:
+            - 1.0 = complete certainty
+            - 0.5 = partial confidence
+            - <0.3 = weak confidence
 
             Return ONLY valid JSON matching this schema:
 
@@ -54,8 +62,7 @@ class LLMSolutionService(SolutionService):
         prompt = self._build_prompt(ctx)
 
         try:
-            raw = self.llm.complete(prompt)
-            data = extract_json(raw)
+            data = call_llm_json(self.llm, prompt)
             parsed = LLMSolution.model_validate(data)
             parsed = LLMSolution.validate_semantics(parsed)
             return Solution(
