@@ -64,6 +64,8 @@ class WorkflowContext(BaseModel):
     ticket: Ticket
     steps: list[ClarificationStep]
     last_decision: NextStepDecision | None = None
+    solution: Solution | None = None
+    chat_history: ChatHistory = Field(default_factory=ChatHistory)
     skipped: bool
     max_steps: int
     phase: WorkflowPhase

@@ -36,7 +36,7 @@ def test_workflow_creates_first_step(workflow: WorkflowState):
 
 
 def test_workflow_waits_for_answer(workflow_service: WorkflowService, workflow: WorkflowState):
-    workflow2 = workflow_service._process_until_waiting(workflow)  # type: ignore
+    workflow2 = workflow_service._process_until_waiting_or_done(workflow)  # type: ignore
 
     assert len(workflow2.steps) == 1
     assert workflow2.solution is None

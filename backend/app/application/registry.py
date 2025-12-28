@@ -2,7 +2,9 @@ import logging
 from typing import NamedTuple
 
 from app.application.answer_parser import AnswerParser
+from app.application.chat_service import ChatService
 from app.application.services.deterministic.parrot.parrot_answer_parser import ParrotAnswerParser
+from app.application.services.deterministic.parrot.parrot_chat_service import ParrotChatService
 from app.application.services.deterministic.parrot.parrot_solution_service import ParrotSolutionService
 from app.application.services.deterministic.parrot.parrot_step_generator import ParrotStepGenerator
 from app.application.services.deterministic.printer.printer_answer_parser import PrinterAnswerParser
@@ -11,6 +13,7 @@ from app.application.services.deterministic.printer.printer_step_generator impor
 from app.application.services.probabilistic.llm.client.openai.openai_client import OpenAIClient
 from app.application.services.probabilistic.llm.domain.llm_stats import LLMUsage
 from app.application.services.probabilistic.llm.llm_answer_parser import LLMAnswerParser
+from app.application.services.probabilistic.llm.llm_chat_service import LLMChatService
 from app.application.services.probabilistic.llm.llm_solution_service import LLMSolutionService
 from app.application.services.probabilistic.llm.llm_step_generator import LLMStepGenerator
 from app.application.solution_service import SolutionService
@@ -24,6 +27,7 @@ class DomainBundle(NamedTuple):
     step_generator: StepGenerator
     answer_parser: AnswerParser
     solution_service: SolutionService
+    chat_service: ChatService | None = None
 
 
 class DomainRegistry:
@@ -47,6 +51,7 @@ domain_registry.register(
         step_generator=ParrotStepGenerator(),
         answer_parser=ParrotAnswerParser(),
         solution_service=ParrotSolutionService(),
+        chat_service=ParrotChatService(),
     ),
 )
 
@@ -79,5 +84,6 @@ domain_registry.register(
         step_generator=LLMStepGenerator(llm_client),
         answer_parser=LLMAnswerParser(),
         solution_service=LLMSolutionService(llm_client),
+        chat_service=LLMChatService(llm_client),
     ),
 )

@@ -34,6 +34,7 @@ def get_workflow_service(
         step_generator=bundle.step_generator,
         answer_parser=bundle.answer_parser,
         solution_service=bundle.solution_service,
+        chat_service=bundle.chat_service,
     )
 
 
@@ -48,4 +49,5 @@ def get_workflow_service_for_creation(
         step_generator=bundle.step_generator,
         answer_parser=bundle.answer_parser,
         solution_service=bundle.solution_service,
+        chat_service=bundle.chat_service,
     )
