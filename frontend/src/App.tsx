@@ -1,121 +1,84 @@
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Select } from '@/components/ui/Select'
-import { Textarea } from '@/components/ui/Textarea'
+import { StartWorkflowForm } from '@/components/StartWorkflowForm'
+import { WorkflowListPanel } from '@/components/WorkflowListPanel'
 import { WorkflowView } from '@/components/WorkflowView'
 import { useWorkflowController } from '@/data/workflowController'
-import { DomainTypeEnum } from '@/types/enums'
+import { useWorkflowListController } from '@/data/workflowListController'
+import type { UIWorkflowCreateForm } from '@/types/fe'
 import { useState } from 'react'
 
 function App() {
+  const listController = useWorkflowListController()
   const controller = useWorkflowController()
 
-  /* ---------- start form state ---------- */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const withListRefresh = <T extends (...args: any[]) => Promise<void>>(fn: T): T =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (async (...args: any[]) => {
+      await fn(...args)
+      await listController.refresh()
+    }) as T
 
-  const [domain, setDomain] = useState<DomainTypeEnum>(DomainTypeEnum.PRINTER)
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [maxSteps, setMaxSteps] = useState(8)
-
-  /* ----------- reset handler ---------- */
+  const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null)
 
   const reset = () => {
-    setDomain(DomainTypeEnum.PRINTER)
-    setName('')
-    setDescription('')
-    setMaxSteps(8)
+    //setSelectedWorkflowId(null)
     controller.reset()
+  }
+
+  const startNewWorkflow = (req: UIWorkflowCreateForm) => {
+    controller.start(req).then(() => listController.refresh())
+  }
+
+  const selectWorkflow = (id: string) => {
+    controller.reset()
+    controller.load(id)
+    setSelectedWorkflowId(id)
   }
 
   /* ---------- initial screen ---------- */
 
   if (!controller.chatHistory || !controller.workflowData || !controller.ticket) {
     return (
-      <div className='min-h-screen flex items-center justify-center bg-gray-50'>
-        <div className='space-y-4 p-6 bg-white rounded shadow max-w-md w-full'>
-          <h1 className='text-xl font-semibold text-center'>AI Orchestrator Demo</h1>
-
-          <p className='text-sm text-gray-600 text-center'>Configure and start a workflow</p>
-
-          {/* Domain */}
-          <div className='space-y-1'>
-            <label className='text-sm font-medium'>Domain</label>
-            <Select value={domain} onChange={(e) => setDomain(e.target.value as DomainTypeEnum)}>
-              <option value={DomainTypeEnum.PRINTER}>Printer</option>
-              <option value={DomainTypeEnum.PARROT}>Parrot</option>
-              <option value={DomainTypeEnum.LLM_SUPPORT}>LLM Support</option>
-            </Select>
-          </div>
-
-          {/* Name */}
-          <div className='space-y-1'>
-            <label className='text-sm font-medium'>Name</label>
-            <Input
-              placeholder='Short workflow name'
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-
-          {/* Description */}
-          <div className='space-y-1'>
-            <label className='text-sm font-medium'>Description</label>
-            <Textarea
-              rows={3}
-              placeholder='Optional description'
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-
-          {/* Max steps */}
-          <div className='space-y-1'>
-            <label className='text-sm font-medium'>Max clarification steps</label>
-            <Input
-              type='number'
-              min={1}
-              max={20}
-              value={maxSteps}
-              onChange={(e) => setMaxSteps(Number(e.target.value))}
-            />
-          </div>
-
-          <div className='flex justify-end'>
-            <Button
-              disabled={controller.loading}
-              onClick={() => controller.start({ domain, name, description, maxSteps })}>
-              Start workflow
-            </Button>
-          </div>
-
-          {controller.error && (
-            <div className='text-sm text-red-600 text-center'>{controller.error}</div>
-          )}
-        </div>
-      </div>
+      <StartWorkflowForm
+        loading={controller.loading}
+        error={controller.error}
+        onStart={startNewWorkflow}
+      />
     )
   }
 
   /* ---------- workflow screen ---------- */
 
   return (
-    <div className='min-h-screen bg-gray-50 py-8'>
-      <WorkflowView
-        ticket={controller.ticket}
-        workflowData={controller.workflowData}
-        currentStep={controller.currentStep}
-        chatHistory={controller.chatHistory}
-        loading={controller.loading}
-        confidence={controller.workflowConfidence}
-        onAnswer={controller.answer}
-        onSkip={controller.skip}
-        onSendChatMessage={controller.chat}
-        onReset={reset}
+    <div className='flex h-screen'>
+      <WorkflowListPanel
+        workflows={listController.items}
+        selectedId={selectedWorkflowId}
+        onSelect={selectWorkflow}
+        onNew={() => {
+          setSelectedWorkflowId(null)
+          controller.reset()
+        }}
       />
 
-      {controller.error && (
-        <div className='mt-4 text-center text-sm text-red-600'>{controller.error}</div>
-      )}
+      <div className='flex-1 overflow-y-auto bg-gray-50 py-8'>
+        <WorkflowView
+          ticket={controller.ticket}
+          workflowData={controller.workflowData}
+          currentStep={controller.currentStep}
+          chatHistory={controller.chatHistory}
+          loading={controller.loading}
+          confidence={controller.workflowConfidence}
+          onAnswer={withListRefresh(controller.answer)}
+          onSkip={withListRefresh(controller.skip)}
+          onSendChatMessage={withListRefresh(controller.chat)}
+          onReset={reset}
+        />
+
+        {controller.error && (
+          <div className='mt-4 text-center text-sm text-red-600'>{controller.error}</div>
+        )}
+      </div>
     </div>
   )
 }

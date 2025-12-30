@@ -49,12 +49,17 @@ export interface WorkflowState {
 
 /* ---------- API envelope ---------- */
 
-export interface WorkflowResponse {
+export interface WorkflowDetailResponse {
   workflow_id: string
   status: string
   state: WorkflowState
   waiting_reason?: WaitingReasonEnum | null
   workflow_confidence?: number | null
+}
+
+export interface WorkflowListResponse {
+  workflows: WorkflowState[]
+  status: string
 }
 
 /* ---------- request payloads ---------- */

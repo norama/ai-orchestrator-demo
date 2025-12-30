@@ -2,20 +2,25 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from app.api.workflows_dependencies import get_workflow_service, get_workflow_service_for_creation
+from app.api.workflows_dependencies import (
+    get_workflow_repository,
+    get_workflow_service,
+    get_workflow_service_for_creation,
+)
 from app.application.commands import AddChatMessageCommand, AnswerStepCommand
 from app.application.workflow_service import WorkflowService
 from app.domain.response import WorkflowDetailResponse, WorkflowListResponse
 from app.domain.workflow import WorkflowStateCreate
+from app.infrastructure.persistence.workflow_repository import WorkflowRepository
 
 workflows_router = APIRouter(prefix="/workflows", tags=["workflows"])
 
 
 @workflows_router.get("", response_model=WorkflowListResponse)
 def list_workflows(
-    service: WorkflowService = Depends(get_workflow_service),
+    repo: WorkflowRepository = Depends(get_workflow_repository),
 ):
-    workflows = service.list_workflows()
+    workflows = repo.list()
     return WorkflowListResponse(
         workflows=workflows,
         status="ok",

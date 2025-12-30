@@ -88,7 +88,7 @@ class SqliteWorkflowRepository(WorkflowRepository):
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(
                 """
-                SELECT state_json FROM workflows
+                SELECT state_json FROM workflows ORDER BY updated_at DESC
                 """
             )
             rows = cursor.fetchall()

@@ -8,7 +8,7 @@ import {
   skipToSolution,
 } from '@/api/workflows'
 import { workflowToChatHistory, workflowToOpenStep } from '@/data/workflowProjector'
-import type { WorkflowResponse, WorkflowState } from '@/types/be'
+import type { WorkflowDetailResponse, WorkflowState } from '@/types/be'
 import { ChatRoleEnum, type WaitingReasonEnum } from '@/types/enums'
 import type {
   UIChatHistory,
@@ -35,6 +35,7 @@ export interface WorkflowController {
   chat(content: string): Promise<void>
   skip(): Promise<void>
   refresh(): Promise<void>
+  load(workflowId: string): Promise<void>
   reset(): void
 }
 
@@ -49,7 +50,7 @@ export function useWorkflowController(): WorkflowController {
 
   /* ----- helpers ----- */
 
-  function applyResponse(res: WorkflowResponse) {
+  function applyResponse(res: WorkflowDetailResponse) {
     setWorkflow(res.state)
     setWaitingReason(res.waiting_reason ?? null)
     setWorkflowConfidence(res.workflow_confidence ?? null)
@@ -139,20 +140,24 @@ export function useWorkflowController(): WorkflowController {
     }
   }
 
-  async function refresh(): Promise<void> {
-    if (!workflow) return
-
+  async function load(workflowId: string): Promise<void> {
     setLoading(true)
     setError(null)
 
     try {
-      const res = await getWorkflow(workflow.id)
+      const res = await getWorkflow(workflowId)
       applyResponse(res)
     } catch (e) {
       setError((e as Error).message)
     } finally {
       setLoading(false)
     }
+  }
+
+  async function refresh(): Promise<void> {
+    if (!workflow) return
+
+    await load(workflow.id)
   }
 
   function reset(): void {
@@ -201,6 +206,7 @@ export function useWorkflowController(): WorkflowController {
     chat,
     skip,
     refresh,
+    load,
     reset,
   }
 }

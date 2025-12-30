@@ -53,3 +53,10 @@ export interface UIWorkflowCreateForm {
   description?: string
   maxSteps?: number
 }
+
+export interface UIWorkflowListItem {
+  id: string
+  name: string
+  ticketTitle: string
+  phase: WorkflowPhaseEnum
+}
