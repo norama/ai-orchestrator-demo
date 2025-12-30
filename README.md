@@ -2,7 +2,7 @@
 
 A demo project showcasing a **stateful, AI-ready workflow orchestration engine**
 for handling long-running, resumable workflows driven by tickets,
-clarifications, and structured reasoning.
+clarifications, structured reasoning, and optional LLM assistance.
 
 The goal of this project is to demonstrate **architecture and orchestration patterns**
 rather than model performance or UI polish.
@@ -11,13 +11,24 @@ rather than model performance or UI polish.
 
 ## Status
 
-✅ **Day 2 complete** — end-to-end orchestration working  
+✅ **Day 3 complete** — AI-ready orchestration with conversational UI  
 🚧 Ongoing development
 
-- Backend orchestration engine implemented and tested
-- Deterministic demo domains (no AI yet)
-- Typed frontend driving workflows interactively
-- Architecture intentionally frozen before introducing LLMs
+### What is implemented
+
+- Backend **workflow orchestration engine** with explicit phases
+- Deterministic demo domains **and** LLM-backed domain
+- LLM integration with:
+  - structured JSON prompting
+  - retry + validation
+  - safe fallbacks
+  - token / usage metering
+- Discussion-phase AI chat (non-mutating)
+- Typed React frontend with:
+  - chat-style workflow display
+  - workflow list
+  - suspend / resume across workflows
+- Architecture intentionally preserved while adding AI
 
 ---
 
@@ -33,6 +44,7 @@ rather than model performance or UI polish.
 - Intent-based commands instead of generic CRUD
 - Persistence designed for suspend / resume / inspect
 - Frontend as a **workflow driver**, not just an API client
+- Safe integration of probabilistic AI into deterministic control flow
 
 ---
 
@@ -46,8 +58,10 @@ A workflow progresses through explicit phases:
 
 - `COLLECTING` – gather clarification steps from the user
 - `SOLVING` – generate a solution based on collected information
-- `DISCUSSION` – allow follow-up discussion (UI-ready, AI later)
-- `DONE` – terminal state
+- `DISCUSSION` – optional follow-up discussion (LLM-powered)
+- `DONE` – terminal, immutable state
+
+The workflow engine strictly controls transitions between phases.
 
 ---
 
@@ -75,15 +89,39 @@ Domain behavior is plugged in via protocols:
 
 - **StepGenerator** – decides what clarification comes next
 - **AnswerParser** – interprets raw user input into domain semantics
-- **SolveService** – generates a solution draft
+- **SolutionService** – generates a solution draft
+- **ChatService** – handles discussion-phase replies (optional)
 
 Domains are registered via a **DomainRegistry** and selected per workflow.
 
 Current demo domains:
-- `PRINTER` – deterministic troubleshooting flow
-- `PARROT` – simple test domain that always asks for more info
 
-LLM-based domains will be added later without changing the core engine.
+- `PRINTER` – deterministic troubleshooting flow (no AI)
+- `PARROT` – simple deterministic test domain
+- `LLM_SUPPORT` – fully LLM-backed clarification, solution, and discussion
+
+LLM-based domains were added **without changing the core engine**.
+
+---
+
+## LLM Integration
+
+LLM usage is integrated safely and intentionally:
+
+- LLM access is abstracted behind an **LLMClient** protocol
+- Providers (e.g. OpenAI) are isolated in infrastructure adapters
+- Structured JSON outputs are enforced via:
+  - explicit schemas
+  - semantic validation
+  - one-retry strict prompting
+- Failures degrade gracefully (never crash the engine)
+
+### Token / Cost Metering
+
+- Token usage is captured at the LLM adapter layer
+- Prompt + completion tokens are logged per call
+- Metering does not leak provider details into domain logic
+- Workflow attribution can be added later without refactoring
 
 ---
 
@@ -98,6 +136,7 @@ LLM-based domains will be added later without changing the core engine.
 - Workflow state is stored as a snapshot (JSON)
 
 This structure is intentionally designed to evolve toward:
+
 - event-based history
 - background execution
 - async I/O
@@ -110,18 +149,35 @@ This structure is intentionally designed to evolve toward:
 
 The frontend is a **typed React application** that drives workflows end-to-end.
 
+Key characteristics:
+
 - No direct backend manipulation
 - All interaction goes through intent-based endpoints
-- Workflow state is interpreted, not mutated, in the UI
-- Minimal Tailwind UI for clarity
+- Workflow state is **interpreted**, not mutated, in the UI
+- Clear separation between:
+  - workflow list (catalog)
+  - active workflow session
+  - UI navigation state
 
-The frontend currently supports:
-- starting workflows by domain
-- answering clarification steps
-- skipping to solution
-- viewing generated solutions and confidence
+### Current UI features
 
-The UI is intentionally minimal and optimized for inspection, not polish.
+- Start workflows with configurable:
+  - domain
+  - name
+  - description
+  - max clarification steps
+- Chat-style workflow display:
+  - AI prompts
+  - user answers
+  - solution rendering with confidence
+  - discussion-phase chat
+- Workflow list panel:
+  - shows all persisted workflows
+  - ordered by recent activity
+  - click to suspend / resume
+- Multiple workflows can be inspected and resumed freely
+
+The UI is intentionally minimal and optimized for clarity, not polish.
 
 ---
 
@@ -133,6 +189,7 @@ app/
 domain/
 application/
 api/
+infrastructure/
 tests/
 
 frontend/
@@ -162,6 +219,7 @@ event-based persistence later.
 Persistence is currently **synchronous**.
 
 The repository interface is intentionally synchronous to:
+
 - keep domain logic free of event-loop concerns
 - minimize accidental complexity
 
@@ -177,6 +235,7 @@ domain or orchestration code.
   - phase transitions
   - deterministic domain behavior
 - Tests use in-memory repositories and fake domains
+- LLM behavior is validated via schema enforcement and safe fallbacks
 - Frontend is tested manually (demo scope)
 
 ---
@@ -201,14 +260,14 @@ Key design choices:
   - Reflects real troubleshooting and reasoning
   - Enables adaptive questioning instead of upfront questionnaires
 - **Domain logic behind protocols**
-  - Allows deterministic implementations today
-  - Enables LLM-backed implementations later without refactoring
-- **Snapshot-based persistence**
-  - Keeps the system simple early on
-  - Leaves room for event sourcing when complexity justifies it
+  - Allows deterministic implementations
+  - Enables LLM-backed implementations without refactoring
+- **Controlled AI integration**
+  - AI operates inside strict schemas and engine rules
+  - Prevents LLMs from mutating state implicitly
 - **Typed frontend as a workflow driver**
   - The UI drives the process intentionally
-  - Avoids “fire-and-forget” API usage patterns
+  - Makes suspend / resume explicit and visible
 
 Overall, the design favors **clarity, evolvability, and control**
 over short-term convenience or raw AI capability.
@@ -223,20 +282,21 @@ This demo intentionally does **not** include:
 - ❌ Multi-tenant isolation
 - ❌ Background workers
 - ❌ Event sourcing (planned)
-- ❌ LLM integration (next phase)
+- ❌ Automated frontend tests
 - ❌ Performance optimizations
 - ❌ Pixel-perfect UI
 
-These are excluded to keep the focus on **workflow orchestration
-and architectural clarity**.
+These are excluded to keep the focus on **workflow orchestration,
+state management, and architectural clarity**.
 
 ---
 
 ## Roadmap (Next Steps)
 
-- LLM-based StepGenerator / AnswerParser
-- Richer discussion phase
-- Chat-like workflow history UI
-- Workflow list and resume/suspend UX
 - Event-based workflow history
-- Background solving execution
+- Undo / redo and branching
+- Solution revision commands
+- Background execution
+- Richer discussion controls
+- Multiple LLM provider support
+- Workflow analytics and cost attribution
