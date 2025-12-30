@@ -7,6 +7,7 @@ export function useWorkflowListController() {
   const [items, setItems] = useState<UIWorkflowListItem[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [hasLoaded, setHasLoaded] = useState(false)
 
   async function refresh() {
     setLoading(true)
@@ -17,6 +18,7 @@ export function useWorkflowListController() {
       setError((e as Error).message)
     } finally {
       setLoading(false)
+      setHasLoaded(true)
     }
   }
 
@@ -24,5 +26,5 @@ export function useWorkflowListController() {
     refresh()
   }, [])
 
-  return { items, loading, error, refresh }
+  return { items, loading, error, refresh, hasLoaded }
 }
