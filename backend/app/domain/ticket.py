@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 class TicketSource(Enum):
     RESTFUL_API_DEV = "RESTFUL_API_DEV"
+    DEMO_CATALOG = "DEMO_CATALOG"
 
 
 class Ticket(BaseModel):

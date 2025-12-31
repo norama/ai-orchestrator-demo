@@ -1,13 +1,16 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.catalog_router import catalog_router
 from app.api.error_handlers import (
+    catalog_item_not_found_handler,
     invalid_workflow_operation_handler,
     workflow_not_found_handler,
 )
 from app.api.llm_router import llm_router
 from app.api.workflows_router import workflows_router
 from app.application.exceptions import (
+    CatalogItemNotFound,
     InvalidWorkflowOperation,
     WorkflowNotFound,
 )
@@ -38,6 +41,11 @@ app.add_exception_handler(
     invalid_workflow_operation_handler,
 )
 
+app.add_exception_handler(
+    CatalogItemNotFound,
+    catalog_item_not_found_handler,
+)
+
 logger = get_logger(__name__)
 
 
@@ -48,4 +56,5 @@ def health():
 
 
 app.include_router(workflows_router)
+app.include_router(catalog_router)
 app.include_router(llm_router)

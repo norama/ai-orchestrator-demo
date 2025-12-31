@@ -4,3 +4,7 @@ class WorkflowNotFound(Exception):
 
 class InvalidWorkflowOperation(Exception):
     pass
+
+
+class CatalogItemNotFound(Exception):
+    pass
