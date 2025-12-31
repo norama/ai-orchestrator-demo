@@ -27,14 +27,11 @@ def get_workflow_service(
     if not workflow:
         raise WorkflowNotFound(f"Workflow {workflow_id} not found")
 
-    bundle = domain_registry.get(workflow.domain)
+    domain = domain_registry.get(workflow.domain_type)
 
     return WorkflowService(
         repo=repo,
-        step_generator=bundle.step_generator,
-        answer_parser=bundle.answer_parser,
-        solution_service=bundle.solution_service,
-        chat_service=bundle.chat_service,
+        domain=domain,
     )
 
 
@@ -42,12 +39,9 @@ def get_workflow_service_for_creation(
     req: WorkflowStateCreate,
     repo: WorkflowRepository = Depends(get_workflow_repository),
 ) -> WorkflowService:
-    bundle = domain_registry.get(req.domain)
+    domain = domain_registry.get(req.domain_type)
 
     return WorkflowService(
         repo=repo,
-        step_generator=bundle.step_generator,
-        answer_parser=bundle.answer_parser,
-        solution_service=bundle.solution_service,
-        chat_service=bundle.chat_service,
+        domain=domain,
     )

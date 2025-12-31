@@ -71,7 +71,7 @@ export function StartWorkflowForm({ loading, error, onStart }: Props) {
         <div className='flex justify-end'>
           <Button
             disabled={loading}
-            onClick={() => onStart({ domain, name, description, maxSteps })}>
+            onClick={() => onStart({ domainType: domain, name, description, maxSteps })}>
             Start workflow
           </Button>
         </div>

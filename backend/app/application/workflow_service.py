@@ -1,14 +1,11 @@
 from uuid import UUID
 
-from app.application.answer_parser import AnswerParser
-from app.application.chat_service import ChatService
 from app.application.commands import (
     AddChatMessageCommand,
     AnswerStepCommand,
 )
 from app.application.exceptions import InvalidWorkflowOperation, WorkflowNotFound
-from app.application.solution_service import SolutionService
-from app.application.step_generator import StepGenerator
+from app.application.registry import WorkflowDomain
 from app.domain.chat import ChatMessage, ChatRole
 from app.domain.workflow import (
     WaitingReason,
@@ -37,24 +34,14 @@ from app.infrastructure.persistence.workflow_repository import WorkflowRepositor
 
 
 class WorkflowService:
-    def __init__(
-        self,
-        repo: WorkflowRepository,
-        step_generator: StepGenerator,
-        solution_service: SolutionService,
-        answer_parser: AnswerParser,
-        chat_service: ChatService | None = None,
-    ):
+    def __init__(self, repo: WorkflowRepository, domain: WorkflowDomain):
         self.repo = repo
-        self.step_generator = step_generator
-        self.solution_service = solution_service
-        self.answer_parser = answer_parser
-        self.chat_service = chat_service
+        self.domain = domain
 
     def _build_context(self, wf: WorkflowState) -> WorkflowContext:
         return WorkflowContext(
             workflow_id=wf.id,
-            domain=wf.domain,
+            domain_type=wf.domain_type,
             ticket=wf.ticket,
             steps=wf.steps,
             last_decision=wf.last_decision,
@@ -80,7 +67,7 @@ class WorkflowService:
                 return workflow
 
             ctx = self._build_context(workflow)
-            decision = self.step_generator.propose_next(ctx)
+            decision = self.domain.step_generator.propose_next(ctx)
 
             workflow.last_decision = decision
             if decision.next_step:
@@ -93,17 +80,17 @@ class WorkflowService:
         # process SOLVING phase
         if workflow.phase == WorkflowPhase.SOLVING:
             ctx = self._build_context(workflow)
-            workflow.solution = self.solution_service.generate_solution(ctx)
-            workflow.phase = WorkflowPhase.DISCUSSION if self.chat_service else WorkflowPhase.DONE
+            workflow.solution = self.domain.solution_service.generate_solution(ctx)
+            workflow.phase = WorkflowPhase.DISCUSSION if self.domain.chat_service else WorkflowPhase.DONE
             return workflow
 
         # process DISCUSSION phase
         if workflow.phase == WorkflowPhase.DISCUSSION:
-            if self.chat_service and workflow.chat_history.messages:
+            if self.domain.chat_service and workflow.chat_history.messages:
                 last_msg = workflow.chat_history.messages[-1]
                 if last_msg.role == ChatRole.USER:
                     ctx = self._build_context(workflow)
-                    reply = self.chat_service.reply(ctx, last_msg)
+                    reply = self.domain.chat_service.reply(ctx, last_msg)
                     workflow.chat_history.add_message(reply)
             return workflow
 
@@ -118,7 +105,7 @@ class WorkflowService:
         return any(step.answer is None for step in workflow.steps)
 
     def _is_waiting_for_chat_input(self, workflow: WorkflowState) -> bool:
-        if not self.chat_service:
+        if not self.domain.chat_service:
             return False
         if not workflow.chat_history.messages:
             return True
@@ -168,7 +155,8 @@ class WorkflowService:
         step.answer = cmd.answer
 
         # domain-specific interpretation hook
-        self.answer_parser.parse_answer(step)
+        if self.domain.answer_parser:
+            self.domain.answer_parser.parse_answer(step)
 
         workflow = self._process_until_waiting_or_done(workflow)
         return self.repo.save(workflow)

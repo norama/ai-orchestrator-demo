@@ -31,7 +31,7 @@ export interface UITicket {
 
 export interface UIWorkflowData {
   id: string
-  domain: DomainTypeEnum
+  domainType: DomainTypeEnum
   name: string
   description: string
   maxSteps: number
@@ -48,7 +48,7 @@ export interface UICurrentStep {
 }
 
 export interface UIWorkflowCreateForm {
-  domain: DomainTypeEnum
+  domainType: DomainTypeEnum
   name?: string
   description?: string
   maxSteps?: number
@@ -58,5 +58,6 @@ export interface UIWorkflowListItem {
   id: string
   name: string
   ticketTitle: string
+  domainType: DomainTypeEnum
   phase: WorkflowPhaseEnum
 }

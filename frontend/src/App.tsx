@@ -62,7 +62,7 @@ function App() {
   return (
     <div className='flex h-screen'>
       <WorkflowListPanel
-        workflows={listController.items}
+        items={listController.items}
         selectedId={selectedWorkflowId}
         onSelect={selectWorkflow}
         onNew={controller.reset}

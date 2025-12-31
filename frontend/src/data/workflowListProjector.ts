@@ -6,6 +6,7 @@ export function workflowToListItem(w: WorkflowState): UIWorkflowListItem {
     id: w.id,
     name: w.name ?? '(unnamed)',
     ticketTitle: w.ticket.title,
+    domainType: w.domain_type,
     phase: w.phase,
   }
 }

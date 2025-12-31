@@ -43,7 +43,7 @@ class Solution(BaseModel):
 
 class WorkflowStateCreate(BaseModel):
     ticket: Ticket
-    domain: DomainType = DomainType.PARROT
+    domain_type: DomainType = DomainType.PARROT
     name: str | None = None
     description: str | None = None
     max_steps: int = 8
@@ -60,7 +60,7 @@ class WorkflowState(WorkflowStateCreate, DbEntry):
 
 class WorkflowContext(BaseModel):
     workflow_id: UUID
-    domain: DomainType
+    domain_type: DomainType
     ticket: Ticket
     steps: list[ClarificationStep]
     last_decision: NextStepDecision | None = None

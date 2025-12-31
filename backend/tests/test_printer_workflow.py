@@ -24,7 +24,7 @@ def test_printer_happy_path():
     workflow = service.create(
         WorkflowStateCreate(
             ticket=Ticket(id=uuid4(), title="test", description="x", source=TicketSource.RESTFUL_API_DEV),
-            domain=DomainType.PRINTER,
+            domain_type=DomainType.PRINTER,
         )
     )
 

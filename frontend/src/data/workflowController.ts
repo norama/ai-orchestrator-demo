@@ -64,7 +64,7 @@ export function useWorkflowController(): WorkflowController {
 
     try {
       const res = await createWorkflow({
-        domain: req.domain,
+        domain_type: req.domainType,
         name: req.name,
         description: req.description,
         max_steps: req.maxSteps,
@@ -182,7 +182,7 @@ export function useWorkflowController(): WorkflowController {
   const workflowData = workflow
     ? {
         id: workflow.id,
-        domain: workflow.domain,
+        domainType: workflow.domain_type,
         name: workflow.name,
         description: workflow.description,
         maxSteps: workflow.max_steps,

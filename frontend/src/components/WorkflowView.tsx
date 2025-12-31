@@ -35,7 +35,7 @@ export function WorkflowView({
   return (
     <div className='space-y-4 p-4 max-w-2xl mx-auto'>
       <h1 className='text-2xl font-bold'>
-        Workflow: {workflowData.name} ({workflowData.domain})
+        Workflow: {workflowData.name} ({workflowData.domainType})
       </h1>
       <p className='text-gray-700'>{workflowData.description}</p>
       <p className='text-sm text-gray-500'>Max steps: {workflowData.maxSteps}</p>

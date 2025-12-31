@@ -36,7 +36,7 @@ export interface Ticket {
 export interface WorkflowState {
   id: string
   ticket: Ticket
-  domain: DomainTypeEnum
+  domain_type: DomainTypeEnum
   name: string
   description: string
   max_steps: number
@@ -65,7 +65,7 @@ export interface WorkflowListResponse {
 /* ---------- request payloads ---------- */
 
 export interface CreateWorkflowRequest {
-  domain: DomainTypeEnum
+  domain_type: DomainTypeEnum
   name?: string
   description?: string
   max_steps?: number

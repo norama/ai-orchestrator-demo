@@ -3,7 +3,6 @@ from typing import NamedTuple
 
 from app.application.answer_parser import AnswerParser
 from app.application.chat_service import ChatService
-from app.application.services.deterministic.parrot.parrot_answer_parser import ParrotAnswerParser
 from app.application.services.deterministic.parrot.parrot_chat_service import ParrotChatService
 from app.application.services.deterministic.parrot.parrot_solution_service import ParrotSolutionService
 from app.application.services.deterministic.parrot.parrot_step_generator import ParrotStepGenerator
@@ -12,7 +11,6 @@ from app.application.services.deterministic.printer.printer_solution_service imp
 from app.application.services.deterministic.printer.printer_step_generator import PrinterStepGenerator
 from app.application.services.probabilistic.llm.client.openai.openai_client import OpenAIClient
 from app.application.services.probabilistic.llm.domain.llm_stats import LLMUsage
-from app.application.services.probabilistic.llm.llm_answer_parser import LLMAnswerParser
 from app.application.services.probabilistic.llm.llm_chat_service import LLMChatService
 from app.application.services.probabilistic.llm.llm_solution_service import LLMSolutionService
 from app.application.services.probabilistic.llm.llm_step_generator import LLMStepGenerator
@@ -23,21 +21,21 @@ from app.domain.config import DomainType
 logger = logging.getLogger(__name__)
 
 
-class DomainBundle(NamedTuple):
+class WorkflowDomain(NamedTuple):
     step_generator: StepGenerator
-    answer_parser: AnswerParser
     solution_service: SolutionService
+    answer_parser: AnswerParser | None = None
     chat_service: ChatService | None = None
 
 
 class DomainRegistry:
     def __init__(self):
-        self._domains: dict[DomainType, DomainBundle] = {}
+        self._domains: dict[DomainType, WorkflowDomain] = {}
 
-    def register(self, domain: DomainType, bundle: DomainBundle) -> None:
+    def register(self, domain: DomainType, bundle: WorkflowDomain) -> None:
         self._domains[domain] = bundle
 
-    def get(self, domain: DomainType) -> DomainBundle:
+    def get(self, domain: DomainType) -> WorkflowDomain:
         if domain not in self._domains:
             raise ValueError(f"Domain {domain} not registered")
         return self._domains[domain]
@@ -47,9 +45,8 @@ domain_registry = DomainRegistry()
 
 domain_registry.register(
     DomainType.PARROT,
-    DomainBundle(
+    WorkflowDomain(
         step_generator=ParrotStepGenerator(),
-        answer_parser=ParrotAnswerParser(),
         solution_service=ParrotSolutionService(),
         chat_service=ParrotChatService(),
     ),
@@ -57,7 +54,7 @@ domain_registry.register(
 
 domain_registry.register(
     DomainType.PRINTER,
-    DomainBundle(
+    WorkflowDomain(
         step_generator=PrinterStepGenerator(),
         answer_parser=PrinterAnswerParser(),
         solution_service=PrinterSolutionService(),
@@ -80,9 +77,8 @@ llm_client = create_llm_client()
 
 domain_registry.register(
     DomainType.LLM_SUPPORT,
-    DomainBundle(
+    WorkflowDomain(
         step_generator=LLMStepGenerator(llm_client),
-        answer_parser=LLMAnswerParser(),
         solution_service=LLMSolutionService(llm_client),
         chat_service=LLMChatService(llm_client),
     ),
