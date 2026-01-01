@@ -2,7 +2,7 @@
 
 A demo project showcasing a **stateful, AI-ready workflow orchestration engine**
 for handling long-running, resumable workflows driven by tickets,
-clarifications, structured reasoning, and optional LLM assistance.
+incremental clarifications, structured reasoning, and optional LLM assistance.
 
 The goal of this project is to demonstrate **architecture and orchestration patterns**
 rather than model performance or UI polish.
@@ -11,24 +11,26 @@ rather than model performance or UI polish.
 
 ## Status
 
-✅ **Day 3 complete** — AI-ready orchestration with conversational UI  
+✅ **Day 4 complete** — ticket catalog + discussion-phase solution refinement  
 🚧 Ongoing development
 
 ### What is implemented
 
 - Backend **workflow orchestration engine** with explicit phases
-- Deterministic demo domains **and** LLM-backed domain
+- Static **ticket catalog** as a controlled workflow entry point
+- Deterministic demo domains **and** an LLM-backed domain
 - LLM integration with:
   - structured JSON prompting
   - retry + validation
   - safe fallbacks
   - token / usage metering
-- Discussion-phase AI chat (non-mutating)
+- Discussion-phase AI chat **with controlled solution refinement**
 - Typed React frontend with:
-  - chat-style workflow display
-  - workflow list
-  - suspend / resume across workflows
-- Architecture intentionally preserved while adding AI
+  - catalog-based workflow start
+  - workflow list (suspend / resume)
+  - dedicated solution panel (not part of chat)
+  - discussion chat driving solution updates
+- Architecture intentionally preserved while adding AI and UI affordances
 
 ---
 
@@ -58,10 +60,24 @@ A workflow progresses through explicit phases:
 
 - `COLLECTING` – gather clarification steps from the user
 - `SOLVING` – generate a solution based on collected information
-- `DISCUSSION` – optional follow-up discussion (LLM-powered)
+- `DISCUSSION` – optional follow-up discussion with controlled solution refinement
 - `DONE` – terminal, immutable state
 
-The workflow engine strictly controls transitions between phases.
+The workflow engine strictly controls transitions and allowed mutations per phase.
+
+---
+
+### Ticket Catalog
+
+Workflows are started from a **static ticket catalog**, not free-form input.
+
+- Catalog entries define:
+  - ticket title and description
+  - domain type
+  - optional source metadata
+- The catalog is **configuration only**
+- The engine is unaware of “tickets” as a concept
+- This removes artificial demo inputs and prepares the system for reporting workflows
 
 ---
 
@@ -78,6 +94,21 @@ Clarifications are built **incrementally**, one step at a time.
 - Confidence is reported alongside decisions
 
 This mirrors real troubleshooting and reasoning workflows.
+
+---
+
+### Discussion & Solution Refinement
+
+The `DISCUSSION` phase enables **controlled refinement** of the solution.
+
+- Users send chat messages only
+- The **ChatService** replies and signals intent
+- The **SolutionService** may regenerate the solution **as a full replacement**
+- Partial or manual solution edits are not allowed
+- Each discussion turn produces an explicit outcome (`discussion_result`)
+
+Chat explains *why* the solution changes;  
+the solution represents the current *truth*.
 
 ---
 
@@ -155,26 +186,23 @@ Key characteristics:
 - All interaction goes through intent-based endpoints
 - Workflow state is **interpreted**, not mutated, in the UI
 - Clear separation between:
-  - workflow list (catalog)
+  - workflow list
   - active workflow session
-  - UI navigation state
+  - catalog-based workflow start
 
 ### Current UI features
 
-- Start workflows with configurable:
-  - domain
-  - name
-  - description
-  - max clarification steps
-- Chat-style workflow display:
-  - AI prompts
-  - user answers
-  - solution rendering with confidence
-  - discussion-phase chat
+- Start workflows by selecting a predefined **catalog ticket**
 - Workflow list panel:
   - shows all persisted workflows
-  - ordered by recent activity
+  - phase badges for orientation
   - click to suspend / resume
+- Workflow session view:
+  - clarification timeline
+  - **dedicated solution panel** (sticky, scrollable)
+  - solution confidence display
+  - discussion chat below the solution
+  - explicit “solution updated” indicators
 - Multiple workflows can be inspected and resumed freely
 
 The UI is intentionally minimal and optimized for clarity, not polish.
@@ -257,8 +285,8 @@ Key design choices:
   - Makes orchestration rules visible and testable
   - Avoids implicit state machines hidden in prompts
 - **Incremental clarifications**
-  - Reflects real troubleshooting and reasoning
-  - Enables adaptive questioning instead of upfront questionnaires
+  - Reflect real troubleshooting and reasoning
+  - Enable adaptive questioning instead of upfront questionnaires
 - **Domain logic behind protocols**
   - Allows deterministic implementations
   - Enables LLM-backed implementations without refactoring
@@ -267,7 +295,7 @@ Key design choices:
   - Prevents LLMs from mutating state implicitly
 - **Typed frontend as a workflow driver**
   - The UI drives the process intentionally
-  - Makes suspend / resume explicit and visible
+  - Makes suspend / resume and refinement explicit and visible
 
 Overall, the design favors **clarity, evolvability, and control**
 over short-term convenience or raw AI capability.
@@ -293,9 +321,10 @@ state management, and architectural clarity**.
 
 ## Roadmap (Next Steps)
 
+- Report materialization from solutions
+- Read-only review / export views
 - Event-based workflow history
 - Undo / redo and branching
-- Solution revision commands
 - Background execution
 - Richer discussion controls
 - Multiple LLM provider support
