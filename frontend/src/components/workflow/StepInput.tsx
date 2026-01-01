@@ -1,6 +1,6 @@
-import { Confidence } from '@/components/chat/Confidence'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Confidence } from '@/components/workflow/Confidence'
 import type { UICurrentStep } from '@/types/fe'
 import { useState } from 'react'
 

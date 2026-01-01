@@ -1,5 +1,5 @@
+import { WorkflowListItem } from '@/components/sidebar/WorkflowListItem'
 import { Button } from '@/components/ui/Button'
-import { WorkflowListItem } from '@/components/WorkflowListItem'
 import type { UIWorkflowListItem } from '@/types/fe'
 
 interface Props {

@@ -1,4 +1,4 @@
-import { Confidence } from '@/components/chat/Confidence'
+import { Confidence } from '@/components/workflow/Confidence'
 import type { UISolution } from '@/types/fe'
 
 interface Props {
