@@ -1,20 +1,15 @@
 import { useState } from 'react'
 
-import {
-  answerStep,
-  createWorkflow,
-  getWorkflow,
-  sendChatMessage,
-  skipToSolution,
-} from '@/api/workflows'
+import { createWorkflowFromCatalog } from '@/api/catalog'
+import { answerStep, getWorkflow, sendChatMessage, skipToSolution } from '@/api/workflows'
 import { workflowToChatHistory, workflowToOpenStep } from '@/data/workflowProjector'
 import type { WorkflowDetailResponse, WorkflowState } from '@/types/be'
 import { ChatRoleEnum, type WaitingReasonEnum } from '@/types/enums'
 import type {
   UIChatHistory,
+  UICreateFromCatalog,
   UICurrentStep,
   UITicket,
-  UIWorkflowCreateForm,
   UIWorkflowData,
 } from '@/types/fe'
 
@@ -30,7 +25,7 @@ export interface WorkflowController {
   loading: boolean
   error: string | null
 
-  start(req: UIWorkflowCreateForm): Promise<void>
+  start(req: UICreateFromCatalog): Promise<void>
   answer(stepId: string, answer: string): Promise<void>
   chat(content: string): Promise<void>
   skip(): Promise<void>
@@ -58,21 +53,16 @@ export function useWorkflowController(): WorkflowController {
 
   /* ----- actions ----- */
 
-  async function start(req: UIWorkflowCreateForm): Promise<void> {
+  async function start(req: UICreateFromCatalog): Promise<void> {
     setLoading(true)
     setError(null)
 
     try {
-      const res = await createWorkflow({
-        domain_type: req.domainType,
+      const res = await createWorkflowFromCatalog({
+        item_id: req.itemId,
         name: req.name,
         description: req.description,
         max_steps: req.maxSteps,
-        ticket: {
-          id: crypto.randomUUID(),
-          title: 'Demo ticket',
-          description: 'Printer problem: cannot print documents.',
-        },
       })
 
       applyResponse(res)

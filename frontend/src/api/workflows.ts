@@ -1,3 +1,5 @@
+import { API_WORKFLOWS_URL } from '@/api/constants'
+import { handleResponse } from '@/api/utils'
 import type {
   AnswerStepRequest,
   ChatMessageRequest,
@@ -6,26 +8,13 @@ import type {
   WorkflowListResponse,
 } from '@/types/be'
 
-const API_BASE_URL = 'http://localhost:8000'
-
-/* ---------- helpers ---------- */
-
-async function handleResponse<T>(res: Response): Promise<T> {
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(text || res.statusText)
-  }
-  const data = await res.json()
-  return data as T
-}
-
 /* ---------- API functions ---------- */
 
 /**
  * Create a new workflow
  */
 export async function createWorkflow(req: CreateWorkflowRequest): Promise<WorkflowDetailResponse> {
-  const res = await fetch(`${API_BASE_URL}/workflows`, {
+  const res = await fetch(API_WORKFLOWS_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -40,7 +29,7 @@ export async function createWorkflow(req: CreateWorkflowRequest): Promise<Workfl
  * Fetch workflow by ID
  */
 export async function getWorkflow(workflowId: string): Promise<WorkflowDetailResponse> {
-  const res = await fetch(`${API_BASE_URL}/workflows/${workflowId}`, {
+  const res = await fetch(`${API_WORKFLOWS_URL}/${workflowId}`, {
     method: 'GET',
   })
 
@@ -51,7 +40,7 @@ export async function getWorkflow(workflowId: string): Promise<WorkflowDetailRes
  * Fetch workflows
  */
 export async function getWorkflows(): Promise<WorkflowListResponse> {
-  const res = await fetch(`${API_BASE_URL}/workflows`, {
+  const res = await fetch(API_WORKFLOWS_URL, {
     method: 'GET',
   })
 
@@ -65,7 +54,7 @@ export async function answerStep(
   workflowId: string,
   req: AnswerStepRequest,
 ): Promise<WorkflowDetailResponse> {
-  const res = await fetch(`${API_BASE_URL}/workflows/${workflowId}/answer`, {
+  const res = await fetch(`${API_WORKFLOWS_URL}/${workflowId}/answer`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -80,7 +69,7 @@ export async function answerStep(
  * Skip to solution
  */
 export async function skipToSolution(workflowId: string): Promise<WorkflowDetailResponse> {
-  const res = await fetch(`${API_BASE_URL}/workflows/${workflowId}/skip`, {
+  const res = await fetch(`${API_WORKFLOWS_URL}/${workflowId}/skip`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -97,7 +86,7 @@ export async function sendChatMessage(
   workflowId: string,
   req: ChatMessageRequest,
 ): Promise<WorkflowDetailResponse> {
-  const res = await fetch(`${API_BASE_URL}/workflows/${workflowId}/chat`, {
+  const res = await fetch(`${API_WORKFLOWS_URL}/${workflowId}/chat`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

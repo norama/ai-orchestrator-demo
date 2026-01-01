@@ -1,19 +1,19 @@
+import { CatalogItemSelect } from '@/components/CatalogItemSelect'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
-import { DomainTypeEnum } from '@/types/enums'
-import type { UIWorkflowCreateForm } from '@/types/fe'
+import type { UICatalogItem, UICreateFromCatalog } from '@/types/fe'
 import { useState } from 'react'
 
 interface Props {
   loading: boolean
   error: string | null
-  onStart: (req: UIWorkflowCreateForm) => void
+  catalogItems: UICatalogItem[]
+  onStart: (req: UICreateFromCatalog) => void
 }
 
-export function StartWorkflowForm({ loading, error, onStart }: Props) {
-  const [domain, setDomain] = useState<DomainTypeEnum>(DomainTypeEnum.PRINTER)
+export function StartWorkflowForm({ loading, error, catalogItems, onStart }: Props) {
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [maxSteps, setMaxSteps] = useState(8)
@@ -25,14 +25,14 @@ export function StartWorkflowForm({ loading, error, onStart }: Props) {
 
         <p className='text-sm text-gray-600 text-center'>Configure and start a workflow</p>
 
-        {/* Domain */}
+        {/* Catalog Item Selection */}
         <div className='space-y-1'>
-          <label className='text-sm font-medium'>Domain</label>
-          <Select value={domain} onChange={(e) => setDomain(e.target.value as DomainTypeEnum)}>
-            <option value={DomainTypeEnum.PRINTER}>Printer</option>
-            <option value={DomainTypeEnum.PARROT}>Parrot</option>
-            <option value={DomainTypeEnum.LLM_SUPPORT}>LLM Support</option>
-          </Select>
+          <CatalogItemSelect
+            catalogItems={catalogItems}
+            selectedItemId={selectedItemId}
+            onSelect={(itemId) => setSelectedItemId(itemId)}
+            disabled={loading}
+          />
         </div>
 
         {/* Name */}
@@ -70,8 +70,12 @@ export function StartWorkflowForm({ loading, error, onStart }: Props) {
 
         <div className='flex justify-end'>
           <Button
-            disabled={loading}
-            onClick={() => onStart({ domainType: domain, name, description, maxSteps })}>
+            disabled={loading || selectedItemId === null}
+            onClick={
+              selectedItemId !== null
+                ? () => onStart({ itemId: selectedItemId, name, description, maxSteps })
+                : undefined
+            }>
             Start workflow
           </Button>
         </div>

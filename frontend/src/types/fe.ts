@@ -1,6 +1,14 @@
 import type { ChatRoleEnum, DomainTypeEnum, WorkflowPhaseEnum } from '@/types/enums'
 import { UIHistoryItemTypeEnum } from '@/types/enums'
 
+export interface UICatalogItem {
+  id: string
+  name: string
+  description: string
+  category?: string
+  domainType: DomainTypeEnum
+}
+
 export interface UIChatMessage {
   id: string
   role: ChatRoleEnum
@@ -46,6 +54,13 @@ export interface UIChatHistory {
 export interface UICurrentStep {
   step_id: string
   prompt: string
+}
+
+export interface UICreateFromCatalog {
+  itemId: string
+  name?: string
+  description?: string
+  maxSteps?: number
 }
 
 export interface UIWorkflowCreateForm {

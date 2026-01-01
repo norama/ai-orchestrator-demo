@@ -5,6 +5,14 @@ import type {
   WorkflowPhaseEnum,
 } from '@/types/enums'
 
+export interface CatalogItemResponse {
+  id: string
+  name: string
+  description: string
+  category: string | null
+  domain_type: DomainTypeEnum
+}
+
 export interface ClarificationStep {
   id: string
   prompt: string
@@ -15,7 +23,7 @@ export interface ClarificationStep {
 export interface Solution {
   content: string
   confidence: number
-  rationale?: string
+  rationale: string | null
 }
 
 export interface ChatMessage {
@@ -55,6 +63,11 @@ export interface WorkflowState {
 
 /* ---------- API envelope ---------- */
 
+export interface CatalogResponse {
+  items: CatalogItemResponse[]
+  status: string
+}
+
 export interface WorkflowDetailResponse {
   workflow_id: string
   status: string
@@ -69,6 +82,13 @@ export interface WorkflowListResponse {
 }
 
 /* ---------- request payloads ---------- */
+
+export interface CreateFromCatalogRequest {
+  item_id: string
+  name?: string
+  description?: string
+  max_steps?: number
+}
 
 export interface CreateWorkflowRequest {
   domain_type: DomainTypeEnum

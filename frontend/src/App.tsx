@@ -1,12 +1,14 @@
 import { StartWorkflowForm } from '@/components/StartWorkflowForm'
 import { WorkflowListPanel } from '@/components/WorkflowListPanel'
 import { WorkflowView } from '@/components/WorkflowView'
+import { useCatalogController } from '@/data/catalogController'
 import { useWorkflowController } from '@/data/workflowController'
 import { useWorkflowListController } from '@/data/workflowListController'
-import type { UIWorkflowCreateForm } from '@/types/fe'
+import type { UICreateFromCatalog } from '@/types/fe'
 import { useEffect, useRef } from 'react'
 
 function App() {
+  const catalogController = useCatalogController()
   const listController = useWorkflowListController()
   const controller = useWorkflowController()
   const hasBootstrappedRef = useRef(false)
@@ -28,16 +30,16 @@ function App() {
       await listController.refresh()
     }) as T
 
-  const loading = controller.loading || listController.loading
-  const error = controller.error || listController.error
+  const loading = controller.loading || listController.loading || catalogController.loading
+  const error = controller.error || listController.error || catalogController.error
   const selectedWorkflowId = controller.workflowData?.id ?? null
 
   const reset = () => {
     controller.reset()
   }
 
-  const startNewWorkflow = (req: UIWorkflowCreateForm) => {
-    controller.start(req).then(() => listController.refresh())
+  const startNewWorkflow = (req: UICreateFromCatalog) => {
+    controller.start(req).then(listController.refresh)
   }
 
   const selectWorkflow = (id: string) => {
@@ -54,7 +56,14 @@ function App() {
   /* ---------- initial screen ---------- */
 
   if (!controller.chatHistory || !controller.workflowData || !controller.ticket) {
-    return <StartWorkflowForm loading={loading} error={error} onStart={startNewWorkflow} />
+    return (
+      <StartWorkflowForm
+        loading={loading}
+        error={error}
+        catalogItems={catalogController.items}
+        onStart={startNewWorkflow}
+      />
+    )
   }
 
   /* ---------- workflow screen ---------- */

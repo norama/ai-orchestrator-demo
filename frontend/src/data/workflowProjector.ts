@@ -48,7 +48,7 @@ export function workflowToChatHistory(state: WorkflowState): UIChatHistory {
       solution: {
         content: state.solution.content,
         confidence: state.solution.confidence,
-        rationale: state.solution.rationale,
+        rationale: state.solution.rationale ?? undefined,
       },
     })
   }
