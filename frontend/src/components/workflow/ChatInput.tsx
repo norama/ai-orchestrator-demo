@@ -18,7 +18,7 @@ export function ChatInput({ disabled, onSend, placeholder }: Props) {
   }
 
   return (
-    <div className='flex gap-2 p-3 border-t'>
+    <div className='flex gap-2 p-3 bg-white'>
       <Input
         value={text}
         placeholder={placeholder}

@@ -2,7 +2,11 @@ import { useState } from 'react'
 
 import { createWorkflowFromCatalog } from '@/api/catalog'
 import { answerStep, getWorkflow, sendChatMessage, skipToSolution } from '@/api/workflows'
-import { workflowToChatHistory, workflowToOpenStep } from '@/data/workflowProjector'
+import {
+  workflowToChatHistory,
+  workflowToOpenStep,
+  workflowToSolution,
+} from '@/data/workflowProjector'
 import type { WorkflowDetailResponse, WorkflowState } from '@/types/be'
 import { ChatRoleEnum, type WaitingReasonEnum } from '@/types/enums'
 import type {
@@ -169,6 +173,7 @@ export function useWorkflowController(): WorkflowController {
         description: workflow.ticket.description,
       }
     : null
+  const solution = workflow ? workflowToSolution(workflow) : null
   const workflowData = workflow
     ? {
         id: workflow.id,
@@ -177,6 +182,7 @@ export function useWorkflowController(): WorkflowController {
         description: workflow.description,
         maxSteps: workflow.max_steps,
         phase: workflow.phase,
+        solution: solution,
         solutionUpdated: workflow.discussion_result
           ? workflow.discussion_result.solution_updated
           : null,

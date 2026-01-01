@@ -21,15 +21,11 @@ export interface UISolution {
   rationale?: string
 }
 
-export type UIChatHistoryItem =
-  | {
-      type: typeof UIHistoryItemTypeEnum.MESSAGE
-      message: UIChatMessage
-    }
-  | {
-      type: typeof UIHistoryItemTypeEnum.SOLUTION
-      solution: UISolution
-    }
+export interface UIChatHistoryItem {
+  type: typeof UIHistoryItemTypeEnum.MESSAGE
+  phase: typeof WorkflowPhaseEnum.COLLECTING | typeof WorkflowPhaseEnum.DISCUSSION
+  message: UIChatMessage
+}
 
 export interface UITicket {
   id: string
@@ -44,6 +40,7 @@ export interface UIWorkflowData {
   description: string
   maxSteps: number
   phase: WorkflowPhaseEnum
+  solution: UISolution | null
   solutionUpdated: boolean | null
 }
 

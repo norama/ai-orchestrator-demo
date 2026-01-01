@@ -34,10 +34,6 @@ function App() {
   const error = controller.error || listController.error || catalogController.error
   const selectedWorkflowId = controller.workflowData?.id ?? null
 
-  const reset = () => {
-    controller.reset()
-  }
-
   const startNewWorkflow = (req: UICreateFromCatalog) => {
     controller.start(req).then(listController.refresh)
   }
@@ -88,7 +84,6 @@ function App() {
           onAnswer={withListRefresh(controller.answer)}
           onSkip={withListRefresh(controller.skip)}
           onSendChatMessage={withListRefresh(controller.chat)}
-          onReset={reset}
         />
 
         {error && <div className='mt-4 text-center text-sm text-red-600'>{error}</div>}

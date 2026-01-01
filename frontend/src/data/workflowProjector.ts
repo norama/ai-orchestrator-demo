@@ -1,5 +1,5 @@
 import type { WorkflowState } from '@/types/be'
-import { ChatRoleEnum, UIHistoryItemTypeEnum } from '@/types/enums'
+import { ChatRoleEnum, UIHistoryItemTypeEnum, WorkflowPhaseEnum } from '@/types/enums'
 import type { UIChatHistory, UIChatHistoryItem, UICurrentStep } from '@/types/fe'
 
 export function workflowToOpenStep(state: WorkflowState): UICurrentStep | null {
@@ -24,6 +24,7 @@ export function workflowToChatHistory(state: WorkflowState): UIChatHistory {
     if (step.answer) {
       items.push({
         type: UIHistoryItemTypeEnum.MESSAGE,
+        phase: WorkflowPhaseEnum.COLLECTING,
         message: {
           id: `q-${i}`,
           role: ChatRoleEnum.AI,
@@ -33,6 +34,7 @@ export function workflowToChatHistory(state: WorkflowState): UIChatHistory {
 
       items.push({
         type: UIHistoryItemTypeEnum.MESSAGE,
+        phase: WorkflowPhaseEnum.COLLECTING,
         message: {
           id: `a-${i}`,
           role: ChatRoleEnum.USER,
@@ -42,20 +44,10 @@ export function workflowToChatHistory(state: WorkflowState): UIChatHistory {
     }
   })
 
-  if (state.solution) {
-    items.push({
-      type: UIHistoryItemTypeEnum.SOLUTION,
-      solution: {
-        content: state.solution.content,
-        confidence: state.solution.confidence,
-        rationale: state.solution.rationale ?? undefined,
-      },
-    })
-  }
-
   state.chat_history.messages.forEach((m, i) => {
     items.push({
       type: UIHistoryItemTypeEnum.MESSAGE,
+      phase: WorkflowPhaseEnum.DISCUSSION,
       message: {
         id: `c-${i}`,
         role: m.role,
@@ -67,4 +59,15 @@ export function workflowToChatHistory(state: WorkflowState): UIChatHistory {
   return {
     items,
   }
+}
+
+export function workflowToSolution(state: WorkflowState) {
+  if (state.solution) {
+    return {
+      content: state.solution.content,
+      confidence: state.solution.confidence,
+      rationale: state.solution.rationale || undefined,
+    }
+  }
+  return null
 }
