@@ -1,6 +1,6 @@
 from typing_extensions import Protocol
 
-from app.domain.chat import ChatMessage
+from app.domain.chat import ChatMessage, ChatReply
 from app.domain.workflow import WorkflowContext
 
 
@@ -9,6 +9,6 @@ class ChatService(Protocol):
         self,
         ctx: WorkflowContext,
         user_message: ChatMessage,
-    ) -> ChatMessage:
+    ) -> ChatReply:
         """Generate a reply to the user's message within the given workflow context."""
         ...

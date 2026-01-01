@@ -37,3 +37,8 @@ class LLMSolution(BaseModel):
         if not (0.0 <= obj.solution_confidence <= 1.0):
             raise ValueError("solution_confidence out of range")
         return obj
+
+
+class LLMChatReply(BaseModel):
+    message: str
+    requires_solution_update: bool

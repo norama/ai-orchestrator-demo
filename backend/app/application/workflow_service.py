@@ -91,7 +91,10 @@ class WorkflowService:
                 if last_msg.role == ChatRole.USER:
                     ctx = self._build_context(workflow)
                     reply = self.domain.chat_service.reply(ctx, last_msg)
-                    workflow.chat_history.add_message(reply)
+                    workflow.chat_history.add_message(reply.message)
+                    if reply.requires_solution_update:
+                        ctx = self._build_context(workflow)
+                        workflow.solution = self.domain.solution_service.generate_solution(ctx)
             return workflow
 
         return workflow

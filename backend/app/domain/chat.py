@@ -18,6 +18,11 @@ class ChatMessage(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+class ChatReply(BaseModel):
+    message: ChatMessage
+    requires_solution_update: bool = False
+
+
 class ChatHistory(BaseModel):
     messages: list[ChatMessage] = Field(default_factory=list)
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

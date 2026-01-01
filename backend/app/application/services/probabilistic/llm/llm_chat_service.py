@@ -2,7 +2,9 @@ from typing import override
 
 from app.application.chat_service import ChatService
 from app.application.services.probabilistic.llm.client.llm_client import LLMClient
-from app.domain.chat import ChatMessage, ChatRole
+from app.application.services.probabilistic.llm.domain.llm import LLMChatReply
+from app.application.services.probabilistic.llm.utils.llm_call import call_llm_json
+from app.domain.chat import ChatMessage, ChatReply, ChatRole
 from app.domain.workflow import WorkflowContext
 
 
@@ -15,13 +17,23 @@ class LLMChatService(ChatService):
 
         return f"""
             You are assisting the user AFTER a solution has already been proposed.
+            Based on the current proposed solution, the recent conversation and the last user message,
+            decide if it is necessary to update the proposed solution.
 
             IMPORTANT RULES:
             - Do NOT change the solution.
             - Do NOT ask new clarification questions.
             - Do NOT propose new steps.
             - Do NOT suggest restarting the workflow.
-            - You may explain, elaborate, clarify, or give usage advice only.
+            - You may explain, elaborate, clarify, or give usage advice.
+            - If the user points out an error, missing consideration, or contradiction
+              in the proposed solution, set requires_solution_update to true.
+
+            Return ONLY valid JSON matching this schema:
+            {{
+                "message": string, your reply to the user following the rules above
+                "requires_solution_update": true or false
+            }}
 
             Proposed solution:
             {ctx.solution.content if ctx.solution else "(no solution)"}
@@ -34,15 +46,24 @@ class LLMChatService(ChatService):
         """.strip()
 
     @override
-    def reply(self, ctx: WorkflowContext, user_message: ChatMessage) -> ChatMessage:
+    def reply(self, ctx: WorkflowContext, user_message: ChatMessage) -> ChatReply:
         prompt = self._build_prompt(ctx, user_message)
 
         try:
-            content = self.llm.complete(prompt)
-        except Exception:
-            content = "I'm unable to respond right now."
-
-        return ChatMessage(
-            role=ChatRole.AI,
-            content=content,
-        )
+            data = call_llm_json(self.llm, prompt)
+            parsed = LLMChatReply.model_validate(data)
+            return ChatReply(
+                message=ChatMessage(
+                    role=ChatRole.AI,
+                    content=parsed.message,
+                ),
+                requires_solution_update=parsed.requires_solution_update,
+            )
+        except Exception as e:
+            return ChatReply(
+                message=ChatMessage(
+                    role=ChatRole.AI,
+                    content=f"Sorry, I couldn't process your message at this time: {e}.",
+                ),
+                requires_solution_update=False,
+            )
