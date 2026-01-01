@@ -36,6 +36,7 @@ export interface UIWorkflowData {
   description: string
   maxSteps: number
   phase: WorkflowPhaseEnum
+  solutionUpdated: boolean | null
 }
 
 export interface UIChatHistory {

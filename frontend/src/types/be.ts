@@ -27,6 +27,11 @@ export interface ChatHistory {
   messages: ChatMessage[]
 }
 
+export interface ChatMutationResult {
+  solution_updated: boolean
+  solution_version: number | null
+}
+
 export interface Ticket {
   id: string
   title: string
@@ -45,6 +50,7 @@ export interface WorkflowState {
   solution: Solution | null
   skipped: boolean
   chat_history: ChatHistory
+  discussion_result: ChatMutationResult | null
 }
 
 /* ---------- API envelope ---------- */

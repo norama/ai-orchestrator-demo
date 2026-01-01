@@ -187,6 +187,9 @@ export function useWorkflowController(): WorkflowController {
         description: workflow.description,
         maxSteps: workflow.max_steps,
         phase: workflow.phase,
+        solutionUpdated: workflow.discussion_result
+          ? workflow.discussion_result.solution_updated
+          : null,
       }
     : null
 

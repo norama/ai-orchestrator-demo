@@ -41,6 +41,11 @@ class Solution(BaseModel):
     rationale: str | None = None
 
 
+class ChatMutationResult(BaseModel):
+    solution_updated: bool
+    solution_version: int | None = None
+
+
 class WorkflowStateCreate(BaseModel):
     ticket: Ticket
     domain_type: DomainType = DomainType.PARROT
@@ -55,6 +60,7 @@ class WorkflowState(WorkflowStateCreate, DbEntry):
     last_decision: NextStepDecision | None = None
     solution: Solution | None = None
     chat_history: ChatHistory = Field(default_factory=ChatHistory)
+    discussion_result: ChatMutationResult | None = None
     skipped: bool = False
 
 

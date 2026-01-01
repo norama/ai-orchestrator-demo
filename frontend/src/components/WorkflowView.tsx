@@ -66,11 +66,18 @@ export function WorkflowView({
       )}
 
       {workflowData.phase === 'DISCUSSION' && (
-        <ChatInput
-          placeholder='Enter your message...'
-          onSend={onSendChatMessage}
-          disabled={loading}
-        />
+        <>
+          {workflowData.solutionUpdated === true && (
+            <div className='p-3 bg-yellow-100 text-yellow-800 rounded'>
+              The solution has been updated based on your discussion.
+            </div>
+          )}
+          <ChatInput
+            placeholder='Enter your message...'
+            onSend={onSendChatMessage}
+            disabled={loading}
+          />
+        </>
       )}
 
       <div className='flex justify-end items-center'>

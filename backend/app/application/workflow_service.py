@@ -8,6 +8,7 @@ from app.application.exceptions import InvalidWorkflowOperation, WorkflowNotFoun
 from app.application.registry import WorkflowDomain
 from app.domain.chat import ChatMessage, ChatRole
 from app.domain.workflow import (
+    ChatMutationResult,
     WaitingReason,
     WorkflowContext,
     WorkflowPhase,
@@ -55,6 +56,10 @@ class WorkflowService:
     # ------- Engine loop --------
 
     def _process_workflow(self, workflow: WorkflowState) -> WorkflowState:
+        # Clear phase-local outcomes
+        workflow.last_decision = None
+        workflow.discussion_result = None
+
         # hard stop
         if workflow.phase == WorkflowPhase.DONE:
             return workflow
@@ -86,6 +91,7 @@ class WorkflowService:
 
         # process DISCUSSION phase
         if workflow.phase == WorkflowPhase.DISCUSSION:
+            discussion_result = ChatMutationResult(solution_updated=False)
             if self.domain.chat_service and workflow.chat_history.messages:
                 last_msg = workflow.chat_history.messages[-1]
                 if last_msg.role == ChatRole.USER:
@@ -95,6 +101,8 @@ class WorkflowService:
                     if reply.requires_solution_update:
                         ctx = self._build_context(workflow)
                         workflow.solution = self.domain.solution_service.generate_solution(ctx)
+                        discussion_result = ChatMutationResult(solution_updated=True)
+            workflow.discussion_result = discussion_result
             return workflow
 
         return workflow
