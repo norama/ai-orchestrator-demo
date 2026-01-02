@@ -5,7 +5,7 @@ from app.application.solution_service import SolutionService
 from app.domain.workflow import Solution, WorkflowContext
 
 
-class LLMSolutionService(SolutionService):
+class LLMSupportSolutionService(SolutionService):
     def __init__(self, llm_client: LLMClient):
         self.llm = llm_client
 

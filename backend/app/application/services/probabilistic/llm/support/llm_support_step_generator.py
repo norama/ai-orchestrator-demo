@@ -5,7 +5,7 @@ from app.application.step_generator import StepGenerator
 from app.domain.workflow import ClarificationStep, NextStepDecision, WorkflowContext
 
 
-class LLMStepGenerator(StepGenerator):
+class LLMSupportStepGenerator(StepGenerator):
     def __init__(self, llm_client: LLMClient):
         self.llm = llm_client
 

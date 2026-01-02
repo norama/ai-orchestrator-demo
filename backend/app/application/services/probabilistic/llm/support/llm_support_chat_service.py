@@ -8,7 +8,7 @@ from app.domain.chat import ChatMessage, ChatReply, ChatRole
 from app.domain.workflow import WorkflowContext
 
 
-class LLMChatService(ChatService):
+class LLMSupportChatService(ChatService):
     def __init__(self, llm: LLMClient):
         self.llm = llm
 
