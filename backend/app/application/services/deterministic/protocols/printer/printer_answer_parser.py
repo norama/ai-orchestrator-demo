@@ -1,6 +1,6 @@
 from app.application.answer_parser import AnswerParser
-from app.application.services.deterministic.printer.domain.printer_domain import PrinterStepMetadata
-from app.application.services.deterministic.printer.domain.printer_domain_parser import parse_printer_answer
+from app.application.services.deterministic.protocols.printer.domain.printer_domain import PrinterStepMetadata
+from app.application.services.deterministic.protocols.printer.domain.printer_domain_parser import parse_printer_answer
 from app.domain.workflow import ClarificationStep
 
 

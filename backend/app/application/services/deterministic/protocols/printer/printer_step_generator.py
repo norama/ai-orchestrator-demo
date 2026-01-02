@@ -1,4 +1,4 @@
-from app.application.services.deterministic.printer.domain.printer_domain import (
+from app.application.services.deterministic.protocols.printer.domain.printer_domain import (
     PrinterExpectedAnswer,
     PrinterParsedAnswer,
     PrinterStepMetadata,

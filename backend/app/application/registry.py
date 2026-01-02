@@ -3,17 +3,21 @@ from typing import NamedTuple
 
 from app.application.answer_parser import AnswerParser
 from app.application.chat_service import ChatService
-from app.application.services.deterministic.parrot.parrot_chat_service import ParrotChatService
-from app.application.services.deterministic.parrot.parrot_solution_service import ParrotSolutionService
-from app.application.services.deterministic.parrot.parrot_step_generator import ParrotStepGenerator
-from app.application.services.deterministic.printer.printer_answer_parser import PrinterAnswerParser
-from app.application.services.deterministic.printer.printer_solution_service import PrinterSolutionService
-from app.application.services.deterministic.printer.printer_step_generator import PrinterStepGenerator
+from app.application.services.deterministic.protocols.parrot.parrot_chat_service import ParrotChatService
+from app.application.services.deterministic.protocols.parrot.parrot_solution_service import ParrotSolutionService
+from app.application.services.deterministic.protocols.parrot.parrot_step_generator import ParrotStepGenerator
+from app.application.services.deterministic.protocols.printer.printer_answer_parser import PrinterAnswerParser
+from app.application.services.deterministic.protocols.printer.printer_solution_service import PrinterSolutionService
+from app.application.services.deterministic.protocols.printer.printer_step_generator import PrinterStepGenerator
 from app.application.services.probabilistic.llm.client.openai.openai_client import OpenAIClient
 from app.application.services.probabilistic.llm.domain.llm_stats import LLMUsage
-from app.application.services.probabilistic.llm.support.llm_support_chat_service import LLMSupportChatService
-from app.application.services.probabilistic.llm.support.llm_support_solution_service import LLMSupportSolutionService
-from app.application.services.probabilistic.llm.support.llm_support_step_generator import LLMSupportStepGenerator
+from app.application.services.probabilistic.llm.protocols.support.llm_support_chat_service import LLMSupportChatService
+from app.application.services.probabilistic.llm.protocols.support.llm_support_solution_service import (
+    LLMSupportSolutionService,
+)
+from app.application.services.probabilistic.llm.protocols.support.llm_support_step_generator import (
+    LLMSupportStepGenerator,
+)
 from app.application.solution_service import SolutionService
 from app.application.step_generator import StepGenerator
 from app.domain.config import DomainType
