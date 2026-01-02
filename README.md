@@ -11,17 +11,17 @@ rather than model performance or UI polish.
 
 ## Status
 
-✅ **Day 4 complete** — ticket catalog + discussion-phase solution refinement  
+✅ **Day 5 complete** — reporting workflows + LLM-based document refinement  
 🚧 Ongoing development
 
 ### What is implemented
 
 - Backend **workflow orchestration engine** with explicit phases
 - Static **ticket catalog** as a controlled workflow entry point
-- Deterministic demo domains **and** an LLM-backed domain
+- Deterministic demo domains **and** multiple LLM-backed domains
 - LLM integration with:
   - structured JSON prompting
-  - retry + validation
+  - retry + semantic validation
   - safe fallbacks
   - token / usage metering
 - Discussion-phase AI chat **with controlled solution refinement**
@@ -30,6 +30,7 @@ rather than model performance or UI polish.
   - workflow list (suspend / resume)
   - dedicated solution panel (not part of chat)
   - discussion chat driving solution updates
+  - Markdown rendering for document-style solutions
 - Architecture intentionally preserved while adding AI and UI affordances
 
 ---
@@ -77,7 +78,7 @@ Workflows are started from a **static ticket catalog**, not free-form input.
   - optional source metadata
 - The catalog is **configuration only**
 - The engine is unaware of “tickets” as a concept
-- This removes artificial demo inputs and prepares the system for reporting workflows
+- The same mechanism is used to launch **reporting workflows**
 
 ---
 
@@ -93,7 +94,7 @@ Clarifications are built **incrementally**, one step at a time.
 - The user may skip directly to solution generation at any time
 - Confidence is reported alongside decisions
 
-This mirrors real troubleshooting and reasoning workflows.
+This mirrors real troubleshooting, reporting, and reasoning workflows.
 
 ---
 
@@ -119,8 +120,8 @@ The engine is **domain-agnostic**.
 Domain behavior is plugged in via protocols:
 
 - **StepGenerator** – decides what clarification comes next
-- **AnswerParser** – interprets raw user input into domain semantics
-- **SolutionService** – generates a solution draft
+- **AnswerParser** – interprets raw user input into domain semantics (optional)
+- **SolutionService** – generates a solution or document
 - **ChatService** – handles discussion-phase replies (optional)
 
 Domains are registered via a **DomainRegistry** and selected per workflow.
@@ -129,7 +130,8 @@ Current demo domains:
 
 - `PRINTER` – deterministic troubleshooting flow (no AI)
 - `PARROT` – simple deterministic test domain
-- `LLM_SUPPORT` – fully LLM-backed clarification, solution, and discussion
+- `LLM_SUPPORT` – LLM-backed troubleshooting (clarifications, solution, discussion)
+- `LLM_REPORT` – LLM-backed reporting domain producing Markdown documents
 
 LLM-based domains were added **without changing the core engine**.
 
@@ -192,7 +194,7 @@ Key characteristics:
 
 ### Current UI features
 
-- Start workflows by selecting a predefined **catalog ticket**
+- Start workflows by selecting a predefined **catalog entry**
 - Workflow list panel:
   - shows all persisted workflows
   - phase badges for orientation
@@ -200,6 +202,7 @@ Key characteristics:
 - Workflow session view:
   - clarification timeline
   - **dedicated solution panel** (sticky, scrollable)
+  - Markdown-rendered solutions (including reports)
   - solution confidence display
   - discussion chat below the solution
   - explicit “solution updated” indicators
@@ -273,8 +276,8 @@ domain or orchestration code.
 This project deliberately avoids a “chatbot-first” architecture.
 
 Instead of treating AI as a stateless function call, the system is built
-around **explicit workflows** that model how real problem-solving unfolds
-over time.
+around **explicit workflows** that model how real problem-solving and
+document creation unfold over time.
 
 Key design choices:
 
@@ -285,7 +288,7 @@ Key design choices:
   - Makes orchestration rules visible and testable
   - Avoids implicit state machines hidden in prompts
 - **Incremental clarifications**
-  - Reflect real troubleshooting and reasoning
+  - Reflect real troubleshooting and reporting workflows
   - Enable adaptive questioning instead of upfront questionnaires
 - **Domain logic behind protocols**
   - Allows deterministic implementations
@@ -313,6 +316,7 @@ This demo intentionally does **not** include:
 - ❌ Automated frontend tests
 - ❌ Performance optimizations
 - ❌ Pixel-perfect UI
+- ❌ Manual document editing
 
 These are excluded to keep the focus on **workflow orchestration,
 state management, and architectural clarity**.
@@ -321,8 +325,7 @@ state management, and architectural clarity**.
 
 ## Roadmap (Next Steps)
 
-- Report materialization from solutions
-- Read-only review / export views
+- Read-only review / export views for reports
 - Event-based workflow history
 - Undo / redo and branching
 - Background execution
