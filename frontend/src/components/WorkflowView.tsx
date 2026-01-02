@@ -6,6 +6,7 @@ import { ChatMessageView } from '@/components/workflow/ChatMessageView'
 import { SolutionView } from '@/components/workflow/SolutionView'
 import { StepInput } from '@/components/workflow/StepInput'
 import { TicketView } from '@/components/workflow/TicketView'
+import { WorkflowPhaseEnum } from '@/types/enums'
 import type { UIChatHistory, UICurrentStep, UITicket, UIWorkflowData } from '@/types/fe'
 
 interface WorkflowViewProps {
@@ -50,10 +51,14 @@ export function WorkflowView({
 
       <BottomFixedLayout>
         {workflowData.solution && (
-          <SolutionView solution={workflowData.solution} updated={workflowData.solutionUpdated} />
+          <SolutionView
+            solution={workflowData.solution}
+            updated={workflowData.solutionUpdated}
+            domainType={workflowData.domainType}
+          />
         )}
 
-        {(currentStep || workflowData.phase === 'DISCUSSION') && (
+        {(currentStep || workflowData.phase === WorkflowPhaseEnum.DISCUSSION) && (
           <div className='my-3 border-t text-gray-300' />
         )}
 
@@ -67,7 +72,7 @@ export function WorkflowView({
           />
         )}
 
-        {workflowData.phase === 'DISCUSSION' && (
+        {workflowData.phase === WorkflowPhaseEnum.DISCUSSION && (
           <ChatInput
             placeholder='Enter your message...'
             onSend={onSendChatMessage}

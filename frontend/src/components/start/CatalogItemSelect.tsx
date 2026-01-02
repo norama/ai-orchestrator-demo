@@ -24,7 +24,7 @@ export function CatalogItemSelect({
     <>
       <label className='text-sm font-medium'>Select a ticket</label>
 
-      <div className='space-y-2'>
+      <div className='space-y-2 max-h-60 overflow-y-auto'>
         {catalogItems.length === 0 && (
           <div key='-' className='text-sm text-red-500 text-center'>
             No catalog items available
@@ -46,7 +46,7 @@ export function CatalogItemSelect({
               <Badge variant='info'>{item.domainType}</Badge>
             </div>
             {selectedItemId === item.id && (
-              <span className='absolute top-2 right-2 text-blue-600'>✓</span>
+              <span className='absolute bottom-2 right-2 text-blue-600'>✓</span>
             )}
           </div>
         ))}

@@ -18,6 +18,7 @@ export const DomainTypeEnum = {
   PARROT: 'PARROT',
   PRINTER: 'PRINTER',
   LLM_SUPPORT: 'LLM_SUPPORT',
+  LLM_REPORT: 'LLM_REPORT',
 } as const
 
 export type DomainTypeEnum = (typeof DomainTypeEnum)[keyof typeof DomainTypeEnum]

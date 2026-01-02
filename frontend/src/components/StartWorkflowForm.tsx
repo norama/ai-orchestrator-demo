@@ -49,7 +49,7 @@ export function StartWorkflowForm({ loading, error, catalogItems, onStart }: Pro
         <div className='space-y-1'>
           <label className='text-sm font-medium'>Description</label>
           <Textarea
-            rows={3}
+            rows={2}
             placeholder='Optional description'
             value={description}
             onChange={(e) => setDescription(e.target.value)}

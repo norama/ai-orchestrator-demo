@@ -1,13 +1,16 @@
 import { Badge } from '@/components/ui/Badge'
+import { MarkdownView } from '@/components/ui/MarkdownView'
 import { Confidence } from '@/components/workflow/Confidence'
+import { DomainTypeEnum } from '@/types/enums'
 import type { UISolution } from '@/types/fe'
 
 interface Props {
   solution: UISolution
   updated: boolean | null
+  domainType: DomainTypeEnum
 }
 
-export function SolutionView({ solution, updated }: Props) {
+export function SolutionView({ solution, updated, domainType }: Props) {
   return (
     <div className='relative p-4 max-h-[30vh] overflow-y-auto bg-green-50 border border-green-200 rounded-lg whitespace-pre-wrap'>
       {updated && (
@@ -16,9 +19,12 @@ export function SolutionView({ solution, updated }: Props) {
         </div>
       )}
 
-      <h3 className='text-lg font-medium mb-2'>Proposed Solution</h3>
+      {domainType !== DomainTypeEnum.LLM_REPORT && (
+        <h3 className='text-lg font-medium mb-2'>Proposed Solution</h3>
+      )}
 
-      <p className='text-sm leading-relaxed whitespace-pre-wrap mb-2'>{solution.content}</p>
+      <MarkdownView content={solution.content} />
+
       <Confidence label='Solution confidence' confidence={solution.confidence} />
       {solution.rationale && (
         <div className='mt-2 p-2 bg-green-100 border border-green-200 rounded'>
