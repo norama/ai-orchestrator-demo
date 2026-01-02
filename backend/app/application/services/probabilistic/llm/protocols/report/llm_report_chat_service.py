@@ -8,7 +8,7 @@ from app.domain.chat import ChatMessage, ChatReply, ChatRole
 from app.domain.workflow import WorkflowContext
 
 
-class LLMSupportChatService(ChatService):
+class LLMReportChatService(ChatService):
     def __init__(self, llm: LLMClient):
         self.llm = llm
 
@@ -16,23 +16,23 @@ class LLMSupportChatService(ChatService):
         recent = "\n".join(f"{m.role}: {m.content}" for m in ctx.chat_history.messages[-6:])
 
         return f"""
-            You are assisting the user AFTER a solution has already been proposed.
-            Based on the current proposed solution (if exists), the recent conversation and the last user message,
-            decide if it is necessary to update the proposed solution.
+            You are assisting the user AFTER a REPORT has been generated.
+            Based on the current proposed report (if exists), the recent conversation and the last user message,
+            decide if it is necessary to update the proposed report.
 
             IMPORTANT RULES:
-            - Do NOT directly rewrite or output the updated solution text.
+            - Do NOT directly rewrite or output the updated report text.
             - Do NOT ask new clarification questions.
             - Do NOT propose new workflow steps or restart the workflow.
 
             Your job is ONLY to:
             - reply to the user, AND
-            - decide whether the solution needs to be regenerated.
+            - decide whether the report needs to be regenerated.
 
             Set requires_solution_update = true IF AND ONLY IF:
-            - The user explicitly asks to change, add, remove, or rewrite part of the solution, OR
+            - The user explicitly asks to change, add, remove, or rewrite part of the report, OR
             - The user points out missing information, an error, or a contradiction, OR
-            - The user requests that the solution be updated for future reference.
+            - The user requests that the report be updated for future reference.
 
             Return ONLY valid JSON matching this schema:
             {{
@@ -48,7 +48,7 @@ class LLMSupportChatService(ChatService):
             TICKET DESCRIPTION:
             {ctx.ticket.description}
 
-            Proposed solution:
+            Proposed report:
             {ctx.solution.content if ctx.solution else "(no solution)"}
 
             Recent conversation:

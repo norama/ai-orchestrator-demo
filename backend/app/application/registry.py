@@ -11,6 +11,11 @@ from app.application.services.deterministic.protocols.printer.printer_solution_s
 from app.application.services.deterministic.protocols.printer.printer_step_generator import PrinterStepGenerator
 from app.application.services.probabilistic.llm.client.openai.openai_client import OpenAIClient
 from app.application.services.probabilistic.llm.domain.llm_stats import LLMUsage
+from app.application.services.probabilistic.llm.protocols.report.llm_report_chat_service import LLMReportChatService
+from app.application.services.probabilistic.llm.protocols.report.llm_report_solution_service import (
+    LLMReportSolutionService,
+)
+from app.application.services.probabilistic.llm.protocols.report.llm_report_step_generator import LLMReportStepGenerator
 from app.application.services.probabilistic.llm.protocols.support.llm_support_chat_service import LLMSupportChatService
 from app.application.services.probabilistic.llm.protocols.support.llm_support_solution_service import (
     LLMSupportSolutionService,
@@ -85,5 +90,14 @@ domain_registry.register(
         step_generator=LLMSupportStepGenerator(llm_client),
         solution_service=LLMSupportSolutionService(llm_client),
         chat_service=LLMSupportChatService(llm_client),
+    ),
+)
+
+domain_registry.register(
+    DomainType.LLM_REPORT,
+    WorkflowDomain(
+        step_generator=LLMReportStepGenerator(llm_client),
+        solution_service=LLMReportSolutionService(llm_client),
+        chat_service=LLMReportChatService(llm_client),
     ),
 )

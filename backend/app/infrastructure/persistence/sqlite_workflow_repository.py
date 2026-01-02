@@ -28,7 +28,7 @@ class SqliteWorkflowRepository(WorkflowRepository):
                     id TEXT PRIMARY KEY,
                     name TEXT,
                     description TEXT,
-                    domain_type TEXT NOT NULL CHECK (domain_type IN ('PARROT', 'PRINTER', 'LLM_SUPPORT')),
+                    domain_type TEXT NOT NULL CHECK (domain_type IN ('PARROT', 'PRINTER', 'LLM_SUPPORT', 'LLM_REPORT')),
                     phase TEXT NOT NULL CHECK (phase IN ('COLLECTING', 'SOLVING', 'DISCUSSION', 'DONE')),
                     state_json TEXT NOT NULL,
                     updated_at TEXT NOT NULL

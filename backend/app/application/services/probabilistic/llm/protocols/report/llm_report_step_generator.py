@@ -5,7 +5,7 @@ from app.application.step_generator import StepGenerator
 from app.domain.workflow import ClarificationStep, NextStepDecision, WorkflowContext
 
 
-class LLMSupportStepGenerator(StepGenerator):
+class LLMReportStepGenerator(StepGenerator):
     def __init__(self, llm_client: LLMClient):
         self.llm = llm_client
 
@@ -18,23 +18,26 @@ class LLMSupportStepGenerator(StepGenerator):
         answered_block = "\n".join(answered) if answered else "(none)"
 
         return f"""
-            You are a troubleshooting assistant.
+            You are preparing to generate a written REPORT.
 
             Your task:
-            - Decide whether another clarification question is needed.
+            - Decide whether another clarification question is needed before writing the report.
             - Ask AT MOST one clarification question.
-            - If enough information is available, stop asking questions.
+            - Prefer stopping early if the report can reasonably be drafted.
 
-            When deciding whether to ask another question:
-            - Consider how many steps are still available.
-            - If you are unsure whether another question will materially improve the solution,
-              prefer returning action = "DONE" with lower confidence.
+            Clarification guidance:
+            - Typical useful clarifications include: audience, length, focus.
+            - Do NOT ask about templates, formatting, or export options.
 
-            Guidance for workflow_confidence:
-            - 1.0 = complete certainty
-            - 0.5 = partial confidence
-            - <0.3 = weak confidence
+            IMPORTANT:
+            If the ticket description does NOT contain concrete factual information
+            (e.g. progress, completed work, findings, metrics),
+            you MUST ask the user to provide a brief factual status summary
+            before generating the report.
+            Example clarification:
+            "What is the current factual status of the project (completed work, current phase, known issues)?"
 
+            When unsure AND factual information is missing, prefer action = "ASK" over "DONE".
 
             Return ONLY valid JSON matching this schema:
 
@@ -46,25 +49,22 @@ class LLMSupportStepGenerator(StepGenerator):
             }}
 
             Rules:
-            - If action is "ASK", prompt MUST be a non-empty string.
+            - If action is "ASK", prompt MUST be non-empty.
             - If action is "DONE", prompt MUST be null.
-            - Do NOT include explanations.
-            - Do NOT include Markdown.
-            - Do NOT include text outside JSON.
+            - No markdown, no explanations, no text outside JSON.
 
             Context:
-
-            TICKET TITLE:
+            REPORT TITLE:
             {ctx.ticket.title}
 
-            TICKET DESCRIPTION:
+            REPORT DESCRIPTION:
             {ctx.ticket.description}
 
             CLARIFICATION ANSWERS SO FAR:
             {answered_block}
 
-            MAX STEPS ALLOWED: {ctx.max_steps}
-            STEPS TAKEN SO FAR: {len(ctx.steps)}
+            MAX STEPS: {ctx.max_steps}
+            STEPS USED: {len(ctx.steps)}
         """.strip()
 
     def propose_next(self, ctx: WorkflowContext) -> NextStepDecision:
