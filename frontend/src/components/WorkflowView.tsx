@@ -6,8 +6,15 @@ import { ChatMessageView } from '@/components/workflow/ChatMessageView'
 import { SolutionView } from '@/components/workflow/SolutionView'
 import { StepInput } from '@/components/workflow/StepInput'
 import { TicketView } from '@/components/workflow/TicketView'
-import { WorkflowPhaseEnum } from '@/types/enums'
-import type { UIChatHistory, UICurrentStep, UITicket, UIWorkflowData } from '@/types/fe'
+import { ChatRoleEnum, WorkflowPhaseEnum } from '@/types/enums'
+import type {
+  UIChatHistory,
+  UIChatMessage,
+  UICurrentStep,
+  UITicket,
+  UIWorkflowData,
+} from '@/types/fe'
+import { useState } from 'react'
 
 interface WorkflowViewProps {
   ticket: UITicket
@@ -16,9 +23,9 @@ interface WorkflowViewProps {
   chatHistory: UIChatHistory
   loading: boolean
   confidence: number | null
-  onAnswer(stepId: string, answer: string): void
-  onSendChatMessage(message: string): void
-  onSkip(): void
+  onAnswer: (stepId: string, answer: string) => Promise<void>
+  onSendChatMessage: (message: string) => Promise<void>
+  onSkip: () => Promise<void>
 }
 
 export function WorkflowView({
@@ -32,6 +39,35 @@ export function WorkflowView({
   onSendChatMessage,
   onSkip,
 }: WorkflowViewProps) {
+  const [pendingMessages, setPendingMessages] = useState<UIChatMessage[]>([])
+  const pendingIds = new Set(pendingMessages.map((m) => m.id))
+
+  const handleSendStepAnswer = (message: string) => {
+    const idUser = crypto.randomUUID()
+    const idSystem = crypto.randomUUID()
+    setPendingMessages((prev) => [
+      ...prev,
+      { id: idSystem, role: ChatRoleEnum.SYSTEM, content: currentStep!.prompt },
+      { id: idUser, role: ChatRoleEnum.USER, content: message },
+    ])
+    onAnswer(currentStep!.stepId, message).finally(() => {
+      setPendingMessages((prev) => prev.filter((msg) => msg.id !== idUser && msg.id !== idSystem))
+    })
+  }
+
+  const handleSendChatMessage = (message: string) => {
+    const idUser = crypto.randomUUID()
+    setPendingMessages((prev) => [
+      ...prev,
+      { id: idUser, role: ChatRoleEnum.USER, content: message },
+    ])
+    onSendChatMessage(message).finally(() => {
+      setPendingMessages((prev) => prev.filter((msg) => msg.id !== idUser))
+    })
+  }
+
+  const messages = [...chatHistory.items.map((item) => item.message), ...pendingMessages]
+
   return (
     <MainLayout>
       <TimelineLayout>
@@ -43,8 +79,12 @@ export function WorkflowView({
         <p className='text-sm text-blue-500'>Phase: {workflowData.phase}</p>
         <TicketView ticket={ticket} />
         <div className='flex flex-col gap-3'>
-          {chatHistory.items.map((item) => (
-            <ChatMessageView key={item.message.id} message={item.message} />
+          {messages.map((message) => (
+            <ChatMessageView
+              key={message.id}
+              message={message}
+              pending={message.role === ChatRoleEnum.USER && pendingIds.has(message.id)}
+            />
           ))}
         </div>
       </TimelineLayout>
@@ -65,7 +105,7 @@ export function WorkflowView({
         {currentStep && (
           <StepInput
             step={currentStep}
-            onAnswer={(text) => onAnswer(currentStep.step_id, text)}
+            onAnswer={handleSendStepAnswer}
             onSkip={onSkip}
             workflowConfidence={confidence}
             disabled={loading}
@@ -75,7 +115,7 @@ export function WorkflowView({
         {workflowData.phase === WorkflowPhaseEnum.DISCUSSION && (
           <ChatInput
             placeholder='Enter your message...'
-            onSend={onSendChatMessage}
+            onSend={handleSendChatMessage}
             disabled={loading}
           />
         )}

@@ -49,7 +49,7 @@ export interface UIChatHistory {
 }
 
 export interface UICurrentStep {
-  step_id: string
+  stepId: string
   prompt: string
 }
 

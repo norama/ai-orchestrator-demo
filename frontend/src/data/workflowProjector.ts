@@ -9,7 +9,7 @@ export function workflowToOpenStep(state: WorkflowState): UICurrentStep | null {
   const openStep = state.steps.find((step) => step.answer === null)
   if (openStep) {
     return {
-      step_id: openStep.id,
+      stepId: openStep.id,
       prompt: openStep.prompt,
     }
   }
