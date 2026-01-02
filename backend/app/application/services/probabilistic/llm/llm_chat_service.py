@@ -21,13 +21,17 @@ class LLMChatService(ChatService):
             decide if it is necessary to update the proposed solution.
 
             IMPORTANT RULES:
-            - Do NOT change the solution.
+            - Do NOT directly rewrite or output the updated solution text.
             - Do NOT ask new clarification questions.
-            - Do NOT propose new steps.
-            - Do NOT suggest restarting the workflow.
-            - You may explain, elaborate, clarify, or give usage advice.
-            - If the user points out an error, missing consideration, or contradiction
-              in the proposed solution, set requires_solution_update to true.
+            - Do NOT propose new workflow steps or restart the workflow.
+            - Your job is ONLY to:
+            - reply to the user, AND
+            - decide whether the solution needs to be regenerated.
+
+            Set requires_solution_update = true IF AND ONLY IF:
+            - The user explicitly asks to change, add, remove, or rewrite part of the solution, OR
+            - The user points out missing information, an error, or a contradiction, OR
+            - The user requests that the solution be updated for future reference.
 
             Return ONLY valid JSON matching this schema:
             {{

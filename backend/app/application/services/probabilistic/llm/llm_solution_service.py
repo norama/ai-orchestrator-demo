@@ -11,17 +11,26 @@ class LLMSolutionService(SolutionService):
 
     @staticmethod
     def _build_prompt(ctx: WorkflowContext) -> str:
-        answered = [f"- Q: {s.prompt}\n  A: {s.answer}" for s in ctx.steps if s.answer is not None]
+        answered = [
+            f"{i + 1} \n Q: {s.prompt} \n A: {s.answer} \n" for i, s in enumerate(ctx.steps) if s.answer is not None
+        ]
 
-        answered_block = "\n".join(answered) if answered else "- (none)"
+        answered_block = "\n".join(answered) if answered else "(none)"
+
+        conversation = "\n".join(
+            f"{i + 1}. {m.role}: {m.content}" for i, m in enumerate(ctx.chat_history.messages[-8:])
+        )
 
         return f"""
             You are a troubleshooting assistant.
             You already have all information provided by the user.
 
             Your task:
-            - Provide the best possible solution given the ticket data and the information provided by the user.
+            - Provide the best possible solution given the ticket data, previous solution (if exists)
+              and the information provided by the user.
               This field should not be null or empty.
+              If the current solution already satisfies the feedback, you may return an improved
+              but equivalent version rather than inventing new content.
             - Specify a confidence level between 0.0 and 1.0 for your solution.
             - Provide a brief rationale for your solution.
               This field can be null if not applicable.
@@ -56,6 +65,12 @@ class LLMSolutionService(SolutionService):
 
             CLARIFICATION ANSWERS FROM USER:
             {answered_block}
+
+            CURRENT PROPOSED SOLUTION:
+            {ctx.solution.content if ctx.solution else "(none)"}
+
+            RECENT CONVERSATION:
+            {conversation or "(none)"}
         """.strip()
 
     def generate_solution(self, ctx: WorkflowContext) -> Solution:
