@@ -9,13 +9,15 @@ interface Props {
   onNew(): void
 }
 
-export function WorkflowListPanel({ items: workflows, selectedId, onSelect, onNew }: Props) {
+export function WorkflowListPanel({ items, selectedId, onSelect, onNew }: Props) {
   return (
-    <div className='w-64 border-r bg-white flex flex-col'>
-      <div className='p-3 font-semibold border-b'>Workflows</div>
+    <div className='w-60 border-r border-gray-300 bg-white flex flex-col'>
+      <div className='px-3 py-2 text-sm font-medium border-b border-gray-300 text-gray-700'>
+        Workflows
+      </div>
 
       <div className='flex-1 overflow-y-auto'>
-        {workflows.map((item) => (
+        {items.map((item) => (
           <WorkflowListItem
             key={item.id}
             item={item}
@@ -25,9 +27,11 @@ export function WorkflowListPanel({ items: workflows, selectedId, onSelect, onNe
         ))}
       </div>
 
-      <Button className='m-3' onClick={onNew}>
-        + New workflow
-      </Button>
+      <div className='p-3 border-t border-gray-300'>
+        <Button variant='secondary' className='w-full justify-start' onClick={onNew}>
+          + New workflow
+        </Button>
+      </div>
     </div>
   )
 }

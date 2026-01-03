@@ -6,8 +6,8 @@ const VARIANT_CLASS: Record<ButtonVariant, string> = {
     enabled:hover:bg-blue-700
   `,
   secondary: `
-    bg-gray-100 text-gray-800
-    enabled:hover:bg-gray-200
+    bg-blue-50 text-blue-800 border border-blue-200
+    enabled:hover:bg-blue-100
   `,
   ghost: `
     bg-transparent text-gray-600
