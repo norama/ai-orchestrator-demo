@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { StatusMarker } from '@/components/ui/StatusMarker'
 import { Confidence } from '@/components/workflow/Confidence'
 import type { UICurrentStep } from '@/types/fe'
 import { useState } from 'react'
@@ -22,38 +23,50 @@ export function StepInput({
   const [value, setValue] = useState('')
 
   function submit() {
-    if (!value.trim()) return
+    if (!value.trim() || disabled) return
     onAnswer(value.trim())
     setValue('')
   }
 
   return (
-    <div className='space-y-4 p-4 border rounded bg-white'>
-      {/* Prompt */}
-      <div className='text-lg font-medium'>{step.prompt}</div>
+    <div className='relative px-4 py-5 bg-white'>
+      {/* Main interactive content */}
+      <div className={['space-y-4 transition-opacity', disabled ? 'opacity-60' : ''].join(' ')}>
+        {/* Prompt */}
+        <div className='text-base font-medium text-gray-900'>{step.prompt}</div>
 
-      {/* Input */}
-      <Input
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder='Type your answer…'
-        disabled={disabled}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') submit()
-        }}
-      />
-      <Confidence label='Workflow confidence' confidence={workflowConfidence} />
+        {/* Input */}
+        <Input
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder='Type your answer…'
+          disabled={disabled}
+          onKeyDown={(e) => e.key === 'Enter' && submit()}
+        />
 
-      {/* Actions */}
-      <div className='flex gap-2'>
-        <Button onClick={submit} disabled={disabled || !value.trim()}>
-          Submit
-        </Button>
+        {/* Confidence */}
+        {workflowConfidence !== null && (
+          <Confidence label='Workflow confidence' confidence={workflowConfidence} />
+        )}
 
-        <Button onClick={onSkip} disabled={disabled}>
-          Skip to solution
-        </Button>
+        {/* Actions */}
+        <div className='flex items-center gap-3'>
+          <Button onClick={submit} disabled={disabled || !value.trim()}>
+            Submit
+          </Button>
+
+          <Button variant='ghost' onClick={onSkip} disabled={disabled}>
+            Skip to solution
+          </Button>
+        </div>
       </div>
+
+      {/* Status layer (never dimmed) */}
+      {disabled && (
+        <div className='absolute bottom-3 right-4'>
+          <StatusMarker variant='pending'>Processing…</StatusMarker>
+        </div>
+      )}
     </div>
   )
 }

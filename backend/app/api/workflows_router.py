@@ -1,3 +1,4 @@
+import asyncio
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -58,11 +59,12 @@ def create_workflow(
 
 
 @workflows_router.post("/{workflow_id}/answer", response_model=WorkflowDetailResponse)
-def answer_step(
+async def answer_step(
     workflow_id: UUID,
     cmd: AnswerStepCommand,
     service: WorkflowService = Depends(get_workflow_service),
 ):
+    await asyncio.sleep(4)
     workflow = service.answer_step(workflow_id, cmd)
 
     return WorkflowDetailResponse(
@@ -75,10 +77,11 @@ def answer_step(
 
 
 @workflows_router.post("/{workflow_id}/skip", response_model=WorkflowDetailResponse)
-def skip_to_solution(
+async def skip_to_solution(
     workflow_id: UUID,
     service: WorkflowService = Depends(get_workflow_service),
 ):
+    await asyncio.sleep(4)
     workflow = service.skip_to_solution(workflow_id)
 
     return WorkflowDetailResponse(
@@ -91,11 +94,12 @@ def skip_to_solution(
 
 
 @workflows_router.post("/{workflow_id}/chat", response_model=WorkflowDetailResponse)
-def send_chat_message(
+async def send_chat_message(
     workflow_id: UUID,
     cmd: AddChatMessageCommand,
     service: WorkflowService = Depends(get_workflow_service),
 ):
+    await asyncio.sleep(4)
     workflow = service.add_chat_message(workflow_id, cmd)
 
     return WorkflowDetailResponse(
