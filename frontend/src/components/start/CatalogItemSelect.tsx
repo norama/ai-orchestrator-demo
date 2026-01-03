@@ -14,43 +14,45 @@ export function CatalogItemSelect({
   onSelect,
   disabled = false,
 }: Props) {
-  const baseClassName = 'border rounded p-3 border-gray-200'
-  const selectedBaseClassName = 'relative border rounded p-3 border-blue-500 bg-blue-50'
-  const className = disabled ? baseClassName : `${baseClassName} cursor-pointer hover:bg-gray-100`
-  const selectedClassName = disabled
-    ? selectedBaseClassName
-    : `${selectedBaseClassName} cursor-pointer`
   return (
-    <>
-      <label className='text-sm font-medium'>Select a ticket</label>
+    <div className='space-y-3'>
+      <div className='text-sm font-bold text-gray-700'>Select a workflow type</div>
 
-      <div className='space-y-2 max-h-60 overflow-y-auto'>
+      <div className='grid gap-3 sm:grid-cols-2'>
         {catalogItems.length === 0 && (
-          <div key='-' className='text-sm text-red-500 text-center'>
+          <div className='text-sm text-red-500 col-span-full text-center'>
             No catalog items available
           </div>
         )}
-        {catalogItems.map((item) => (
-          <div
-            key={item.id}
-            className={selectedItemId === item.id ? selectedClassName : className}
-            onClick={!disabled ? () => onSelect(item.id) : undefined}
-            role='button'
-            tabIndex={0}
-            aria-pressed={selectedItemId === item.id}>
-            <div className='font-medium'>{item.name}</div>
-            <div className='text-sm text-gray-600'>{item.description}</div>
-            <div className='mt-2 flex flex-wrap gap-2'>
-              {item.category && <Badge>{item.category}</Badge>}
 
-              <Badge variant='info'>{item.domainType}</Badge>
+        {catalogItems.map((item) => {
+          const selected = selectedItemId === item.id
+
+          return (
+            <div
+              key={item.id}
+              onClick={!disabled ? () => onSelect(item.id) : undefined}
+              className={[
+                'relative rounded-lg border p-3 transition',
+                selected
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 bg-white hover:bg-gray-50',
+                disabled ? 'opacity-60' : 'cursor-pointer',
+              ].join(' ')}>
+              <div className='font-medium text-gray-900'>{item.name}</div>
+
+              <div className='mt-1 text-sm text-gray-600 line-clamp-2'>{item.description}</div>
+
+              <div className='mt-2 flex gap-2'>
+                {item.category && <Badge>{item.category}</Badge>}
+                <Badge variant='info'>{item.domainType}</Badge>
+              </div>
+
+              {selected && <span className='absolute bottom-2 right-3 text-blue-600'>✓</span>}
             </div>
-            {selectedItemId === item.id && (
-              <span className='absolute bottom-2 right-2 text-blue-600'>✓</span>
-            )}
-          </div>
-        ))}
+          )
+        })}
       </div>
-    </>
+    </div>
   )
 }

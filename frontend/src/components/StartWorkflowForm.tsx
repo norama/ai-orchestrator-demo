@@ -19,35 +19,43 @@ export function StartWorkflowForm({ loading, error, catalogItems, onStart }: Pro
   const [maxSteps, setMaxSteps] = useState(8)
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-gray-50'>
-      <div className='space-y-4 p-6 bg-white rounded shadow max-w-md w-full'>
-        <h1 className='text-xl font-semibold text-center'>AI Orchestrator Demo</h1>
-
-        <p className='text-sm text-gray-600 text-center'>Configure and start a workflow</p>
-
-        {/* Catalog Item Selection */}
-        <div className='space-y-1'>
-          <CatalogItemSelect
-            catalogItems={catalogItems}
-            selectedItemId={selectedItemId}
-            onSelect={(itemId) => setSelectedItemId(itemId)}
-            disabled={loading}
-          />
+    <div className='min-h-screen bg-gray-50'>
+      <div className='mx-auto max-w-3xl px-4 py-10 space-y-8'>
+        {/* Header */}
+        <div className='text-center space-y-2'>
+          <h1 className='text-2xl font-semibold text-gray-900'>AI Orchestrator Demo</h1>
+          <p className='text-sm text-gray-600'>Start a workflow from the catalog</p>
         </div>
 
-        {/* Name */}
-        <div className='space-y-1'>
-          <label className='text-sm font-medium'>Name</label>
-          <Input
-            placeholder='Short workflow name'
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
+        {/* Catalog */}
+        <CatalogItemSelect
+          catalogItems={catalogItems}
+          selectedItemId={selectedItemId}
+          onSelect={setSelectedItemId}
+          disabled={loading}
+        />
 
-        {/* Description */}
-        <div className='space-y-1'>
-          <label className='text-sm font-medium'>Description</label>
+        {/* Optional configuration */}
+        <div className='space-y-4 rounded-lg border border-gray-400 bg-white p-4'>
+          <div className='text-sm font-medium text-gray-700'>Optional configuration</div>
+
+          <div className='grid gap-4 sm:grid-cols-2'>
+            <Input
+              placeholder='Workflow name (optional)'
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+
+            <Input
+              type='number'
+              min={1}
+              max={20}
+              value={maxSteps}
+              onChange={(e) => setMaxSteps(Number(e.target.value))}
+              placeholder='Max steps'
+            />
+          </div>
+
           <Textarea
             rows={2}
             placeholder='Optional description'
@@ -56,29 +64,25 @@ export function StartWorkflowForm({ loading, error, catalogItems, onStart }: Pro
           />
         </div>
 
-        {/* Max steps */}
-        <div className='space-y-1'>
-          <label className='text-sm font-medium'>Max clarification steps</label>
-          <Input
-            type='number'
-            min={1}
-            max={20}
-            value={maxSteps}
-            onChange={(e) => setMaxSteps(Number(e.target.value))}
-          />
-        </div>
-
+        {/* Actions */}
         <div className='flex justify-end'>
           <Button
             disabled={loading || selectedItemId === null}
             onClick={
-              selectedItemId !== null
-                ? () => onStart({ itemId: selectedItemId, name, description, maxSteps })
+              selectedItemId
+                ? () =>
+                    onStart({
+                      itemId: selectedItemId,
+                      name,
+                      description,
+                      maxSteps,
+                    })
                 : undefined
             }>
             Start workflow
           </Button>
         </div>
+
         {error && <div className='text-sm text-red-600 text-center'>{error}</div>}
       </div>
     </div>
