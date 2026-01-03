@@ -1,17 +1,19 @@
 import { StartWorkflowForm } from '@/components/StartWorkflowForm'
+import { Drawer } from '@/components/ui/Drawer'
 import { WorkflowListPanel } from '@/components/WorkflowListPanel'
 import { WorkflowView } from '@/components/WorkflowView'
 import { useCatalogController } from '@/data/catalogController'
 import { useWorkflowController } from '@/data/workflowController'
 import { useWorkflowListController } from '@/data/workflowListController'
 import type { UICreateFromCatalog } from '@/types/fe'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 function App() {
   const catalogController = useCatalogController()
   const listController = useWorkflowListController()
   const controller = useWorkflowController()
   const hasBootstrappedRef = useRef(false)
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   // Auto-load the first workflow when the list is loaded
   useEffect(() => {
@@ -65,30 +67,62 @@ function App() {
   /* ---------- workflow screen ---------- */
 
   return (
-    <div className='flex h-screen'>
-      <WorkflowListPanel
-        items={listController.items}
-        selectedId={selectedWorkflowId}
-        onSelect={selectWorkflow}
-        onNew={controller.reset}
-      />
-
-      <div className='flex-1 overflow-y-auto bg-gray-50 py-8'>
-        <WorkflowView
-          ticket={controller.ticket}
-          workflowData={controller.workflowData}
-          currentStep={controller.currentStep}
-          chatHistory={controller.chatHistory}
-          loading={loading}
-          confidence={controller.workflowConfidence}
-          onAnswer={withListRefresh(controller.answer)}
-          onSkip={withListRefresh(controller.skip)}
-          onSendChatMessage={withListRefresh(controller.chat)}
-        />
-
-        {error && <div className='mt-4 text-center text-sm text-red-600'>{error}</div>}
+    <>
+      <div className='fixed top-0 inset-x-0 z-30 lg:hidden flex items-center gap-2 px-4 h-12 border-b border-gray-300 bg-white'>
+        <button
+          onClick={() => setDrawerOpen(true)}
+          className='text-sm px-2 py-1 rounded hover:bg-gray-100'>
+          ☰
+        </button>
+        <div className='text-sm font-medium text-gray-800 truncate'>
+          {controller.workflowData?.name || 'AI Orchestrator Demo'}
+        </div>
       </div>
-    </div>
+
+      <div className='flex h-screen pt-12 lg:pt-0'>
+        {/* Desktop rail */}
+        <div className='hidden lg:block h-screen'>
+          <WorkflowListPanel
+            items={listController.items}
+            selectedId={selectedWorkflowId}
+            onSelect={selectWorkflow}
+            onNew={controller.reset}
+          />
+        </div>
+
+        {/* Mobile drawer */}
+        <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} className='lg:hidden'>
+          <WorkflowListPanel
+            items={listController.items}
+            selectedId={selectedWorkflowId}
+            onSelect={(id) => {
+              selectWorkflow(id)
+              setDrawerOpen(false)
+            }}
+            onNew={() => {
+              controller.reset()
+              setDrawerOpen(false)
+            }}
+          />
+        </Drawer>
+
+        <div className='flex-1 overflow-y-auto bg-gray-50 py-10'>
+          <WorkflowView
+            ticket={controller.ticket}
+            workflowData={controller.workflowData}
+            currentStep={controller.currentStep}
+            chatHistory={controller.chatHistory}
+            loading={loading}
+            confidence={controller.workflowConfidence}
+            onAnswer={withListRefresh(controller.answer)}
+            onSkip={withListRefresh(controller.skip)}
+            onSendChatMessage={withListRefresh(controller.chat)}
+          />
+
+          {error && <div className='mt-4 text-center text-sm text-red-600'>{error}</div>}
+        </div>
+      </div>
+    </>
   )
 }
 
