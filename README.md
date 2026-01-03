@@ -5,13 +5,13 @@ for handling long-running, resumable workflows driven by tickets,
 incremental clarifications, structured reasoning, and optional LLM assistance.
 
 The goal of this project is to demonstrate **architecture and orchestration patterns**
-rather than model performance or UI polish.
+rather than model performance or pixel-perfect UI.
 
 ---
 
 ## Status
 
-✅ **Day 5 complete** — reporting workflows + LLM-based document refinement  
+✅ **Day 6 complete** — UI consolidation, responsiveness, and UX polish  
 🚧 Ongoing development
 
 ### What is implemented
@@ -27,8 +27,10 @@ rather than model performance or UI polish.
 - Discussion-phase AI chat **with controlled solution refinement**
 - Typed React frontend with:
   - catalog-based workflow start
-  - workflow list (suspend / resume)
+  - workflow list with suspend / resume
+  - responsive navigation (drawer on mobile, rail on desktop)
   - dedicated solution panel (not part of chat)
+  - optimistic UI for chat and clarification answers
   - discussion chat driving solution updates
   - Markdown rendering for document-style solutions
 - Architecture intentionally preserved while adding AI and UI affordances
@@ -199,16 +201,18 @@ Key characteristics:
   - shows all persisted workflows
   - phase badges for orientation
   - click to suspend / resume
+  - responsive (drawer on mobile, rail on desktop)
 - Workflow session view:
   - clarification timeline
   - **dedicated solution panel** (sticky, scrollable)
   - Markdown-rendered solutions (including reports)
   - solution confidence display
   - discussion chat below the solution
+  - optimistic rendering for user messages and answers
   - explicit “solution updated” indicators
 - Multiple workflows can be inspected and resumed freely
 
-The UI is intentionally minimal and optimized for clarity, not polish.
+The UI is intentionally minimal and optimized for **clarity, calmness, and intent**.
 
 ---
 
