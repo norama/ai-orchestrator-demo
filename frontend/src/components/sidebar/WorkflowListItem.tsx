@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/Badge'
+import { WorkflowPhaseBadge } from '@/components/workflow/WorkflowPhaseBadge'
 import type { UIWorkflowListItem } from '@/types/fe'
 import { useEffect, useRef } from 'react'
 
@@ -19,9 +20,6 @@ export function WorkflowListItem({ item, selected, onSelect }: Props) {
       })
     }
   }, [selected])
-
-  const phaseVariant =
-    item.phase === 'DONE' ? 'success' : item.phase === 'SOLVING' ? 'warning' : 'info'
 
   return (
     <div
@@ -45,7 +43,7 @@ export function WorkflowListItem({ item, selected, onSelect }: Props) {
         {/* Row 3: Badges */}
         <div className='flex items-center gap-1.5 pt-0.5'>
           <Badge>{item.domainType}</Badge>
-          <Badge variant={phaseVariant}>{item.phase}</Badge>
+          <WorkflowPhaseBadge phase={item.phase} />
         </div>
       </div>
     </div>

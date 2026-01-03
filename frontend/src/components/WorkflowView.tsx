@@ -5,7 +5,7 @@ import { ChatInput } from '@/components/workflow/ChatInput'
 import { ChatMessageView } from '@/components/workflow/ChatMessageView'
 import { SolutionView } from '@/components/workflow/SolutionView'
 import { StepInput } from '@/components/workflow/StepInput'
-import { TicketView } from '@/components/workflow/TicketView'
+import { WorkflowHeader } from '@/components/workflow/WorkflowHeader'
 import { ChatRoleEnum, WorkflowPhaseEnum } from '@/types/enums'
 import type {
   UIChatHistory,
@@ -71,13 +71,7 @@ export function WorkflowView({
   return (
     <MainLayout>
       <TimelineLayout>
-        <h1 className='text-2xl font-bold'>
-          Workflow: {workflowData.name} ({workflowData.domainType})
-        </h1>
-        <p className='text-gray-700'>{workflowData.description}</p>
-        <p className='text-sm text-gray-500'>Max steps: {workflowData.maxSteps}</p>
-        <p className='text-sm text-blue-500'>Phase: {workflowData.phase}</p>
-        <TicketView ticket={ticket} />
+        <WorkflowHeader workflow={workflowData} ticket={ticket} />
         <div className='flex flex-col gap-3'>
           {messages.map((message) => (
             <ChatMessageView
