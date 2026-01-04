@@ -1,14 +1,22 @@
+import logging
+
 from app.application.services.deterministic.protocols.printer.domain.printer_domain import (
     PrinterExpectedAnswer,
     PrinterParsedAnswer,
     PrinterStepMetadata,
 )
 from app.application.solution_service import SolutionService
+from app.domain.streaming import StreamSink
 from app.domain.workflow import Solution, WorkflowContext
+
+logger = logging.getLogger(__name__)
 
 
 class PrinterSolutionService(SolutionService):
-    def generate_solution(self, ctx: WorkflowContext) -> Solution:
+    def generate_solution(self, ctx: WorkflowContext, stream: StreamSink | None = None) -> Solution:
+        if stream:
+            logger.warning("Streaming not supported in PrinterSolutionService; ignoring stream parameter.")
+
         steps = ctx.steps
 
         summary = "\n".join(f"- {s.prompt} → {s.answer}" for s in steps)

@@ -26,6 +26,8 @@ interface WorkflowViewProps {
   onAnswer: (stepId: string, answer: string) => Promise<void>
   onSendChatMessage: (message: string) => Promise<void>
   onSkip: () => Promise<void>
+  isStreaming: boolean
+  streamedText: string
 }
 
 export function WorkflowView({
@@ -38,6 +40,8 @@ export function WorkflowView({
   onAnswer,
   onSendChatMessage,
   onSkip,
+  isStreaming,
+  streamedText,
 }: WorkflowViewProps) {
   const [pendingMessages, setPendingMessages] = useState<UIChatMessage[]>([])
   const pendingIds = new Set(pendingMessages.map((m) => m.id))
@@ -84,11 +88,13 @@ export function WorkflowView({
       </TimelineLayout>
 
       <BottomFixedLayout>
-        {workflowData.solution && (
+        {(workflowData.solution || isStreaming) && (
           <SolutionView
             solution={workflowData.solution}
             updated={workflowData.solutionUpdated}
             domainType={workflowData.domainType}
+            isStreaming={isStreaming}
+            streamedText={streamedText}
           />
         )}
 
@@ -102,7 +108,7 @@ export function WorkflowView({
             onAnswer={handleSendStepAnswer}
             onSkip={onSkip}
             workflowConfidence={confidence}
-            disabled={loading}
+            disabled={isStreaming || loading}
           />
         )}
 
@@ -110,7 +116,7 @@ export function WorkflowView({
           <ChatInput
             placeholder='Enter your message...'
             onSend={handleSendChatMessage}
-            disabled={loading}
+            disabled={isStreaming || loading}
           />
         )}
       </BottomFixedLayout>

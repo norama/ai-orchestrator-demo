@@ -1,17 +1,10 @@
-from typing import Any
-
-from typing_extensions import Protocol
+from typing import Protocol, runtime_checkable
 
 
+@runtime_checkable
 class LLMClient(Protocol):
-    def complete(self, prompt: str) -> str:
+    def complete_text(self, prompt: str) -> str:
         """
         Complete the given prompt and return the generated text.
-        """
-        ...
-
-    def complete_json(self, prompt: str) -> dict[str, Any]:
-        """
-        Complete the given prompt and return the generated JSON.
         """
         ...

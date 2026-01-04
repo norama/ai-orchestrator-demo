@@ -1,12 +1,17 @@
-from app.application.services.probabilistic.llm.client.llm_client import LLMClient
-from app.application.services.probabilistic.llm.domain.llm import LLMSolution
-from app.application.services.probabilistic.llm.utils.llm_call import call_llm_json
+from app.application.services.probabilistic.llm.client.streaming_llm_client import StreamingLLMClient
+from app.application.services.probabilistic.llm.domain.llm import LLMSolution, LLMSolutionMeta
+from app.application.services.probabilistic.llm.utils.llm_call import (
+    SENTINEL,
+    call_llm_stream_text_with_json,
+    call_llm_text_with_json,
+)
 from app.application.solution_service import SolutionService
+from app.domain.streaming import StreamSink
 from app.domain.workflow import Solution, WorkflowContext
 
 
 class LLMSupportSolutionService(SolutionService):
-    def __init__(self, llm_client: LLMClient):
+    def __init__(self, llm_client: StreamingLLMClient):
         self.llm = llm_client
 
     @staticmethod
@@ -38,23 +43,28 @@ class LLMSupportSolutionService(SolutionService):
             Provide the best possible solution based on available information.
             If information is incomplete, state assumptions explicitly.
 
-            Guidance for solution_confidence:
-            - 1.0 = complete certainty
-            - 0.5 = partial confidence
-            - <0.3 = weak confidence
+            Return ONLY in this format:
 
-            Return ONLY valid JSON matching this schema:
+            raw solution text in Markdown format
+            END of report marker: {SENTINEL}
+            followed by JSON matching this schema:
 
             {{
-                "content": string,
                 "solution_confidence": number between 0.0 and 1.0,
                 "rationale": string or null
             }}
 
-            Rules:
+            Rules for output format:
+            - Solution content Markdown should be followed immediately by the END marker {SENTINEL}.
+            - END marker should be followed by a JSON object according to the schema.
             - Write the solution in Markdown. Include explanations, step-by-step instructions, code snippets as needed.
             - Write the rationale in one plain-text sentence without Markdown.
             - Do NOT include text outside JSON.
+
+            Guidance for solution_confidence:
+            - 1.0 = complete certainty
+            - 0.5 = partial confidence
+            - <0.3 = weak confidence
 
             Context:
             TICKET TITLE:
@@ -73,17 +83,22 @@ class LLMSupportSolutionService(SolutionService):
             {conversation or "(none)"}
         """.strip()
 
-    def generate_solution(self, ctx: WorkflowContext) -> Solution:
+    def generate_solution(self, ctx: WorkflowContext, stream: StreamSink | None = None) -> Solution:
         prompt = self._build_prompt(ctx)
 
         try:
-            data = call_llm_json(self.llm, prompt)
-            parsed = LLMSolution.model_validate(data)
-            parsed = LLMSolution.validate_semantics(parsed)
+            if stream:
+                markdown, data = call_llm_stream_text_with_json(self.llm, stream, prompt)
+            else:
+                markdown, data = call_llm_text_with_json(self.llm, prompt)
+
+            meta = LLMSolutionMeta.model_validate(data)
+            solution = LLMSolution(content=markdown, meta=meta)
+            solution.validate_semantics()
             return Solution(
-                content=parsed.content,
-                confidence=parsed.solution_confidence,
-                rationale=parsed.rationale,
+                content=solution.content,
+                confidence=solution.meta.solution_confidence,
+                rationale=solution.meta.rationale,
             )
 
         except Exception as e:

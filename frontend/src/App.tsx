@@ -114,9 +114,11 @@ function App() {
             chatHistory={controller.chatHistory}
             loading={loading}
             confidence={controller.workflowConfidence}
-            onAnswer={withListRefresh(controller.answer)}
-            onSkip={withListRefresh(controller.skip)}
+            onAnswer={withListRefresh(controller.answerStream)}
+            onSkip={withListRefresh(controller.skipStream)}
             onSendChatMessage={withListRefresh(controller.chat)}
+            isStreaming={controller.isStreaming}
+            streamedText={controller.streamedText}
           />
 
           {error && <div className='mt-4 text-center text-sm text-red-600'>{error}</div>}

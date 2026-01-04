@@ -1,37 +1,46 @@
-import { Badge } from '@/components/ui/Badge'
 import { MarkdownView } from '@/components/ui/MarkdownView'
 import { Confidence } from '@/components/workflow/Confidence'
+import { Rationale } from '@/components/workflow/Rationale'
+import { SolutionStatus } from '@/components/workflow/SolutionStatus'
 import { DomainTypeEnum } from '@/types/enums'
 import type { UISolution } from '@/types/fe'
+import { useEffect, useRef } from 'react'
 
 interface Props {
-  solution: UISolution
+  solution: UISolution | null
   updated: boolean | null
   domainType: DomainTypeEnum
+  isStreaming: boolean
+  streamedText: string
 }
 
-export function SolutionView({ solution, updated, domainType }: Props) {
+export function SolutionView({ solution, updated, domainType, isStreaming, streamedText }: Props) {
+  const content = streamedText ? streamedText : solution ? solution.content : null
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!isStreaming) return
+    const el = containerRef.current
+    if (!el) return
+
+    el.scrollTop = el.scrollHeight
+  }, [streamedText, isStreaming])
+
   return (
-    <div className='relative p-4 max-h-[30vh] overflow-y-auto bg-green-50 border border-green-200 rounded-lg whitespace-pre-wrap'>
-      {updated && (
-        <div className='sticky top-0 z-10 flex justify-end px-2 py-2'>
-          {updated && <Badge variant='warning'>Updated</Badge>}
-        </div>
-      )}
+    <div
+      ref={containerRef}
+      className='relative p-4 max-h-[30vh] overflow-y-auto bg-green-50 border border-green-200 rounded-lg'>
+      {updated && <SolutionStatus status='Updated' variant='warning' />}
+      {isStreaming && <SolutionStatus status='Generating' variant='info' />}
 
       {domainType !== DomainTypeEnum.LLM_REPORT && (
         <h3 className='text-lg font-medium mb-2'>Proposed Solution</h3>
       )}
 
-      <MarkdownView content={solution.content} />
+      {content && <MarkdownView content={content} />}
 
-      <Confidence label='Solution confidence' confidence={solution.confidence} />
-      {solution.rationale && (
-        <div className='mt-2 p-2 bg-green-100 border border-green-200 rounded'>
-          <h4 className='font-medium mb-1'>Rationale:</h4>
-          <p className='whitespace-pre-wrap text-sm'>{solution.rationale}</p>
-        </div>
-      )}
+      {solution && <Confidence label='Solution confidence' confidence={solution.confidence} />}
+      {solution && <Rationale label='Rationale' rationale={solution.rationale} />}
     </div>
   )
 }

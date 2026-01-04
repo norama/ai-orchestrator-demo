@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { createWorkflowFromCatalog } from '@/api/catalog'
 import { answerStep, getWorkflow, sendChatMessage, skipToSolution } from '@/api/workflows'
+import { postSSE } from '@/data/sse'
 import {
   workflowToChatHistory,
   workflowToOpenStep,
@@ -29,10 +30,15 @@ export interface WorkflowController {
   loading: boolean
   error: string | null
 
+  isStreaming: boolean
+  streamedText: string
+
   start(req: UICreateFromCatalog): Promise<void>
   answer(stepId: string, answer: string): Promise<void>
+  answerStream(stepId: string, answer: string): Promise<void>
   chat(content: string): Promise<void>
   skip(): Promise<void>
+  skipStream(): Promise<void>
   refresh(): Promise<void>
   load(workflowId: string): Promise<void>
   reset(): void
@@ -46,6 +52,9 @@ export function useWorkflowController(): WorkflowController {
   const [workflowConfidence, setWorkflowConfidence] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const [isStreaming, setIsStreaming] = useState(false)
+  const [streamedText, setStreamedText] = useState('')
 
   /* ----- helpers ----- */
 
@@ -97,6 +106,45 @@ export function useWorkflowController(): WorkflowController {
     }
   }
 
+  async function stream(path: string, body: unknown): Promise<void> {
+    setIsStreaming(true)
+    setStreamedText('')
+    setError(null)
+
+    try {
+      await postSSE(path, body, {
+        onChunk: (text) => {
+          setStreamedText((prev) => prev + text)
+        },
+        onDone: async () => {
+          setIsStreaming(false)
+
+          // authoritative refresh
+          await refresh()
+
+          // reset streamed text back only after refresh to avoid flicker
+          setStreamedText('')
+        },
+        onError: (err) => {
+          setIsStreaming(false)
+          setError(err)
+        },
+      })
+    } catch (e) {
+      setIsStreaming(false)
+      setError((e as Error).message)
+    }
+  }
+
+  async function answerStream(stepId: string, answer: string): Promise<void> {
+    if (!workflow) return
+
+    await stream(`${workflow.id}/answer/stream`, {
+      step_id: stepId,
+      answer,
+    })
+  }
+
   async function chat(content: string): Promise<void> {
     if (!workflow) return
 
@@ -132,6 +180,12 @@ export function useWorkflowController(): WorkflowController {
     } finally {
       setLoading(false)
     }
+  }
+
+  async function skipStream(): Promise<void> {
+    if (!workflow) return
+
+    await stream(`${workflow.id}/skip/stream`, {})
   }
 
   async function load(workflowId: string): Promise<void> {
@@ -200,10 +254,14 @@ export function useWorkflowController(): WorkflowController {
     workflowConfidence,
     loading,
     error,
+    isStreaming,
+    streamedText,
     start,
     answer,
+    answerStream,
     chat,
     skip,
+    skipStream,
     refresh,
     load,
     reset,

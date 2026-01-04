@@ -44,6 +44,7 @@ export function StartWorkflowForm({ loading, error, catalogItems, onStart }: Pro
               placeholder='Workflow name (optional)'
               value={name}
               onChange={(e) => setName(e.target.value)}
+              disabled={loading}
             />
 
             <Input
@@ -53,6 +54,7 @@ export function StartWorkflowForm({ loading, error, catalogItems, onStart }: Pro
               value={maxSteps}
               onChange={(e) => setMaxSteps(Number(e.target.value))}
               placeholder='Max steps'
+              disabled={loading}
             />
           </div>
 
@@ -61,6 +63,7 @@ export function StartWorkflowForm({ loading, error, catalogItems, onStart }: Pro
             placeholder='Optional description'
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            disabled={loading}
           />
         </div>
 

@@ -3,6 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
+from app.api.streaming_utils import stream_command
 from app.api.workflows_dependencies import (
     get_workflow_repository,
     get_workflow_service,
@@ -39,6 +40,8 @@ def get_workflow(
         workflow_id=workflow.id,
         status="ok",
         state=workflow,
+        waiting_reason=service.get_waiting_reason(workflow),
+        workflow_confidence=service.get_workflow_confidence(workflow),
     )
 
 
@@ -76,6 +79,21 @@ async def answer_step(
     )
 
 
+@workflows_router.post("/{workflow_id}/answer/stream", response_model=None)
+async def answer_step_stream(
+    workflow_id: UUID,
+    cmd: AnswerStepCommand,
+    service: WorkflowService = Depends(get_workflow_service),
+):
+    return stream_command(
+        lambda stream: service.answer_step(
+            workflow_id,
+            cmd,
+            stream=stream,
+        )
+    )
+
+
 @workflows_router.post("/{workflow_id}/skip", response_model=WorkflowDetailResponse)
 async def skip_to_solution(
     workflow_id: UUID,
@@ -90,6 +108,19 @@ async def skip_to_solution(
         state=workflow,
         waiting_reason=service.get_waiting_reason(workflow),
         workflow_confidence=service.get_workflow_confidence(workflow),
+    )
+
+
+@workflows_router.post("/{workflow_id}/skip/stream")
+def skip_to_solution_stream(
+    workflow_id: UUID,
+    service: WorkflowService = Depends(get_workflow_service),
+):
+    return stream_command(
+        lambda stream: service.skip_to_solution(
+            workflow_id,
+            stream=stream,
+        )
     )
 
 

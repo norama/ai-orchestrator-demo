@@ -25,18 +25,23 @@ class LLMNextStep(BaseModel):
         return obj
 
 
-class LLMSolution(BaseModel):
-    content: str
+class LLMSolutionMeta(BaseModel):
     solution_confidence: float  # 0.0–1.0
     rationale: str | None = None
 
-    @staticmethod
-    def validate_semantics(obj: "LLMSolution") -> "LLMSolution":
-        if not obj.content.strip():
-            raise ValueError("content is required")
-        if not (0.0 <= obj.solution_confidence <= 1.0):
+    def validate_semantics(self) -> None:
+        if not (0.0 <= self.solution_confidence <= 1.0):
             raise ValueError("solution_confidence out of range")
-        return obj
+
+
+class LLMSolution(BaseModel):
+    content: str
+    meta: LLMSolutionMeta
+
+    def validate_semantics(self) -> None:
+        if not self.content.strip():
+            raise ValueError("content is required")
+        self.meta.validate_semantics()
 
 
 class LLMChatReply(BaseModel):

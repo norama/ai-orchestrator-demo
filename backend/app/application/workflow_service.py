@@ -7,6 +7,7 @@ from app.application.commands import (
 from app.application.exceptions import InvalidWorkflowOperation, WorkflowNotFound
 from app.application.registry import WorkflowDomain
 from app.domain.chat import ChatMessage, ChatRole
+from app.domain.streaming import StreamSink
 from app.domain.workflow import (
     ChatMutationResult,
     WaitingReason,
@@ -55,7 +56,7 @@ class WorkflowService:
 
     # ------- Engine loop --------
 
-    def _process_workflow(self, workflow: WorkflowState) -> WorkflowState:
+    def _process_workflow(self, workflow: WorkflowState, stream: StreamSink | None = None) -> WorkflowState:
         # Clear phase-local outcomes
         workflow.last_decision = None
         workflow.discussion_result = None
@@ -85,7 +86,7 @@ class WorkflowService:
         # process SOLVING phase
         if workflow.phase == WorkflowPhase.SOLVING:
             ctx = self._build_context(workflow)
-            workflow.solution = self.domain.solution_service.generate_solution(ctx)
+            workflow.solution = self.domain.solution_service.generate_solution(ctx, stream)
             workflow.phase = WorkflowPhase.DISCUSSION if self.domain.chat_service else WorkflowPhase.DONE
             return workflow
 
@@ -107,9 +108,11 @@ class WorkflowService:
 
         return workflow
 
-    def _process_until_waiting_or_done(self, workflow: WorkflowState) -> WorkflowState:
+    def _process_until_waiting_or_done(
+        self, workflow: WorkflowState, stream: StreamSink | None = None
+    ) -> WorkflowState:
         while not self._is_waiting_for_user(workflow) and workflow.phase != WorkflowPhase.DONE:
-            workflow = self._process_workflow(workflow)
+            workflow = self._process_workflow(workflow, stream)
         return workflow
 
     def _has_open_step(self, workflow: WorkflowState) -> bool:
@@ -142,11 +145,7 @@ class WorkflowService:
 
     # ------- Commands with processing --------
 
-    def answer_step(
-        self,
-        workflow_id: UUID,
-        cmd: AnswerStepCommand,
-    ) -> WorkflowState:
+    def answer_step(self, workflow_id: UUID, cmd: AnswerStepCommand, stream: StreamSink | None = None) -> WorkflowState:
         workflow = self.get_workflow(workflow_id)
 
         if workflow.phase != WorkflowPhase.COLLECTING:
@@ -169,10 +168,10 @@ class WorkflowService:
         if self.domain.answer_parser:
             self.domain.answer_parser.parse_answer(step)
 
-        workflow = self._process_until_waiting_or_done(workflow)
+        workflow = self._process_until_waiting_or_done(workflow, stream)
         return self.repo.save(workflow)
 
-    def skip_to_solution(self, workflow_id: UUID) -> WorkflowState:
+    def skip_to_solution(self, workflow_id: UUID, stream: StreamSink | None = None) -> WorkflowState:
         workflow = self.get_workflow(workflow_id)
 
         if workflow.phase != WorkflowPhase.COLLECTING:
@@ -180,7 +179,7 @@ class WorkflowService:
 
         workflow.skipped = True
 
-        workflow = self._process_until_waiting_or_done(workflow)
+        workflow = self._process_until_waiting_or_done(workflow, stream)
         return self.repo.save(workflow)
 
     # ------- Creation --------

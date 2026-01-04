@@ -8,7 +8,7 @@ export function Confidence({ label, confidence }: Props) {
     return null
   }
   return (
-    <p className='text-sm text-gray-600'>
+    <p className='text-sm text-gray-600 my-2'>
       {label}: {(confidence * 100).toFixed(2)}%
     </p>
   )
