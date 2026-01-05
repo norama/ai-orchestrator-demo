@@ -47,18 +47,23 @@ export interface Ticket {
 }
 
 export interface WorkflowState {
-  id: string
-  ticket: Ticket
-  domain_type: DomainTypeEnum
-  name: string
-  description: string
-  max_steps: number
   phase: WorkflowPhaseEnum
   steps: ClarificationStep[]
   solution: Solution | null
   skipped: boolean
   chat_history: ChatHistory
   discussion_result: ChatMutationResult | null
+}
+
+export interface Workflow {
+  id: string
+  parent_id: string | null
+  ticket: Ticket
+  domain_type: DomainTypeEnum
+  name: string
+  description: string
+  max_steps: number
+  state: WorkflowState
 }
 
 /* ---------- API envelope ---------- */
@@ -71,13 +76,13 @@ export interface CatalogResponse {
 export interface WorkflowDetailResponse {
   workflow_id: string
   status: string
-  state: WorkflowState
+  workflow: Workflow
   waiting_reason?: WaitingReasonEnum | null
   workflow_confidence?: number | null
 }
 
 export interface WorkflowListResponse {
-  workflows: WorkflowState[]
+  workflows: Workflow[]
   status: string
 }
 

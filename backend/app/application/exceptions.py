@@ -8,3 +8,7 @@ class InvalidWorkflowOperation(Exception):
 
 class CatalogItemNotFound(Exception):
     pass
+
+
+class SnapshotNotFound(Exception):
+    pass

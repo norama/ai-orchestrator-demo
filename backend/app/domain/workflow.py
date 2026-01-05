@@ -46,7 +46,7 @@ class ChatMutationResult(BaseModel):
     solution_version: int | None = None
 
 
-class WorkflowStateCreate(BaseModel):
+class WorkflowCreate(BaseModel):
     ticket: Ticket
     domain_type: DomainType = DomainType.PARROT
     name: str | None = None
@@ -54,7 +54,7 @@ class WorkflowStateCreate(BaseModel):
     max_steps: int = 8
 
 
-class WorkflowState(WorkflowStateCreate, DbEntry):
+class WorkflowState(BaseModel):
     phase: WorkflowPhase = WorkflowPhase.COLLECTING
     steps: list[ClarificationStep] = Field(default_factory=list)
     last_decision: NextStepDecision | None = None
@@ -62,6 +62,11 @@ class WorkflowState(WorkflowStateCreate, DbEntry):
     chat_history: ChatHistory = Field(default_factory=ChatHistory)
     discussion_result: ChatMutationResult | None = None
     skipped: bool = False
+
+
+class Workflow(WorkflowCreate, DbEntry):
+    parent_id: UUID | None = None
+    state: WorkflowState = Field(default_factory=WorkflowState)
 
 
 class WorkflowContext(BaseModel):

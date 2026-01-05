@@ -6,9 +6,10 @@ import { postSSE } from '@/data/sse'
 import {
   workflowToChatHistory,
   workflowToOpenStep,
-  workflowToSolution,
+  workflowToTicket,
+  workflowToWorkflowData,
 } from '@/data/workflowProjector'
-import type { WorkflowDetailResponse, WorkflowState } from '@/types/be'
+import type { Workflow, WorkflowDetailResponse } from '@/types/be'
 import { ChatRoleEnum, type WaitingReasonEnum } from '@/types/enums'
 import type {
   UIChatHistory,
@@ -47,7 +48,7 @@ export interface WorkflowController {
 /* ---------- implementation ---------- */
 
 export function useWorkflowController(): WorkflowController {
-  const [workflow, setWorkflow] = useState<WorkflowState | null>(null)
+  const [workflow, setWorkflow] = useState<Workflow | null>(null)
   const [waitingReason, setWaitingReason] = useState<WaitingReasonEnum | null>(null)
   const [workflowConfidence, setWorkflowConfidence] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
@@ -59,7 +60,7 @@ export function useWorkflowController(): WorkflowController {
   /* ----- helpers ----- */
 
   function applyResponse(res: WorkflowDetailResponse) {
-    setWorkflow(res.state)
+    setWorkflow(res.workflow)
     setWaitingReason(res.waiting_reason ?? null)
     setWorkflowConfidence(res.workflow_confidence ?? null)
   }
@@ -220,28 +221,8 @@ export function useWorkflowController(): WorkflowController {
 
   const currentStep = workflow ? workflowToOpenStep(workflow) : null
   const chatHistory = workflow ? workflowToChatHistory(workflow) : null
-  const ticket = workflow
-    ? {
-        id: workflow.ticket.id,
-        title: workflow.ticket.title,
-        description: workflow.ticket.description,
-      }
-    : null
-  const solution = workflow ? workflowToSolution(workflow) : null
-  const workflowData = workflow
-    ? {
-        id: workflow.id,
-        domainType: workflow.domain_type,
-        name: workflow.name,
-        description: workflow.description,
-        maxSteps: workflow.max_steps,
-        phase: workflow.phase,
-        solution: solution,
-        solutionUpdated: workflow.discussion_result
-          ? workflow.discussion_result.solution_updated
-          : null,
-      }
-    : null
+  const ticket = workflow ? workflowToTicket(workflow) : null
+  const workflowData = workflow ? workflowToWorkflowData(workflow) : null
 
   /* ----- exposed controller ----- */
 

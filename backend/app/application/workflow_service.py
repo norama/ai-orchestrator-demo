@@ -11,10 +11,10 @@ from app.domain.streaming import StreamSink
 from app.domain.workflow import (
     ChatMutationResult,
     WaitingReason,
+    Workflow,
     WorkflowContext,
+    WorkflowCreate,
     WorkflowPhase,
-    WorkflowState,
-    WorkflowStateCreate,
 )
 from app.infrastructure.persistence.workflow_repository import WorkflowRepository
 
@@ -40,119 +40,121 @@ class WorkflowService:
         self.repo = repo
         self.domain = domain
 
-    def _build_context(self, wf: WorkflowState) -> WorkflowContext:
+    def _build_context(self, wf: Workflow) -> WorkflowContext:
         return WorkflowContext(
             workflow_id=wf.id,
             domain_type=wf.domain_type,
             ticket=wf.ticket,
-            steps=wf.steps,
-            last_decision=wf.last_decision,
-            solution=wf.solution,
-            chat_history=wf.chat_history,
-            skipped=wf.skipped,
+            steps=wf.state.steps,
+            last_decision=wf.state.last_decision,
+            solution=wf.state.solution,
+            chat_history=wf.state.chat_history,
+            skipped=wf.state.skipped,
             max_steps=wf.max_steps,
-            phase=wf.phase,
+            phase=wf.state.phase,
         )
 
     # ------- Engine loop --------
 
-    def _process_workflow(self, workflow: WorkflowState, stream: StreamSink | None = None) -> WorkflowState:
+    def _process_workflow(self, workflow: Workflow, stream: StreamSink | None = None) -> Workflow:
         # Clear phase-local outcomes
-        workflow.last_decision = None
-        workflow.discussion_result = None
+        state = workflow.state
+        state.last_decision = None
+        state.discussion_result = None
 
         # hard stop
-        if workflow.phase == WorkflowPhase.DONE:
+        if state.phase == WorkflowPhase.DONE:
             return workflow
 
         # process COLLECTING phase
-        if workflow.phase == WorkflowPhase.COLLECTING:
-            if workflow.skipped or len(workflow.steps) >= workflow.max_steps:
+        if state.phase == WorkflowPhase.COLLECTING:
+            if state.skipped or len(state.steps) >= workflow.max_steps:
                 # move to SOLVING phase if max steps reached
-                workflow.phase = WorkflowPhase.SOLVING
+                state.phase = WorkflowPhase.SOLVING
                 return workflow
 
             ctx = self._build_context(workflow)
             decision = self.domain.step_generator.propose_next(ctx)
 
-            workflow.last_decision = decision
+            state.last_decision = decision
             if decision.next_step:
-                workflow.steps.append(decision.next_step)
+                state.steps.append(decision.next_step)
                 return workflow
 
-            workflow.phase = WorkflowPhase.SOLVING
+            state.phase = WorkflowPhase.SOLVING
             return workflow
 
         # process SOLVING phase
-        if workflow.phase == WorkflowPhase.SOLVING:
+        if state.phase == WorkflowPhase.SOLVING:
             ctx = self._build_context(workflow)
-            workflow.solution = self.domain.solution_service.generate_solution(ctx, stream)
-            workflow.phase = WorkflowPhase.DISCUSSION if self.domain.chat_service else WorkflowPhase.DONE
+            state.solution = self.domain.solution_service.generate_solution(ctx, stream)
+            state.phase = WorkflowPhase.DISCUSSION if self.domain.chat_service else WorkflowPhase.DONE
             return workflow
 
         # process DISCUSSION phase
-        if workflow.phase == WorkflowPhase.DISCUSSION:
+        if state.phase == WorkflowPhase.DISCUSSION:
             discussion_result = ChatMutationResult(solution_updated=False)
-            if self.domain.chat_service and workflow.chat_history.messages:
-                last_msg = workflow.chat_history.messages[-1]
+            if self.domain.chat_service and state.chat_history.messages:
+                last_msg = state.chat_history.messages[-1]
                 if last_msg.role == ChatRole.USER:
                     ctx = self._build_context(workflow)
                     reply = self.domain.chat_service.reply(ctx, last_msg)
-                    workflow.chat_history.add_message(reply.message)
+                    state.chat_history.add_message(reply.message)
                     if reply.requires_solution_update:
                         ctx = self._build_context(workflow)
-                        workflow.solution = self.domain.solution_service.generate_solution(ctx)
+                        state.solution = self.domain.solution_service.generate_solution(ctx)
                         discussion_result = ChatMutationResult(solution_updated=True)
-            workflow.discussion_result = discussion_result
+            state.discussion_result = discussion_result
             return workflow
 
         return workflow
 
-    def _process_until_waiting_or_done(
-        self, workflow: WorkflowState, stream: StreamSink | None = None
-    ) -> WorkflowState:
-        while not self._is_waiting_for_user(workflow) and workflow.phase != WorkflowPhase.DONE:
+    def _process_until_waiting_or_done(self, workflow: Workflow, stream: StreamSink | None = None) -> Workflow:
+        while not self._is_waiting_for_user(workflow) and workflow.state.phase != WorkflowPhase.DONE:
             workflow = self._process_workflow(workflow, stream)
         return workflow
 
-    def _has_open_step(self, workflow: WorkflowState) -> bool:
-        return any(step.answer is None for step in workflow.steps)
+    def _has_open_step(self, workflow: Workflow) -> bool:
+        return any(step.answer is None for step in workflow.state.steps)
 
-    def _is_waiting_for_chat_input(self, workflow: WorkflowState) -> bool:
+    def _is_waiting_for_chat_input(self, workflow: Workflow) -> bool:
         if not self.domain.chat_service:
             return False
-        if not workflow.chat_history.messages:
+        if not workflow.state.chat_history.messages:
             return True
-        last_msg = workflow.chat_history.messages[-1]
+        last_msg = workflow.state.chat_history.messages[-1]
         return last_msg.role != ChatRole.USER
 
-    def get_waiting_reason(self, workflow: WorkflowState) -> WaitingReason | None:
-        if workflow.phase == WorkflowPhase.COLLECTING and workflow.skipped:
+    def get_waiting_reason(self, workflow: Workflow) -> WaitingReason | None:
+        state = workflow.state
+        if state.phase == WorkflowPhase.COLLECTING and state.skipped:
             return None
-        if workflow.phase == WorkflowPhase.COLLECTING and self._has_open_step(workflow):
+        if state.phase == WorkflowPhase.COLLECTING and self._has_open_step(workflow):
             return WaitingReason.ANSWER_NEEDED
-        if workflow.phase == WorkflowPhase.DISCUSSION and self._is_waiting_for_chat_input(workflow):
+        if state.phase == WorkflowPhase.DISCUSSION and self._is_waiting_for_chat_input(workflow):
             return WaitingReason.CHAT
         return None
 
-    def get_workflow_confidence(self, workflow: WorkflowState) -> float | None:
-        if workflow.last_decision:
-            return workflow.last_decision.workflow_confidence
+    def get_workflow_confidence(self, workflow: Workflow) -> float | None:
+        state = workflow.state
+        if state.last_decision:
+            return state.last_decision.workflow_confidence
         return None
 
-    def _is_waiting_for_user(self, workflow: WorkflowState) -> bool:
+    def _is_waiting_for_user(self, workflow: Workflow) -> bool:
         return self.get_waiting_reason(workflow) is not None
 
     # ------- Commands with processing --------
 
-    def answer_step(self, workflow_id: UUID, cmd: AnswerStepCommand, stream: StreamSink | None = None) -> WorkflowState:
+    def answer_step(self, workflow_id: UUID, cmd: AnswerStepCommand, stream: StreamSink | None = None) -> Workflow:
         workflow = self.get_workflow(workflow_id)
+        state = workflow.state
 
-        if workflow.phase != WorkflowPhase.COLLECTING:
+        if state.phase != WorkflowPhase.COLLECTING:
             raise InvalidWorkflowOperation("Answers can only be added in COLLECTING phase")
 
         step = next(
-            (s for s in workflow.steps if s.id == cmd.step_id),
+            (s for s in state.steps if s.id == cmd.step_id),
             None,
         )
 
@@ -171,20 +173,21 @@ class WorkflowService:
         workflow = self._process_until_waiting_or_done(workflow, stream)
         return self.repo.save(workflow)
 
-    def skip_to_solution(self, workflow_id: UUID, stream: StreamSink | None = None) -> WorkflowState:
+    def skip_to_solution(self, workflow_id: UUID, stream: StreamSink | None = None) -> Workflow:
         workflow = self.get_workflow(workflow_id)
+        state = workflow.state
 
-        if workflow.phase != WorkflowPhase.COLLECTING:
+        if state.phase != WorkflowPhase.COLLECTING:
             raise InvalidWorkflowOperation("Can only skip to solution in COLLECTING phase")
 
-        workflow.skipped = True
+        state.skipped = True
 
         workflow = self._process_until_waiting_or_done(workflow, stream)
         return self.repo.save(workflow)
 
     # ------- Creation --------
 
-    def create(self, workflow_create: WorkflowStateCreate) -> WorkflowState:
+    def create(self, workflow_create: WorkflowCreate) -> Workflow:
         workflow = self.repo.create(workflow_create)
 
         workflow = self._process_until_waiting_or_done(workflow)
@@ -192,20 +195,20 @@ class WorkflowService:
 
     # -------- Queries --------
 
-    def get_workflow(self, workflow_id: UUID) -> WorkflowState:
+    def get_workflow(self, workflow_id: UUID) -> Workflow:
         workflow = self.repo.get(workflow_id)
         if not workflow:
             raise WorkflowNotFound(f"Workflow {workflow_id} not found")
         return workflow
 
-    def list_workflows(self) -> list[WorkflowState]:
+    def list_workflows(self) -> list[Workflow]:
         return self.repo.list()
 
     def add_chat_message(
         self,
         workflow_id: UUID,
         cmd: AddChatMessageCommand,
-    ) -> WorkflowState:
+    ) -> Workflow:
         workflow = self.get_workflow(workflow_id)
 
         if not cmd.content.strip():
@@ -216,7 +219,7 @@ class WorkflowService:
             content=cmd.content,
         )
 
-        workflow.chat_history.add_message(user_message)
+        workflow.state.chat_history.add_message(user_message)
 
         workflow = self._process_until_waiting_or_done(workflow)
         return self.repo.save(workflow)

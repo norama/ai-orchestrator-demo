@@ -108,6 +108,7 @@ export function WorkflowView({
             onAnswer={handleSendStepAnswer}
             onSkip={onSkip}
             workflowConfidence={confidence}
+            loading={isStreaming || loading}
             disabled={isStreaming || loading}
           />
         )}
@@ -116,6 +117,7 @@ export function WorkflowView({
           <ChatInput
             placeholder='Enter your message...'
             onSend={handleSendChatMessage}
+            loading={isStreaming || loading}
             disabled={isStreaming || loading}
           />
         )}

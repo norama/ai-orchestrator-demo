@@ -1,6 +1,7 @@
 from app.application.answer_parser import AnswerParser
 from app.application.solution_service import SolutionService
 from app.application.step_generator import StepGenerator
+from app.domain.streaming import StreamSink
 from app.domain.workflow import ClarificationStep, NextStepDecision, Solution, WorkflowContext
 
 
@@ -25,7 +26,7 @@ class FakeStepGenerator(StepGenerator):
 
 
 class FakeSolutionService(SolutionService):
-    def generate_solution(self, ctx: WorkflowContext) -> Solution:
+    def generate_solution(self, ctx: WorkflowContext, stream: StreamSink | None = None) -> Solution:
         return Solution(
             content="Solved",
             confidence=1.0,

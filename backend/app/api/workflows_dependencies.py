@@ -5,7 +5,7 @@ from fastapi import Depends
 from app.application.exceptions import WorkflowNotFound
 from app.application.registry import domain_registry
 from app.application.workflow_service import WorkflowService
-from app.domain.workflow import WorkflowStateCreate
+from app.domain.workflow import WorkflowCreate
 from app.infrastructure.persistence.sqlite_workflow_repository import (
     SqliteWorkflowRepository,
 )
@@ -36,7 +36,7 @@ def get_workflow_service(
 
 
 def get_workflow_service_for_creation(
-    req: WorkflowStateCreate,
+    req: WorkflowCreate,
     repo: WorkflowRepository = Depends(get_workflow_repository),
 ) -> WorkflowService:
     domain = domain_registry.get(req.domain_type)

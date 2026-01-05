@@ -5,7 +5,7 @@ from app.application.exceptions import CatalogItemNotFound
 from app.domain.catalog import DEMO_CATALOG, WorkflowStateCreateFromCatalog
 from app.domain.catalog_response import CatalogItemResponse, CatalogResponse
 from app.domain.response import WorkflowDetailResponse
-from app.domain.workflow import WorkflowStateCreate
+from app.domain.workflow import WorkflowCreate
 from app.infrastructure.persistence.workflow_repository import WorkflowRepository
 
 catalog_router = APIRouter(prefix="/catalog", tags=["workflows", "catalog"])
@@ -32,7 +32,7 @@ def create_workflow_from_catalog(
     if not catalog_item:
         raise CatalogItemNotFound(f"Catalog item {req.item_id} not found")
 
-    create_req = WorkflowStateCreate(
+    create_req = WorkflowCreate(
         ticket=catalog_item.to_ticket(),
         domain_type=catalog_item.domain_type,
         name=req.name,
@@ -46,7 +46,7 @@ def create_workflow_from_catalog(
     return WorkflowDetailResponse(
         workflow_id=workflow.id,
         status="created",
-        state=workflow,
+        workflow=workflow,
         waiting_reason=service.get_waiting_reason(workflow),
         workflow_confidence=service.get_workflow_confidence(workflow),
     )

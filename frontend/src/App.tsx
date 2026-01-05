@@ -41,7 +41,6 @@ function App() {
   }
 
   const selectWorkflow = (id: string) => {
-    controller.reset()
     controller.load(id)
   }
 

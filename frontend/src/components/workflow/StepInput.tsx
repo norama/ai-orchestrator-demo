@@ -11,6 +11,7 @@ interface StepInputProps {
   onSkip(): void
   workflowConfidence: number | null
   disabled?: boolean
+  loading?: boolean
 }
 
 export function StepInput({
@@ -19,6 +20,7 @@ export function StepInput({
   onSkip,
   workflowConfidence,
   disabled = false,
+  loading = false,
 }: StepInputProps) {
   const [value, setValue] = useState('')
 
@@ -62,7 +64,7 @@ export function StepInput({
       </div>
 
       {/* Status layer (never dimmed) */}
-      {disabled && (
+      {loading && (
         <div className='absolute bottom-3 right-4'>
           <StatusMarker variant='pending'>Processing…</StatusMarker>
         </div>

@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from app.application.exceptions import (
     CatalogItemNotFound,
     InvalidWorkflowOperation,
+    SnapshotNotFound,
     WorkflowNotFound,
 )
 
@@ -37,6 +38,18 @@ def catalog_item_not_found_handler(
     exc: Exception,
 ) -> Response:
     assert isinstance(exc, CatalogItemNotFound)
+
+    return JSONResponse(
+        status_code=404,
+        content={"detail": str(exc)},
+    )
+
+
+def snapshot_not_found_handler(
+    request: Request,
+    exc: Exception,
+) -> Response:
+    assert isinstance(exc, SnapshotNotFound)
 
     return JSONResponse(
         status_code=404,

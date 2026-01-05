@@ -4,12 +4,13 @@ import { StatusMarker } from '@/components/ui/StatusMarker'
 import { useState } from 'react'
 
 interface Props {
-  disabled?: boolean
   onSend: (text: string) => void
   placeholder?: string
+  disabled?: boolean
+  loading?: boolean
 }
 
-export function ChatInput({ disabled, onSend, placeholder }: Props) {
+export function ChatInput({ onSend, placeholder, disabled, loading }: Props) {
   const [text, setText] = useState('')
 
   function submit() {
@@ -37,7 +38,7 @@ export function ChatInput({ disabled, onSend, placeholder }: Props) {
         </div>
       </div>
 
-      {disabled && (
+      {loading && (
         <StatusMarker className='absolute -bottom-1 right-4' variant='pending'>
           Waiting for response…
         </StatusMarker>

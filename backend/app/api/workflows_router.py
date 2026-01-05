@@ -12,7 +12,7 @@ from app.api.workflows_dependencies import (
 from app.application.commands import AddChatMessageCommand, AnswerStepCommand
 from app.application.workflow_service import WorkflowService
 from app.domain.response import WorkflowDetailResponse, WorkflowListResponse
-from app.domain.workflow import WorkflowStateCreate
+from app.domain.workflow import WorkflowCreate
 from app.infrastructure.persistence.workflow_repository import WorkflowRepository
 
 workflows_router = APIRouter(prefix="/workflows", tags=["workflows"])
@@ -39,7 +39,7 @@ def get_workflow(
     return WorkflowDetailResponse(
         workflow_id=workflow.id,
         status="ok",
-        state=workflow,
+        workflow=workflow,
         waiting_reason=service.get_waiting_reason(workflow),
         workflow_confidence=service.get_workflow_confidence(workflow),
     )
@@ -47,7 +47,7 @@ def get_workflow(
 
 @workflows_router.post("", response_model=WorkflowDetailResponse)
 def create_workflow(
-    req: WorkflowStateCreate,
+    req: WorkflowCreate,
     service: WorkflowService = Depends(get_workflow_service_for_creation),
 ):
     workflow = service.create(req)
@@ -55,7 +55,7 @@ def create_workflow(
     return WorkflowDetailResponse(
         workflow_id=workflow.id,
         status="created",
-        state=workflow,
+        workflow=workflow,
         waiting_reason=service.get_waiting_reason(workflow),
         workflow_confidence=service.get_workflow_confidence(workflow),
     )
@@ -73,7 +73,7 @@ async def answer_step(
     return WorkflowDetailResponse(
         workflow_id=workflow.id,
         status="updated",
-        state=workflow,
+        workflow=workflow,
         waiting_reason=service.get_waiting_reason(workflow),
         workflow_confidence=service.get_workflow_confidence(workflow),
     )
@@ -105,7 +105,7 @@ async def skip_to_solution(
     return WorkflowDetailResponse(
         workflow_id=workflow.id,
         status="skipped",
-        state=workflow,
+        workflow=workflow,
         waiting_reason=service.get_waiting_reason(workflow),
         workflow_confidence=service.get_workflow_confidence(workflow),
     )
@@ -136,7 +136,7 @@ async def send_chat_message(
     return WorkflowDetailResponse(
         workflow_id=workflow.id,
         status="chat_added",
-        state=workflow,
+        workflow=workflow,
         waiting_reason=service.get_waiting_reason(workflow),
         workflow_confidence=service.get_workflow_confidence(workflow),
     )
