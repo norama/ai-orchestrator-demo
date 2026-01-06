@@ -1,7 +1,7 @@
 from typing import Protocol
 from uuid import UUID
 
-from app.domain.workflow import Workflow, WorkflowCreate
+from app.domain.workflow import Workflow, WorkflowCreate, WorkflowHistory
 
 
 class WorkflowRepository(Protocol):
@@ -10,3 +10,4 @@ class WorkflowRepository(Protocol):
     def list(self) -> list[Workflow]: ...
     def save(self, workflow: Workflow) -> Workflow: ...
     def branch(self, snapshot_id: UUID) -> Workflow: ...
+    def history(self, workflow_id: UUID) -> WorkflowHistory: ...

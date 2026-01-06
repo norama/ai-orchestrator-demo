@@ -4,10 +4,17 @@ from pathlib import Path
 from typing import override
 from uuid import UUID, uuid4
 
-from app.application.exceptions import SnapshotNotFound
+from app.application.exceptions import SnapshotNotFound, WorkflowNotFound
 from app.domain.config import DomainType
 from app.domain.ticket import Ticket
-from app.domain.workflow import Workflow, WorkflowCreate, WorkflowState
+from app.domain.workflow import (
+    Workflow,
+    WorkflowCreate,
+    WorkflowHistory,
+    WorkflowHistoryItem,
+    WorkflowPhase,
+    WorkflowState,
+)
 from app.infrastructure.persistence.workflow_repository import (
     WorkflowRepository,
 )
@@ -283,3 +290,71 @@ class SqliteWorkflowRepository(WorkflowRepository):
         )
 
         return self.persist(new_workflow)
+
+    @override
+    def history(self, workflow_id: UUID) -> WorkflowHistory:
+        def _label_for_state(state: WorkflowState) -> str:
+            if state.phase == WorkflowPhase.COLLECTING:
+                return "Clarification updated"
+            if state.phase == WorkflowPhase.SOLVING:
+                return "Solution generated"
+            if state.phase == WorkflowPhase.DISCUSSION:
+                return "Solution refined"
+            if state.phase == WorkflowPhase.DONE:
+                return "Workflow completed"
+            return "State updated"
+
+        items: list[WorkflowHistoryItem] = []
+
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.execute(
+                """
+                SELECT
+                    parent_id,
+                    current_snapshot_id AS snapshot_id
+                FROM workflows
+                WHERE id = ?
+                """,
+                (str(workflow_id),),
+            )
+            row = cursor.fetchone()
+
+            if row is None:
+                raise WorkflowNotFound(f"Cannot get history: workflow with ID {workflow_id} does not exist")
+
+            (parent_id, snapshot_id) = row
+            parent_workflow_id = UUID(parent_id) if parent_id else None
+            current_snapshot_id = UUID(snapshot_id)
+
+            cursor = conn.execute(
+                """
+                SELECT
+                    ws.id,
+                    ws.created_at,
+                    ws.state_json
+                FROM workflow_snapshots ws
+                WHERE ws.workflow_id = ?
+                ORDER BY ws.created_at ASC
+                """,
+                (str(workflow_id),),
+            )
+            rows = cursor.fetchall()
+
+        for row in rows:
+            snapshot_id, created_at, state_json = row
+            state = WorkflowState.model_validate_json(state_json)
+
+            item = WorkflowHistoryItem(
+                snapshot_id=UUID(snapshot_id),
+                created_at=datetime.fromisoformat(created_at),
+                phase=state.phase,
+                label=_label_for_state(state),
+            )
+            items.append(item)
+
+        return WorkflowHistory(
+            workflow_id=workflow_id,
+            parent_workflow_id=parent_workflow_id,
+            current_snapshot_id=current_snapshot_id,
+            items=items,
+        )

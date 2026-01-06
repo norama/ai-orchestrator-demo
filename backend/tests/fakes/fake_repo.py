@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from app.domain.workflow import Workflow, WorkflowCreate
+from app.domain.workflow import Workflow, WorkflowCreate, WorkflowHistory
 from app.infrastructure.persistence.workflow_repository import WorkflowRepository
 
 
@@ -24,4 +24,7 @@ class FakeWorkflowRepository(WorkflowRepository):
         return list(self._store.values())
 
     def branch(self, snapshot_id: UUID) -> Workflow:
+        raise NotImplementedError()
+
+    def history(self, workflow_id: UUID) -> WorkflowHistory:
         raise NotImplementedError()

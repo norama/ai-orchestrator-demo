@@ -11,7 +11,7 @@ from app.api.workflows_dependencies import (
 )
 from app.application.commands import AddChatMessageCommand, AnswerStepCommand
 from app.application.workflow_service import WorkflowService
-from app.domain.response import WorkflowDetailResponse, WorkflowListResponse
+from app.domain.response import WorkflowDetailResponse, WorkflowHistoryResponse, WorkflowListResponse
 from app.domain.workflow import WorkflowCreate
 from app.infrastructure.persistence.workflow_repository import WorkflowRepository
 
@@ -42,6 +42,19 @@ def get_workflow(
         workflow=workflow,
         waiting_reason=service.get_waiting_reason(workflow),
         workflow_confidence=service.get_workflow_confidence(workflow),
+    )
+
+
+@workflows_router.get("/{workflow_id}/history", response_model=WorkflowHistoryResponse)
+def get_workflow_history(
+    workflow_id: UUID,
+    repo: WorkflowRepository = Depends(get_workflow_repository),
+):
+    history = repo.history(workflow_id)
+
+    return WorkflowHistoryResponse(
+        history=history,
+        status="ok",
     )
 
 
