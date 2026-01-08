@@ -23,7 +23,7 @@ def get_workflow_service(
     workflow_id: UUID,
     repo: WorkflowRepository = Depends(get_workflow_repository),
 ) -> WorkflowService:
-    workflow = repo.get(workflow_id)
+    workflow = repo.get_workflow(workflow_id)
     if not workflow:
         raise WorkflowNotFound(f"Workflow {workflow_id} not found")
 

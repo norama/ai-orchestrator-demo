@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends
 
+from app.api.response import WorkflowDetailResponse
 from app.api.workflows_dependencies import get_workflow_repository, get_workflow_service_for_creation
 from app.application.exceptions import CatalogItemNotFound
 from app.domain.catalog import DEMO_CATALOG, WorkflowStateCreateFromCatalog
 from app.domain.catalog_response import CatalogItemResponse, CatalogResponse
-from app.domain.response import WorkflowDetailResponse
 from app.domain.workflow import WorkflowCreate
 from app.infrastructure.persistence.workflow_repository import WorkflowRepository
 

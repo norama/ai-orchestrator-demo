@@ -5,6 +5,7 @@ from app.application.exceptions import (
     CatalogItemNotFound,
     InvalidWorkflowOperation,
     SnapshotNotFound,
+    SnapshotWorkflowMismatch,
     WorkflowNotFound,
 )
 
@@ -53,5 +54,17 @@ def snapshot_not_found_handler(
 
     return JSONResponse(
         status_code=404,
+        content={"detail": str(exc)},
+    )
+
+
+def snapshot_workflow_mismatch_handler(
+    request: Request,
+    exc: Exception,
+) -> Response:
+    assert isinstance(exc, SnapshotWorkflowMismatch)
+
+    return JSONResponse(
+        status_code=409,
         content={"detail": str(exc)},
     )

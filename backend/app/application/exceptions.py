@@ -12,3 +12,7 @@ class CatalogItemNotFound(Exception):
 
 class SnapshotNotFound(Exception):
     pass
+
+
+class SnapshotWorkflowMismatch(Exception):
+    pass

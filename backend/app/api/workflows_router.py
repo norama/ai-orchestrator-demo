@@ -3,6 +3,13 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
+from app.api.event_view import event_to_view
+from app.api.response import (
+    SnapshotDetailResponse,
+    WorkflowDetailResponse,
+    WorkflowHistoryResponse,
+    WorkflowListResponse,
+)
 from app.api.streaming_utils import stream_command
 from app.api.workflows_dependencies import (
     get_workflow_repository,
@@ -11,7 +18,6 @@ from app.api.workflows_dependencies import (
 )
 from app.application.commands import AddChatMessageCommand, AnswerStepCommand
 from app.application.workflow_service import WorkflowService
-from app.domain.response import WorkflowDetailResponse, WorkflowHistoryResponse, WorkflowListResponse
 from app.domain.workflow import WorkflowCreate
 from app.infrastructure.persistence.workflow_repository import WorkflowRepository
 
@@ -19,10 +25,10 @@ workflows_router = APIRouter(prefix="/workflows", tags=["workflows"])
 
 
 @workflows_router.get("", response_model=WorkflowListResponse)
-def list_workflows(
+def get_workflows(
     repo: WorkflowRepository = Depends(get_workflow_repository),
 ):
-    workflows = repo.list()
+    workflows = repo.get_workflows()
     return WorkflowListResponse(
         workflows=workflows,
         status="ok",
@@ -45,15 +51,38 @@ def get_workflow(
     )
 
 
+@workflows_router.get("/{workflow_id}/snapshots/{snapshot_id}", response_model=SnapshotDetailResponse)
+def get_snapshot(
+    workflow_id: UUID,
+    snapshot_id: UUID,
+    repo: WorkflowRepository = Depends(get_workflow_repository),
+):
+    snapshot = repo.get_snapshot(workflow_id, snapshot_id)
+
+    return SnapshotDetailResponse(
+        workflow_id=workflow_id,
+        snapshot=snapshot,
+        status="ok",
+    )
+
+
 @workflows_router.get("/{workflow_id}/history", response_model=WorkflowHistoryResponse)
 def get_workflow_history(
     workflow_id: UUID,
     repo: WorkflowRepository = Depends(get_workflow_repository),
+    service: WorkflowService = Depends(get_workflow_service),
 ):
-    history = repo.history(workflow_id)
+    workflow = service.get_workflow(workflow_id)
+
+    events = repo.get_events(workflow_id)
+    current_snapshot_id = repo.get_current_snapshot_id(workflow_id)
+    parent_workflow_id = workflow.parent_id
 
     return WorkflowHistoryResponse(
-        history=history,
+        workflow_id=workflow_id,
+        parent_workflow_id=parent_workflow_id,
+        current_snapshot_id=current_snapshot_id,
+        events=[event_to_view(event) for event in events],
         status="ok",
     )
 
@@ -68,6 +97,23 @@ def create_workflow(
     return WorkflowDetailResponse(
         workflow_id=workflow.id,
         status="created",
+        workflow=workflow,
+        waiting_reason=service.get_waiting_reason(workflow),
+        workflow_confidence=service.get_workflow_confidence(workflow),
+    )
+
+
+@workflows_router.post("/{workflow_id}/snapshots/{snapshot_id}/branch", response_model=WorkflowDetailResponse)
+def branch_workflow(
+    workflow_id: UUID,
+    snapshot_id: UUID,
+    service: WorkflowService = Depends(get_workflow_service),
+):
+    workflow = service.branch(workflow_id, snapshot_id)
+
+    return WorkflowDetailResponse(
+        workflow_id=workflow.id,
+        status="branched",
         workflow=workflow,
         waiting_reason=service.get_waiting_reason(workflow),
         workflow_confidence=service.get_workflow_confidence(workflow),

@@ -6,6 +6,7 @@ from app.api.error_handlers import (
     catalog_item_not_found_handler,
     invalid_workflow_operation_handler,
     snapshot_not_found_handler,
+    snapshot_workflow_mismatch_handler,
     workflow_not_found_handler,
 )
 from app.api.llm_router import llm_router
@@ -14,6 +15,7 @@ from app.application.exceptions import (
     CatalogItemNotFound,
     InvalidWorkflowOperation,
     SnapshotNotFound,
+    SnapshotWorkflowMismatch,
     WorkflowNotFound,
 )
 from app.logging_utils import get_logger, setup_logging
@@ -51,6 +53,11 @@ app.add_exception_handler(
 app.add_exception_handler(
     SnapshotNotFound,
     snapshot_not_found_handler,
+)
+
+app.add_exception_handler(
+    SnapshotWorkflowMismatch,
+    snapshot_workflow_mismatch_handler,
 )
 
 logger = get_logger(__name__)

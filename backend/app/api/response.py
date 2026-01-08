@@ -1,9 +1,10 @@
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from app.domain.workflow import WaitingReason, Workflow, WorkflowHistory
+from app.api.event_view import WorkflowEventView
+from app.domain.workflow import WaitingReason, Workflow, WorkflowState
 
 
 class WorkflowListResponse(BaseModel):
@@ -19,11 +20,20 @@ class WorkflowDetailResponse(BaseModel):
     status: str
 
 
+class SnapshotDetailResponse(BaseModel):
+    workflow_id: UUID
+    snapshot: WorkflowState
+    status: str
+
+
 class LLMResponse(BaseModel):
     response_json: dict[str, Any]
     status: str
 
 
 class WorkflowHistoryResponse(BaseModel):
-    history: WorkflowHistory
+    workflow_id: UUID
+    parent_workflow_id: UUID | None = None
+    current_snapshot_id: UUID
+    events: list[WorkflowEventView] = Field(default_factory=list)
     status: str

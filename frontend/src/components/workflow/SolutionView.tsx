@@ -29,7 +29,7 @@ export function SolutionView({ solution, updated, domainType, isStreaming, strea
   return (
     <div
       ref={containerRef}
-      className='relative p-4 max-h-[30vh] overflow-y-auto bg-green-50 border border-green-200 rounded-lg'>
+      className={`relative p-4 max-h-[30vh] overflow-y-auto bg-green-50 border border-green-200 rounded-lg ${!content ? 'hidden' : ''}`}>
       {updated && <SolutionStatus status='Updated' variant='warning' />}
       {isStreaming && <SolutionStatus status='Generating' variant='info' />}
 

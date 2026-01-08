@@ -1,4 +1,3 @@
-from datetime import datetime
 from enum import Enum
 from typing import Any
 from uuid import UUID, uuid4
@@ -67,6 +66,7 @@ class WorkflowState(BaseModel):
 
 class Workflow(WorkflowCreate, DbEntry):
     parent_id: UUID | None = None
+    parent_snapshot_id: UUID | None = None
     state: WorkflowState = Field(default_factory=WorkflowState)
 
 
@@ -83,17 +83,3 @@ class WorkflowContext(BaseModel):
     phase: WorkflowPhase
 
     model_config = ConfigDict(frozen=True)
-
-
-class WorkflowHistoryItem(BaseModel):
-    snapshot_id: UUID
-    created_at: datetime
-    phase: WorkflowPhase
-    label: str
-
-
-class WorkflowHistory(BaseModel):
-    workflow_id: UUID
-    parent_workflow_id: UUID | None = None
-    current_snapshot_id: UUID
-    items: list[WorkflowHistoryItem] = Field(default_factory=list)
