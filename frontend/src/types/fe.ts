@@ -1,4 +1,10 @@
-import type { ChatRoleEnum, DomainTypeEnum, WorkflowPhaseEnum } from '@/types/enums'
+import type {
+  ChatRoleEnum,
+  DomainTypeEnum,
+  EventDisplayTypeEnum,
+  WorkflowEventTypeEnum,
+  WorkflowPhaseEnum,
+} from '@/types/enums'
 import { UIHistoryItemTypeEnum } from '@/types/enums'
 
 export interface UICatalogItem {
@@ -21,7 +27,7 @@ export interface UISolution {
   rationale?: string
 }
 
-export interface UIChatHistoryItem {
+export interface UIChatItem {
   type: typeof UIHistoryItemTypeEnum.MESSAGE
   phase: typeof WorkflowPhaseEnum.COLLECTING | typeof WorkflowPhaseEnum.DISCUSSION
   message: UIChatMessage
@@ -39,13 +45,10 @@ export interface UIWorkflowData {
   name: string
   description: string
   maxSteps: number
-  phase: WorkflowPhaseEnum
-  solution: UISolution | null
-  solutionUpdated: boolean | null
 }
 
-export interface UIChatHistory {
-  items: UIChatHistoryItem[]
+export interface UIChat {
+  items: UIChatItem[]
 }
 
 export interface UICurrentStep {
@@ -73,4 +76,39 @@ export interface UIWorkflowListItem {
   ticketTitle: string
   domainType: DomainTypeEnum
   phase: WorkflowPhaseEnum
+}
+
+export interface UIEventDisplayItem {
+  type: EventDisplayTypeEnum
+  label: string
+  value: string | number | boolean
+  emphasis: boolean
+}
+
+export interface UIWorkflowEvent {
+  id: string
+  snapshotId: string
+  previousSnapshotId: string | null
+  createdAt: Date
+
+  type: WorkflowEventTypeEnum
+  label: string
+  display: UIEventDisplayItem[] | null
+
+  isCurrent: boolean
+}
+
+export interface UIWorkflowHistory {
+  workflowId: string
+  parentWorkflowId: string | null
+  currentSnapshotId: string
+  events: UIWorkflowEvent[]
+}
+
+export interface UIWorkflowState {
+  phase: WorkflowPhaseEnum
+  chat: UIChat
+  currentStep: UICurrentStep | null
+  solution: UISolution | null
+  solutionUpdated: boolean | null
 }

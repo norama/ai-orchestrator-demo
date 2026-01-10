@@ -1,19 +1,20 @@
-import type { Workflow } from '@/types/be'
+import type { Workflow, WorkflowState } from '@/types/be'
 import { ChatRoleEnum, UIHistoryItemTypeEnum, WorkflowPhaseEnum } from '@/types/enums'
 import type {
-  UIChatHistory,
-  UIChatHistoryItem,
+  UIChat,
+  UIChatItem,
   UICurrentStep,
   UISolution,
   UITicket,
   UIWorkflowData,
+  UIWorkflowState,
 } from '@/types/fe'
 
-export function workflowToOpenStep(workflow: Workflow): UICurrentStep | null {
-  if (workflow.state.solution) {
+export function stateToOpenStep(state: WorkflowState): UICurrentStep | null {
+  if (state.solution) {
     return null
   }
-  const openStep = workflow.state.steps.find((step) => step.answer === null)
+  const openStep = state.steps.find((step) => step.answer === null)
   if (openStep) {
     return {
       stepId: openStep.id,
@@ -24,10 +25,10 @@ export function workflowToOpenStep(workflow: Workflow): UICurrentStep | null {
 }
 
 // Assumption: discussion messages only appear after solution
-export function workflowToChatHistory(workflow: Workflow): UIChatHistory {
-  const items: UIChatHistoryItem[] = []
+export function stateToChatHistory(state: WorkflowState): UIChat {
+  const items: UIChatItem[] = []
 
-  workflow.state.steps.forEach((step, i) => {
+  state.steps.forEach((step, i) => {
     if (step.answer) {
       items.push({
         type: UIHistoryItemTypeEnum.MESSAGE,
@@ -51,7 +52,7 @@ export function workflowToChatHistory(workflow: Workflow): UIChatHistory {
     }
   })
 
-  workflow.state.chat_history.messages.forEach((m, i) => {
+  state.chat_history.messages.forEach((m, i) => {
     items.push({
       type: UIHistoryItemTypeEnum.MESSAGE,
       phase: WorkflowPhaseEnum.DISCUSSION,
@@ -68,8 +69,8 @@ export function workflowToChatHistory(workflow: Workflow): UIChatHistory {
   }
 }
 
-export function workflowToSolution(workflow: Workflow): UISolution | null {
-  const solution = workflow.state.solution
+export function stateToSolution(state: WorkflowState): UISolution | null {
+  const solution = state.solution
   if (solution) {
     return {
       content: solution.content,
@@ -87,11 +88,6 @@ export function workflowToWorkflowData(workflow: Workflow): UIWorkflowData {
     name: workflow.name,
     description: workflow.description,
     maxSteps: workflow.max_steps,
-    phase: workflow.state.phase,
-    solution: workflowToSolution(workflow),
-    solutionUpdated: workflow.state.discussion_result
-      ? workflow.state.discussion_result.solution_updated
-      : null,
   }
 }
 
@@ -100,5 +96,15 @@ export function workflowToTicket(workflow: Workflow): UITicket {
     id: workflow.ticket.id,
     title: workflow.ticket.title,
     description: workflow.ticket.description,
+  }
+}
+
+export function stateToWorkflowState(state: WorkflowState): UIWorkflowState {
+  return {
+    phase: state.phase,
+    chat: stateToChatHistory(state),
+    currentStep: stateToOpenStep(state),
+    solution: stateToSolution(state),
+    solutionUpdated: state.discussion_result ? state.discussion_result.solution_updated : null,
   }
 }

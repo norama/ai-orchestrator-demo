@@ -18,6 +18,7 @@ from app.api.workflows_dependencies import (
 )
 from app.application.commands import AddChatMessageCommand, AnswerStepCommand
 from app.application.workflow_service import WorkflowService
+from app.application.workflow_utils import get_waiting_reason, get_workflow_confidence
 from app.domain.workflow import WorkflowCreate
 from app.infrastructure.persistence.workflow_repository import WorkflowRepository
 
@@ -46,8 +47,8 @@ def get_workflow(
         workflow_id=workflow.id,
         status="ok",
         workflow=workflow,
-        waiting_reason=service.get_waiting_reason(workflow),
-        workflow_confidence=service.get_workflow_confidence(workflow),
+        waiting_reason=get_waiting_reason(workflow.state),
+        workflow_confidence=get_workflow_confidence(workflow.state),
     )
 
 
@@ -62,6 +63,8 @@ def get_snapshot(
     return SnapshotDetailResponse(
         workflow_id=workflow_id,
         snapshot=snapshot,
+        waiting_reason=get_waiting_reason(snapshot),
+        workflow_confidence=get_workflow_confidence(snapshot),
         status="ok",
     )
 
@@ -98,8 +101,8 @@ def create_workflow(
         workflow_id=workflow.id,
         status="created",
         workflow=workflow,
-        waiting_reason=service.get_waiting_reason(workflow),
-        workflow_confidence=service.get_workflow_confidence(workflow),
+        waiting_reason=get_waiting_reason(workflow.state),
+        workflow_confidence=get_workflow_confidence(workflow.state),
     )
 
 
@@ -115,8 +118,8 @@ def branch_workflow(
         workflow_id=workflow.id,
         status="branched",
         workflow=workflow,
-        waiting_reason=service.get_waiting_reason(workflow),
-        workflow_confidence=service.get_workflow_confidence(workflow),
+        waiting_reason=get_waiting_reason(workflow.state),
+        workflow_confidence=get_workflow_confidence(workflow.state),
     )
 
 
@@ -133,8 +136,8 @@ async def answer_step(
         workflow_id=workflow.id,
         status="updated",
         workflow=workflow,
-        waiting_reason=service.get_waiting_reason(workflow),
-        workflow_confidence=service.get_workflow_confidence(workflow),
+        waiting_reason=get_waiting_reason(workflow.state),
+        workflow_confidence=get_workflow_confidence(workflow.state),
     )
 
 
@@ -165,8 +168,8 @@ async def skip_to_solution(
         workflow_id=workflow.id,
         status="skipped",
         workflow=workflow,
-        waiting_reason=service.get_waiting_reason(workflow),
-        workflow_confidence=service.get_workflow_confidence(workflow),
+        waiting_reason=get_waiting_reason(workflow.state),
+        workflow_confidence=get_workflow_confidence(workflow.state),
     )
 
 
@@ -196,6 +199,6 @@ async def send_chat_message(
         workflow_id=workflow.id,
         status="chat_added",
         workflow=workflow,
-        waiting_reason=service.get_waiting_reason(workflow),
-        workflow_confidence=service.get_workflow_confidence(workflow),
+        waiting_reason=get_waiting_reason(workflow.state),
+        workflow_confidence=get_workflow_confidence(workflow.state),
     )

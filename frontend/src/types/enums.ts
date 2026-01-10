@@ -38,3 +38,26 @@ export const UIHistoryItemTypeEnum = {
 
 export type UIHistoryItemTypeEnum =
   (typeof UIHistoryItemTypeEnum)[keyof typeof UIHistoryItemTypeEnum]
+
+export const WorkflowEventTypeEnum = {
+  WORKFLOW_CREATED: 'WORKFLOW_CREATED',
+  WORKFLOW_BRANCHED: 'WORKFLOW_BRANCHED',
+  CLARIFICATION_UPDATED: 'CLARIFICATION_UPDATED',
+  SOLUTION_GENERATED: 'SOLUTION_GENERATED',
+  CHAT_REPLIED: 'CHAT_REPLIED',
+  SOLUTION_UPDATED: 'SOLUTION_UPDATED',
+  WORKFLOW_COMPLETED: 'WORKFLOW_COMPLETED',
+}
+
+export type WorkflowEventTypeEnum =
+  (typeof WorkflowEventTypeEnum)[keyof typeof WorkflowEventTypeEnum]
+
+export const EventDisplayTypeEnum = {
+  TEXT: 'TEXT',
+  CONFIDENCE: 'CONFIDENCE',
+  BOOLEAN: 'BOOLEAN',
+  FLAG: 'FLAG',
+  CODE: 'CODE',
+} as const
+
+export type EventDisplayTypeEnum = (typeof EventDisplayTypeEnum)[keyof typeof EventDisplayTypeEnum]

@@ -3,7 +3,16 @@ import { catalogResponseToItem } from '@/data/catalogProjector'
 import type { UICatalogItem } from '@/types/fe'
 import { useEffect, useState } from 'react'
 
-export function useCatalogController() {
+export interface CatalogController {
+  items: UICatalogItem[]
+  loading: boolean
+  error: string | null
+  hasLoaded: boolean
+
+  refresh(): Promise<void>
+}
+
+export function useCatalogController(): CatalogController {
   const [items, setItems] = useState<UICatalogItem[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)

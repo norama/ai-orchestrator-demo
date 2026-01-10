@@ -6,6 +6,7 @@ from app.application.commands import (
 )
 from app.application.exceptions import InvalidWorkflowOperation, WorkflowNotFound
 from app.application.registry import WorkflowDomain
+from app.application.workflow_utils import is_waiting_for_user
 from app.domain.chat import ChatMessage, ChatRole
 from app.domain.event import (
     ChatRepliedEventData,
@@ -20,7 +21,6 @@ from app.domain.event import (
 from app.domain.streaming import StreamSink
 from app.domain.workflow import (
     ChatMutationResult,
-    WaitingReason,
     Workflow,
     WorkflowContext,
     WorkflowCreate,
@@ -121,39 +121,9 @@ class WorkflowService:
         return workflow
 
     def _process_until_waiting_or_done(self, workflow: Workflow, stream: StreamSink | None = None) -> Workflow:
-        while not self._is_waiting_for_user(workflow) and workflow.state.phase != WorkflowPhase.DONE:
+        while not is_waiting_for_user(workflow.state) and workflow.state.phase != WorkflowPhase.DONE:
             workflow = self._process_workflow(workflow, stream)
         return workflow
-
-    def _has_open_step(self, workflow: Workflow) -> bool:
-        return any(step.answer is None for step in workflow.state.steps)
-
-    def _is_waiting_for_chat_input(self, workflow: Workflow) -> bool:
-        if not self.domain.chat_service:
-            return False
-        if not workflow.state.chat_history.messages:
-            return True
-        last_msg = workflow.state.chat_history.messages[-1]
-        return last_msg.role != ChatRole.USER
-
-    def get_waiting_reason(self, workflow: Workflow) -> WaitingReason | None:
-        state = workflow.state
-        if state.phase == WorkflowPhase.COLLECTING and state.skipped:
-            return None
-        if state.phase == WorkflowPhase.COLLECTING and self._has_open_step(workflow):
-            return WaitingReason.ANSWER_NEEDED
-        if state.phase == WorkflowPhase.DISCUSSION and self._is_waiting_for_chat_input(workflow):
-            return WaitingReason.CHAT
-        return None
-
-    def get_workflow_confidence(self, workflow: Workflow) -> float | None:
-        state = workflow.state
-        if state.last_decision:
-            return state.last_decision.workflow_confidence
-        return None
-
-    def _is_waiting_for_user(self, workflow: Workflow) -> bool:
-        return self.get_waiting_reason(workflow) is not None
 
     # ------- Commands with processing --------
 

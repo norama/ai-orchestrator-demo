@@ -3,7 +3,16 @@ import { workflowToListItem } from '@/data/workflowListProjector'
 import type { UIWorkflowListItem } from '@/types/fe'
 import { useEffect, useState } from 'react'
 
-export function useWorkflowListController() {
+export interface WorkflowListController {
+  items: UIWorkflowListItem[]
+  loading: boolean
+  error: string | null
+  hasLoaded: boolean
+
+  refresh(): Promise<void>
+}
+
+export function useWorkflowListController(): WorkflowListController {
   const [items, setItems] = useState<UIWorkflowListItem[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)

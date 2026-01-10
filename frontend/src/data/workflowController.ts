@@ -4,28 +4,20 @@ import { createWorkflowFromCatalog } from '@/api/catalog'
 import { answerStep, getWorkflow, sendChatMessage, skipToSolution } from '@/api/workflows'
 import { postSSE } from '@/data/sse'
 import {
-  workflowToChatHistory,
-  workflowToOpenStep,
+  stateToWorkflowState,
   workflowToTicket,
   workflowToWorkflowData,
 } from '@/data/workflowProjector'
 import type { Workflow, WorkflowDetailResponse } from '@/types/be'
 import { ChatRoleEnum, type WaitingReasonEnum } from '@/types/enums'
-import type {
-  UIChatHistory,
-  UICreateFromCatalog,
-  UICurrentStep,
-  UITicket,
-  UIWorkflowData,
-} from '@/types/fe'
+import type { UICreateFromCatalog, UITicket, UIWorkflowData, UIWorkflowState } from '@/types/fe'
 
 /* ---------- controller API ---------- */
 
 export interface WorkflowController {
   ticket: UITicket | null
   workflowData: UIWorkflowData | null
-  currentStep: UICurrentStep | null
-  chatHistory: UIChatHistory | null
+  workflowState: UIWorkflowState | null
   waitingReason: WaitingReasonEnum | null
   workflowConfidence: number | null
   loading: boolean
@@ -219,18 +211,16 @@ export function useWorkflowController(): WorkflowController {
 
   /* ----- projections ----- */
 
-  const currentStep = workflow ? workflowToOpenStep(workflow) : null
-  const chatHistory = workflow ? workflowToChatHistory(workflow) : null
   const ticket = workflow ? workflowToTicket(workflow) : null
   const workflowData = workflow ? workflowToWorkflowData(workflow) : null
+  const workflowState = workflow ? stateToWorkflowState(workflow.state) : null
 
   /* ----- exposed controller ----- */
 
   return {
     ticket,
     workflowData,
-    currentStep,
-    chatHistory,
+    workflowState,
     waitingReason,
     workflowConfidence,
     loading,

@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 from app.api.response import WorkflowDetailResponse
 from app.api.workflows_dependencies import get_workflow_repository, get_workflow_service_for_creation
 from app.application.exceptions import CatalogItemNotFound
+from app.application.workflow_utils import get_waiting_reason, get_workflow_confidence
 from app.domain.catalog import DEMO_CATALOG, WorkflowStateCreateFromCatalog
 from app.domain.catalog_response import CatalogItemResponse, CatalogResponse
 from app.domain.workflow import WorkflowCreate
@@ -47,6 +48,6 @@ def create_workflow_from_catalog(
         workflow_id=workflow.id,
         status="created",
         workflow=workflow,
-        waiting_reason=service.get_waiting_reason(workflow),
-        workflow_confidence=service.get_workflow_confidence(workflow),
+        waiting_reason=get_waiting_reason(workflow.state),
+        workflow_confidence=get_workflow_confidence(workflow.state),
     )

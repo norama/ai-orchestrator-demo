@@ -1,32 +1,33 @@
 import { Badge } from '@/components/ui/Badge'
 import { TicketSummary } from '@/components/workflow/TicketSummary'
 import { WorkflowPhaseBadge } from '@/components/workflow/WorkflowPhaseBadge'
-import type { UITicket, UIWorkflowData } from '@/types/fe'
+import type { UITicket, UIWorkflowData, UIWorkflowState } from '@/types/fe'
 
 interface WorkflowHeaderProps {
-  workflow: UIWorkflowData
   ticket: UITicket
+  workflowData: UIWorkflowData
+  workflowState: UIWorkflowState
 }
 
-export function WorkflowHeader({ workflow, ticket }: WorkflowHeaderProps) {
-  const title = workflow.name?.trim() || ticket.title || 'Workflow'
+export function WorkflowHeader({ ticket, workflowData, workflowState }: WorkflowHeaderProps) {
+  const title = workflowData.name?.trim() || ticket.title || 'Workflow'
 
   return (
     <div className='space-y-4'>
       {/* Workflow title */}
       <div>
         <h1 className='text-2xl font-semibold text-gray-900'>{title}</h1>
-        {workflow.description && (
-          <p className='mt-1 text-sm text-gray-600'>{workflow.description}</p>
+        {workflowData.description && (
+          <p className='mt-1 text-sm text-gray-600'>{workflowData.description}</p>
         )}
       </div>
 
       {/* Metadata row */}
       <div className='flex flex-wrap items-center gap-3 text-sm'>
-        <Badge variant='info'>{workflow.domainType}</Badge>
-        <WorkflowPhaseBadge phase={workflow.phase} />
+        <Badge variant='info'>{workflowData.domainType}</Badge>
+        <WorkflowPhaseBadge phase={workflowState.phase} />
 
-        <span className='text-gray-500'>Max steps: {workflow.maxSteps}</span>
+        <span className='text-gray-500'>Max steps: {workflowData.maxSteps}</span>
       </div>
 
       {/* Ticket */}

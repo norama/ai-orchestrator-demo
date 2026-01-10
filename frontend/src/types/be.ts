@@ -1,7 +1,9 @@
 import type {
   ChatRoleEnum,
   DomainTypeEnum,
+  EventDisplayTypeEnum,
   WaitingReasonEnum,
+  WorkflowEventTypeEnum,
   WorkflowPhaseEnum,
 } from '@/types/enums'
 
@@ -115,4 +117,38 @@ export interface AnswerStepRequest {
 export interface ChatMessageRequest {
   role: ChatRoleEnum
   content: string
+}
+
+export interface EventDisplayItem {
+  type: EventDisplayTypeEnum
+  label: string
+  value: string | number | boolean
+  emphasis: boolean
+}
+
+export interface WorkflowEventView {
+  id: string
+  snapshot_id: string
+  previous_snapshot_id: string | null
+  created_at: string
+
+  type: WorkflowEventTypeEnum
+  label: string
+  display: EventDisplayItem[] | null
+}
+
+export interface WorkflowHistoryResponse {
+  workflow_id: string
+  parent_workflow_id: string | null
+  current_snapshot_id: string
+  events: WorkflowEventView[]
+  status: string
+}
+
+export interface SnapshotDetailResponse {
+  workflow_id: string
+  snapshot: WorkflowState
+  waiting_reason?: WaitingReasonEnum | null
+  workflow_confidence?: number | null
+  status: string
 }

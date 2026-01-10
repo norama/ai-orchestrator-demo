@@ -26,11 +26,11 @@ class SolutionGeneratedReason(str, Enum):
 
 
 class EventDisplayType(str, Enum):
-    TEXT = "text"
-    CONFIDENCE = "confidence"
-    BOOLEAN = "boolean"
-    FLAG = "flag"
-    CODE = "code"
+    TEXT = "TEXT"
+    CONFIDENCE = "CONFIDENCE"
+    BOOLEAN = "BOOLEAN"
+    FLAG = "FLAG"
+    CODE = "CODE"
 
 
 class EventDisplayItem(BaseModel):
@@ -93,19 +93,6 @@ class WorkflowBranchedEventData(WorkflowCreatedEventData):
             domain type: {self.domain_type},
             name: {self.name or "N/A"},
         """
-
-    def to_display(self) -> list[EventDisplayItem]:
-        items = super().to_display()
-        items.insert(
-            0,
-            EventDisplayItem(
-                type=EventDisplayType.TEXT,
-                label="Parent Workflow",
-                value=self.parent_name or str(self.parent_workflow_id),
-                emphasis=True,
-            ),
-        )
-        return items
 
 
 class ClarificationUpdatedEventData(BaseModel):

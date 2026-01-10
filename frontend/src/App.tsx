@@ -52,7 +52,7 @@ function App() {
 
   /* ---------- initial screen ---------- */
 
-  if (!controller.chatHistory || !controller.workflowData || !controller.ticket) {
+  if (!controller.workflowData || !controller.ticket || !controller.workflowState) {
     return (
       <StartWorkflowForm
         loading={loading}
@@ -109,8 +109,7 @@ function App() {
           <WorkflowView
             ticket={controller.ticket}
             workflowData={controller.workflowData}
-            currentStep={controller.currentStep}
-            chatHistory={controller.chatHistory}
+            workflowState={controller.workflowState}
             loading={loading}
             confidence={controller.workflowConfidence}
             onAnswer={withListRefresh(controller.answerStream)}

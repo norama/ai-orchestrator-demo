@@ -7,20 +7,13 @@ import { SolutionView } from '@/components/workflow/SolutionView'
 import { StepInput } from '@/components/workflow/StepInput'
 import { WorkflowHeader } from '@/components/workflow/WorkflowHeader'
 import { ChatRoleEnum, WorkflowPhaseEnum } from '@/types/enums'
-import type {
-  UIChatHistory,
-  UIChatMessage,
-  UICurrentStep,
-  UITicket,
-  UIWorkflowData,
-} from '@/types/fe'
+import type { UIChatMessage, UITicket, UIWorkflowData, UIWorkflowState } from '@/types/fe'
 import { useState } from 'react'
 
 interface WorkflowViewProps {
   ticket: UITicket
   workflowData: UIWorkflowData
-  currentStep: UICurrentStep | null
-  chatHistory: UIChatHistory
+  workflowState: UIWorkflowState
   loading: boolean
   confidence: number | null
   onAnswer: (stepId: string, answer: string) => Promise<void>
@@ -33,8 +26,7 @@ interface WorkflowViewProps {
 export function WorkflowView({
   ticket,
   workflowData,
-  currentStep,
-  chatHistory,
+  workflowState,
   loading,
   confidence,
   onAnswer,
@@ -51,10 +43,10 @@ export function WorkflowView({
     const idSystem = crypto.randomUUID()
     setPendingMessages((prev) => [
       ...prev,
-      { id: idSystem, role: ChatRoleEnum.SYSTEM, content: currentStep!.prompt },
+      { id: idSystem, role: ChatRoleEnum.SYSTEM, content: workflowState.currentStep!.prompt },
       { id: idUser, role: ChatRoleEnum.USER, content: message },
     ])
-    onAnswer(currentStep!.stepId, message).finally(() => {
+    onAnswer(workflowState.currentStep!.stepId, message).finally(() => {
       setPendingMessages((prev) => prev.filter((msg) => msg.id !== idUser && msg.id !== idSystem))
     })
   }
@@ -70,12 +62,12 @@ export function WorkflowView({
     })
   }
 
-  const messages = [...chatHistory.items.map((item) => item.message), ...pendingMessages]
+  const messages = [...workflowState.chat.items.map((item) => item.message), ...pendingMessages]
 
   return (
     <MainLayout>
       <TimelineLayout>
-        <WorkflowHeader workflow={workflowData} ticket={ticket} />
+        <WorkflowHeader ticket={ticket} workflowData={workflowData} workflowState={workflowState} />
         <div className='flex flex-col gap-3'>
           {messages.map((message) => (
             <ChatMessageView
@@ -88,23 +80,23 @@ export function WorkflowView({
       </TimelineLayout>
 
       <BottomFixedLayout>
-        {(workflowData.solution || isStreaming) && (
+        {(workflowState.solution || isStreaming) && (
           <SolutionView
-            solution={workflowData.solution}
-            updated={workflowData.solutionUpdated}
+            solution={workflowState.solution}
+            updated={workflowState.solutionUpdated}
             domainType={workflowData.domainType}
             isStreaming={isStreaming}
             streamedText={streamedText}
           />
         )}
 
-        {(currentStep || workflowData.phase === WorkflowPhaseEnum.DISCUSSION) && (
+        {(workflowState.currentStep || workflowState.phase === WorkflowPhaseEnum.DISCUSSION) && (
           <div className='my-3 border-t text-gray-300' />
         )}
 
-        {currentStep && (
+        {workflowState.currentStep && (
           <StepInput
-            step={currentStep}
+            step={workflowState.currentStep}
             onAnswer={handleSendStepAnswer}
             onSkip={onSkip}
             workflowConfidence={confidence}
@@ -113,7 +105,7 @@ export function WorkflowView({
           />
         )}
 
-        {workflowData.phase === WorkflowPhaseEnum.DISCUSSION && (
+        {workflowState.phase === WorkflowPhaseEnum.DISCUSSION && (
           <ChatInput
             placeholder='Enter your message...'
             onSend={handleSendChatMessage}
