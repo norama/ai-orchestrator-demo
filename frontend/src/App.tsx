@@ -4,6 +4,7 @@ import { WorkflowListPanel } from '@/components/WorkflowListPanel'
 import { WorkflowView } from '@/components/WorkflowView'
 import { useCatalogController } from '@/data/catalogController'
 import { useWorkflowController } from '@/data/workflowController'
+import { useWorkflowHistoryController } from '@/data/workflowHistoryController'
 import { useWorkflowListController } from '@/data/workflowListController'
 import type { UICreateFromCatalog } from '@/types/fe'
 import { useEffect, useRef, useState } from 'react'
@@ -11,6 +12,7 @@ import { useEffect, useRef, useState } from 'react'
 function App() {
   const catalogController = useCatalogController()
   const listController = useWorkflowListController()
+  const historyController = useWorkflowHistoryController()
   const controller = useWorkflowController()
   const hasBootstrappedRef = useRef(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -32,16 +34,45 @@ function App() {
       await listController.refresh()
     }) as T
 
-  const loading = controller.loading || listController.loading || catalogController.loading
-  const error = controller.error || listController.error || catalogController.error
+  const loading =
+    controller.loading ||
+    listController.loading ||
+    catalogController.loading ||
+    historyController.loading
+  const error =
+    controller.error || listController.error || catalogController.error || historyController.error
   const selectedWorkflowId = controller.workflowData?.id ?? null
 
-  const startNewWorkflow = (req: UICreateFromCatalog) => {
-    controller.start(req).then(listController.refresh)
+  const startNewWorkflow = async (req: UICreateFromCatalog) => {
+    const workflowId = await controller.start(req)
+    if (workflowId) {
+      await listController.refresh()
+      await historyController.load(workflowId)
+    } else {
+      historyController.reset()
+    }
   }
+
+  /*
+  const branchFromHistory = async () => {
+    const newWorkflowId = await controller.branch()
+    if (newWorkflowId) {
+      await listController.refresh()
+      await historyController.load(newWorkflowId)
+    } else {
+      historyController.reset()
+    }
+  }
+  */
 
   const selectWorkflow = (id: string) => {
     controller.load(id)
+    historyController.load(id)
+  }
+
+  const resetControllers = () => {
+    controller.reset()
+    historyController.reset()
   }
 
   /* ---------- initial loading state ---------- */
@@ -85,7 +116,7 @@ function App() {
             items={listController.items}
             selectedId={selectedWorkflowId}
             onSelect={selectWorkflow}
-            onNew={controller.reset}
+            onNew={resetControllers}
           />
         </div>
 
@@ -99,7 +130,7 @@ function App() {
               setDrawerOpen(false)
             }}
             onNew={() => {
-              controller.reset()
+              resetControllers()
               setDrawerOpen(false)
             }}
           />
@@ -111,7 +142,6 @@ function App() {
             workflowData={controller.workflowData}
             workflowState={controller.workflowState}
             loading={loading}
-            confidence={controller.workflowConfidence}
             onAnswer={withListRefresh(controller.answerStream)}
             onSkip={withListRefresh(controller.skipStream)}
             onSendChatMessage={withListRefresh(controller.chat)}

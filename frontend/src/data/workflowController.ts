@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { createWorkflowFromCatalog } from '@/api/catalog'
+import { branchFromSnapshot, getSnapshot } from '@/api/history'
 import { answerStep, getWorkflow, sendChatMessage, skipToSolution } from '@/api/workflows'
 import { postSSE } from '@/data/sse'
 import {
@@ -8,25 +9,30 @@ import {
   workflowToTicket,
   workflowToWorkflowData,
 } from '@/data/workflowProjector'
-import type { Workflow, WorkflowDetailResponse } from '@/types/be'
-import { ChatRoleEnum, type WaitingReasonEnum } from '@/types/enums'
+import type { Workflow, WorkflowDetailResponse, WorkflowState } from '@/types/be'
+import { ChatRoleEnum } from '@/types/enums'
 import type { UICreateFromCatalog, UITicket, UIWorkflowData, UIWorkflowState } from '@/types/fe'
 
 /* ---------- controller API ---------- */
+
+interface Preview {
+  snapshotId: string
+  state: WorkflowState
+}
 
 export interface WorkflowController {
   ticket: UITicket | null
   workflowData: UIWorkflowData | null
   workflowState: UIWorkflowState | null
-  waitingReason: WaitingReasonEnum | null
-  workflowConfidence: number | null
   loading: boolean
   error: string | null
+
+  isPreviewingSnapshot: boolean
 
   isStreaming: boolean
   streamedText: string
 
-  start(req: UICreateFromCatalog): Promise<void>
+  start(req: UICreateFromCatalog): Promise<string | null>
   answer(stepId: string, answer: string): Promise<void>
   answerStream(stepId: string, answer: string): Promise<void>
   chat(content: string): Promise<void>
@@ -34,6 +40,8 @@ export interface WorkflowController {
   skipStream(): Promise<void>
   refresh(): Promise<void>
   load(workflowId: string): Promise<void>
+  previewSnapshot(snapshotId: string): Promise<void>
+  branch(): Promise<string | null>
   reset(): void
 }
 
@@ -41,8 +49,7 @@ export interface WorkflowController {
 
 export function useWorkflowController(): WorkflowController {
   const [workflow, setWorkflow] = useState<Workflow | null>(null)
-  const [waitingReason, setWaitingReason] = useState<WaitingReasonEnum | null>(null)
-  const [workflowConfidence, setWorkflowConfidence] = useState<number | null>(null)
+  const [preview, setPreview] = useState<Preview | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -51,15 +58,13 @@ export function useWorkflowController(): WorkflowController {
 
   /* ----- helpers ----- */
 
-  function applyResponse(res: WorkflowDetailResponse) {
+  function applyWorkflowResponse(res: WorkflowDetailResponse) {
     setWorkflow(res.workflow)
-    setWaitingReason(res.waiting_reason ?? null)
-    setWorkflowConfidence(res.workflow_confidence ?? null)
   }
 
   /* ----- actions ----- */
 
-  async function start(req: UICreateFromCatalog): Promise<void> {
+  async function start(req: UICreateFromCatalog): Promise<string | null> {
     setLoading(true)
     setError(null)
 
@@ -71,16 +76,21 @@ export function useWorkflowController(): WorkflowController {
         max_steps: req.maxSteps,
       })
 
-      applyResponse(res)
+      applyWorkflowResponse(res)
+      return res.workflow.id
     } catch (e) {
       setError((e as Error).message)
+      return null
     } finally {
       setLoading(false)
     }
   }
 
   async function answer(stepId: string, answer: string): Promise<void> {
-    if (!workflow) return
+    if (!workflow) {
+      setError('No workflow loaded')
+      return
+    }
 
     setLoading(true)
     setError(null)
@@ -91,7 +101,7 @@ export function useWorkflowController(): WorkflowController {
         answer,
       })
 
-      applyResponse(res)
+      applyWorkflowResponse(res)
     } catch (e) {
       setError((e as Error).message)
     } finally {
@@ -130,7 +140,10 @@ export function useWorkflowController(): WorkflowController {
   }
 
   async function answerStream(stepId: string, answer: string): Promise<void> {
-    if (!workflow) return
+    if (!workflow) {
+      setError('No workflow loaded')
+      return
+    }
 
     await stream(`${workflow.id}/answer/stream`, {
       step_id: stepId,
@@ -139,7 +152,10 @@ export function useWorkflowController(): WorkflowController {
   }
 
   async function chat(content: string): Promise<void> {
-    if (!workflow) return
+    if (!workflow) {
+      setError('No workflow loaded')
+      return
+    }
 
     setLoading(true)
     setError(null)
@@ -150,7 +166,7 @@ export function useWorkflowController(): WorkflowController {
         content,
       })
 
-      applyResponse(res)
+      applyWorkflowResponse(res)
     } catch (e) {
       setError((e as Error).message)
     } finally {
@@ -159,7 +175,10 @@ export function useWorkflowController(): WorkflowController {
   }
 
   async function skip(): Promise<void> {
-    if (!workflow) return
+    if (!workflow) {
+      setError('No workflow loaded')
+      return
+    }
 
     setLoading(true)
     setError(null)
@@ -167,7 +186,7 @@ export function useWorkflowController(): WorkflowController {
     try {
       const res = await skipToSolution(workflow.id)
 
-      applyResponse(res)
+      applyWorkflowResponse(res)
     } catch (e) {
       setError((e as Error).message)
     } finally {
@@ -176,18 +195,22 @@ export function useWorkflowController(): WorkflowController {
   }
 
   async function skipStream(): Promise<void> {
-    if (!workflow) return
+    if (!workflow) {
+      setError('No workflow loaded')
+      return
+    }
 
     await stream(`${workflow.id}/skip/stream`, {})
   }
 
   async function load(workflowId: string): Promise<void> {
+    setPreview(null)
     setLoading(true)
     setError(null)
 
     try {
       const res = await getWorkflow(workflowId)
-      applyResponse(res)
+      applyWorkflowResponse(res)
     } catch (e) {
       setError((e as Error).message)
     } finally {
@@ -195,16 +218,61 @@ export function useWorkflowController(): WorkflowController {
     }
   }
 
+  async function previewSnapshot(snapshotId: string): Promise<void> {
+    if (!workflow) {
+      setError('No workflow loaded')
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      const res = await getSnapshot(workflow.id, snapshotId)
+      setPreview({ snapshotId, state: res.snapshot })
+    } catch (e) {
+      setError((e as Error).message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function branch(): Promise<string | null> {
+    if (!workflow || !preview) {
+      setError('No snapshot selected for branching')
+      return null
+    }
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      const res = await branchFromSnapshot(workflow.id, preview.snapshotId)
+
+      // Switch to new workflow
+      setPreview(null)
+      applyWorkflowResponse(res)
+      return res.workflow.id
+    } catch (e) {
+      setError((e as Error).message)
+      return null
+    } finally {
+      setLoading(false)
+    }
+  }
+
   async function refresh(): Promise<void> {
-    if (!workflow) return
+    if (!workflow) {
+      setError('No workflow loaded')
+      return
+    }
 
     await load(workflow.id)
   }
 
   function reset(): void {
     setWorkflow(null)
-    setWaitingReason(null)
-    setWorkflowConfidence(null)
+    setPreview(null)
     setError(null)
     setLoading(false)
   }
@@ -213,7 +281,10 @@ export function useWorkflowController(): WorkflowController {
 
   const ticket = workflow ? workflowToTicket(workflow) : null
   const workflowData = workflow ? workflowToWorkflowData(workflow) : null
-  const workflowState = workflow ? stateToWorkflowState(workflow.state) : null
+  const state = preview ? preview.state : workflow ? workflow.state : null
+  const workflowState = state ? stateToWorkflowState(state) : null
+
+  const isPreviewingSnapshot = preview !== null
 
   /* ----- exposed controller ----- */
 
@@ -221,10 +292,9 @@ export function useWorkflowController(): WorkflowController {
     ticket,
     workflowData,
     workflowState,
-    waitingReason,
-    workflowConfidence,
     loading,
     error,
+    isPreviewingSnapshot,
     isStreaming,
     streamedText,
     start,
@@ -235,6 +305,8 @@ export function useWorkflowController(): WorkflowController {
     skipStream,
     refresh,
     load,
+    previewSnapshot,
+    branch,
     reset,
-  }
+  } as WorkflowController
 }

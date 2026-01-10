@@ -62,6 +62,7 @@ def get_snapshot(
 
     return SnapshotDetailResponse(
         workflow_id=workflow_id,
+        snapshot_id=snapshot_id,
         snapshot=snapshot,
         waiting_reason=get_waiting_reason(snapshot),
         workflow_confidence=get_workflow_confidence(snapshot),

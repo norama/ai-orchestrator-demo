@@ -22,6 +22,7 @@ class WorkflowDetailResponse(BaseModel):
 
 class SnapshotDetailResponse(BaseModel):
     workflow_id: UUID
+    snapshot_id: UUID
     snapshot: WorkflowState
     waiting_reason: WaitingReason | None = None
     workflow_confidence: float | None = None

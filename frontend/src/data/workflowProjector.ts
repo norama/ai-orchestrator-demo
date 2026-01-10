@@ -106,5 +106,6 @@ export function stateToWorkflowState(state: WorkflowState): UIWorkflowState {
     currentStep: stateToOpenStep(state),
     solution: stateToSolution(state),
     solutionUpdated: state.discussion_result ? state.discussion_result.solution_updated : null,
+    workflowConfidence: state.last_decision ? state.last_decision.workflow_confidence : null,
   }
 }

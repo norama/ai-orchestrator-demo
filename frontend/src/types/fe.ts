@@ -111,4 +111,5 @@ export interface UIWorkflowState {
   currentStep: UICurrentStep | null
   solution: UISolution | null
   solutionUpdated: boolean | null
+  workflowConfidence: number | null
 }

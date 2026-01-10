@@ -15,7 +15,6 @@ interface WorkflowViewProps {
   workflowData: UIWorkflowData
   workflowState: UIWorkflowState
   loading: boolean
-  confidence: number | null
   onAnswer: (stepId: string, answer: string) => Promise<void>
   onSendChatMessage: (message: string) => Promise<void>
   onSkip: () => Promise<void>
@@ -28,7 +27,6 @@ export function WorkflowView({
   workflowData,
   workflowState,
   loading,
-  confidence,
   onAnswer,
   onSendChatMessage,
   onSkip,
@@ -99,7 +97,7 @@ export function WorkflowView({
             step={workflowState.currentStep}
             onAnswer={handleSendStepAnswer}
             onSkip={onSkip}
-            workflowConfidence={confidence}
+            workflowConfidence={workflowState.workflowConfidence}
             loading={isStreaming || loading}
             disabled={isStreaming || loading}
           />

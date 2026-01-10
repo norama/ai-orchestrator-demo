@@ -22,6 +22,12 @@ export interface ClarificationStep {
   metadata?: Record<string, unknown>
 }
 
+export interface NextStepDecision {
+  next_step: ClarificationStep | null
+  workflow_confidence: number | null
+  reason: string
+}
+
 export interface Solution {
   content: string
   confidence: number
@@ -51,6 +57,7 @@ export interface Ticket {
 export interface WorkflowState {
   phase: WorkflowPhaseEnum
   steps: ClarificationStep[]
+  last_decision: NextStepDecision | null
   solution: Solution | null
   skipped: boolean
   chat_history: ChatHistory
@@ -77,10 +84,10 @@ export interface CatalogResponse {
 
 export interface WorkflowDetailResponse {
   workflow_id: string
-  status: string
   workflow: Workflow
   waiting_reason?: WaitingReasonEnum | null
   workflow_confidence?: number | null
+  status: string
 }
 
 export interface WorkflowListResponse {
@@ -147,6 +154,7 @@ export interface WorkflowHistoryResponse {
 
 export interface SnapshotDetailResponse {
   workflow_id: string
+  snapshot_id: string
   snapshot: WorkflowState
   waiting_reason?: WaitingReasonEnum | null
   workflow_confidence?: number | null

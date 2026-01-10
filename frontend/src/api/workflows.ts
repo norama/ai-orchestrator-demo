@@ -4,9 +4,7 @@ import type {
   AnswerStepRequest,
   ChatMessageRequest,
   CreateWorkflowRequest,
-  SnapshotDetailResponse,
   WorkflowDetailResponse,
-  WorkflowHistoryResponse,
   WorkflowListResponse,
 } from '@/types/be'
 
@@ -94,45 +92,6 @@ export async function sendChatMessage(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(req),
-  })
-
-  return handleResponse<WorkflowDetailResponse>(res)
-}
-
-/**
- * Fetch snapshot by ID
- */
-export async function getSnapshot(
-  workflowId: string,
-  snapshotId: string,
-): Promise<SnapshotDetailResponse> {
-  const res = await fetch(`${API_WORKFLOWS_URL}/${workflowId}/snapshots/${snapshotId}`, {
-    method: 'GET',
-  })
-
-  return handleResponse<SnapshotDetailResponse>(res)
-}
-
-/**
- * Fetch snapshots for a workflow
- */
-export async function getWorkflowHistory(workflowId: string): Promise<WorkflowHistoryResponse> {
-  const res = await fetch(`${API_WORKFLOWS_URL}/${workflowId}/history`, {
-    method: 'GET',
-  })
-
-  return handleResponse<WorkflowHistoryResponse>(res)
-}
-
-/**
- * Create a new workflow
- */
-export async function branchWorkflow(
-  workflowId: string,
-  snapshotId: string,
-): Promise<WorkflowDetailResponse> {
-  const res = await fetch(`${API_WORKFLOWS_URL}/${workflowId}/snapshots/${snapshotId}/branch`, {
-    method: 'POST',
   })
 
   return handleResponse<WorkflowDetailResponse>(res)
