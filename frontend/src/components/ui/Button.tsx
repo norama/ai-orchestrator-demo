@@ -29,6 +29,7 @@ export function Button({
 >) {
   return (
     <button
+      type='button'
       {...props}
       className={[
         'px-4 py-2 rounded text-sm font-medium',

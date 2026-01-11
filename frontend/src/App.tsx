@@ -1,5 +1,6 @@
 import { StartWorkflowForm } from '@/components/StartWorkflowForm'
 import { Drawer } from '@/components/ui/Drawer'
+import { WorkflowHistoryPanel } from '@/components/WorkflowHistoryPanel'
 import { WorkflowListPanel } from '@/components/WorkflowListPanel'
 import { WorkflowView } from '@/components/WorkflowView'
 import { useCatalogController } from '@/data/catalogController'
@@ -8,7 +9,7 @@ import { useWorkflowHistoryController } from '@/data/workflowHistoryController'
 import { useWorkflowListController } from '@/data/workflowListController'
 import type { UICreateFromCatalog } from '@/types/fe'
 import { WorkflowHeader } from '@/WorkflowHeader'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 function App() {
   const catalogController = useCatalogController()
@@ -16,24 +17,36 @@ function App() {
   const historyController = useWorkflowHistoryController()
   const controller = useWorkflowController()
   const hasBootstrappedRef = useRef(false)
-  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [mobileWorkflowListOpen, setMobileWorkflowListOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
+
+  const selectWorkflow = useCallback(
+    (id: string) => {
+      controller.load(id)
+      historyController.load(id)
+    },
+    [controller, historyController],
+  )
 
   // Auto-load the first workflow when the list is loaded
   useEffect(() => {
     if (hasBootstrappedRef.current) return
     if (!controller.workflowData && listController.items.length > 0 && !controller.loading) {
       hasBootstrappedRef.current = true
-      controller.load(listController.items[0].id)
+      selectWorkflow(listController.items[0].id)
     }
-  }, [controller, listController.items])
+  }, [controller, listController.items, selectWorkflow])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const withListRefresh = <T extends (...args: any[]) => Promise<void>>(fn: T): T =>
+  const withRefresh = <T extends (...args: any[]) => Promise<void>>(fn: T): T =>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (async (...args: any[]) => {
       await fn(...args)
       await listController.refresh()
+      const selectedWorkflowId = controller.workflowData?.id ?? null
+      if (selectedWorkflowId) {
+        await historyController.load(selectedWorkflowId)
+      }
     }) as T
 
   const loading =
@@ -67,11 +80,6 @@ function App() {
   }
   */
 
-  const selectWorkflow = (id: string) => {
-    controller.load(id)
-    historyController.load(id)
-  }
-
   const resetControllers = () => {
     controller.reset()
     historyController.reset()
@@ -104,9 +112,15 @@ function App() {
       <WorkflowHeader
         workflowName={controller.workflowData?.name ?? null}
         historyCount={historyController.history?.events.length ?? null}
-        isHistoryOpen={historyOpen}
-        onOpenWorkflows={() => setDrawerOpen(true)}
-        onToggleHistory={() => setHistoryOpen((v) => !v)}
+        historyOpen={historyOpen}
+        onMobileOpenWorkflows={() => {
+          setMobileWorkflowListOpen(true)
+          setHistoryOpen(false)
+        }}
+        onToggleHistory={() => {
+          setHistoryOpen((v) => !v)
+          setMobileWorkflowListOpen(false)
+        }}
       />
 
       {/* Global layout wrapper */}
@@ -118,40 +132,79 @@ function App() {
             selectedId={selectedWorkflowId}
             onSelect={selectWorkflow}
             onNew={resetControllers}
+            disabled={loading || controller.isPreviewingSnapshot}
           />
         </div>
 
         {/* Mobile drawer */}
-        <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} className='lg:hidden'>
+        <Drawer
+          open={mobileWorkflowListOpen}
+          onClose={() => setMobileWorkflowListOpen(false)}
+          className='lg:hidden'>
           <WorkflowListPanel
             items={listController.items}
             selectedId={selectedWorkflowId}
             onSelect={(id) => {
               selectWorkflow(id)
-              setDrawerOpen(false)
+              setMobileWorkflowListOpen(false)
             }}
             onNew={() => {
               resetControllers()
-              setDrawerOpen(false)
+              setMobileWorkflowListOpen(false)
             }}
           />
         </Drawer>
 
-        <div className='flex-1 overflow-y-auto bg-gray-50 py-10'>
-          <WorkflowView
-            ticket={controller.ticket}
-            workflowData={controller.workflowData}
-            workflowState={controller.workflowState}
-            loading={loading}
-            onAnswer={withListRefresh(controller.answerStream)}
-            onSkip={withListRefresh(controller.skipStream)}
-            onSendChatMessage={withListRefresh(controller.chat)}
-            isStreaming={controller.isStreaming}
-            streamedText={controller.streamedText}
-          />
+        {/* Main content area */}
 
-          {error && <div className='mt-4 text-center text-sm text-red-600'>{error}</div>}
+        {/* Center + right */}
+        <div className='flex flex-1 overflow-hidden'>
+          <div
+            className={[
+              'flex-1 overflow-y-auto bg-gray-50 py-12',
+              'transition-[margin] duration-300 ease-in-out',
+              historyOpen ? 'lg:mr-80' : 'lg:mr-0',
+            ].join(' ')}>
+            <WorkflowView
+              ticket={controller.ticket}
+              workflowData={controller.workflowData}
+              workflowState={controller.workflowState}
+              loading={loading}
+              onAnswer={withRefresh(controller.answerStream)}
+              onSkip={withRefresh(controller.skipStream)}
+              onSendChatMessage={withRefresh(controller.chat)}
+              isStreaming={controller.isStreaming}
+              streamedText={controller.streamedText}
+            />
+          </div>
+
+          {/* Desktop History panel */}
+          <div className='hidden lg:block relative h-[calc(100vh-3rem)]'>
+            <div
+              className={[
+                'absolute top-0 right-0 h-full w-80',
+                'border-l border-gray-300 bg-white',
+                'transform transition-transform duration-300 ease-in-out',
+                historyOpen ? 'translate-x-0' : 'translate-x-full',
+              ].join(' ')}>
+              {historyController.history && (
+                <WorkflowHistoryPanel history={historyController.history} />
+              )}
+            </div>
+          </div>
         </div>
+
+        {/* Mobile History drawer */}
+        <div className='lg:hidden'>
+          <Drawer open={historyOpen} onClose={() => setHistoryOpen(false)} placement='top'>
+            {historyController.history && (
+              <WorkflowHistoryPanel history={historyController.history} />
+            )}
+          </Drawer>
+        </div>
+        {error && (
+          <div className='fixed bottom-2 inset-x-0 text-center text-sm text-red-600'>{error}</div>
+        )}
       </div>
     </>
   )

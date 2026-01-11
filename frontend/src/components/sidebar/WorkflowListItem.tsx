@@ -7,9 +7,10 @@ interface Props {
   item: UIWorkflowListItem
   selected: boolean
   onSelect: () => void
+  disabled?: boolean
 }
 
-export function WorkflowListItem({ item, selected, onSelect }: Props) {
+export function WorkflowListItem({ item, selected, onSelect, disabled }: Props) {
   const ref = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -24,11 +25,12 @@ export function WorkflowListItem({ item, selected, onSelect }: Props) {
   return (
     <div
       ref={ref}
-      onClick={onSelect}
+      onClick={disabled ? undefined : onSelect}
       className={[
-        'relative px-3 py-2 cursor-pointer transition',
+        'relative px-3 py-2 transition',
         'border-b border-gray-100',
-        selected ? 'bg-blue-50' : 'hover:bg-gray-100',
+        selected ? 'bg-blue-100' : !disabled ? 'hover:bg-gray-100' : '',
+        disabled ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer',
       ].join(' ')}>
       {/* Selected accent */}
       {selected && <div className='absolute left-0 top-0 bottom-0 w-1 bg-blue-500' />}

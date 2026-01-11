@@ -88,10 +88,6 @@ export function WorkflowView({
           />
         )}
 
-        {(workflowState.currentStep || workflowState.phase === WorkflowPhaseEnum.DISCUSSION) && (
-          <div className='my-3 border-t text-gray-300' />
-        )}
-
         {workflowState.currentStep && (
           <StepInput
             step={workflowState.currentStep}

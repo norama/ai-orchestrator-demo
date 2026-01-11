@@ -19,13 +19,13 @@ class WorkflowEventView(BaseModel):
 
 def event_label(event_type: WorkflowEventType) -> str:
     labels = {
-        WorkflowEventType.WORKFLOW_CREATED: "Workflow Created",
-        WorkflowEventType.WORKFLOW_BRANCHED: "Workflow Branched",
-        WorkflowEventType.CLARIFICATION_UPDATED: "Clarification Updated",
-        WorkflowEventType.SOLUTION_GENERATED: "Solution Generated",
-        WorkflowEventType.CHAT_REPLIED: "Chat Replied",
-        WorkflowEventType.WORKFLOW_COMPLETED: "Workflow Completed",
-        WorkflowEventType.SOLUTION_UPDATED: "Solution Updated",
+        WorkflowEventType.WORKFLOW_CREATED: "Workflow started",
+        WorkflowEventType.WORKFLOW_BRANCHED: "Workflow branched",
+        WorkflowEventType.CLARIFICATION_UPDATED: "Clarification refined",
+        WorkflowEventType.SOLUTION_GENERATED: "Solution generated",
+        WorkflowEventType.CHAT_REPLIED: "Chat replied",
+        WorkflowEventType.WORKFLOW_COMPLETED: "Workflow completed",
+        WorkflowEventType.SOLUTION_UPDATED: "Solution updated",
     }
     return labels.get(event_type, "Unknown Event")
 

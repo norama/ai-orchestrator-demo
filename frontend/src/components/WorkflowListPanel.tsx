@@ -1,3 +1,4 @@
+import { HeaderLayout } from '@/components/layout/HeaderLayout'
 import { WorkflowListItem } from '@/components/sidebar/WorkflowListItem'
 import { Button } from '@/components/ui/Button'
 import type { UIWorkflowListItem } from '@/types/fe'
@@ -7,14 +8,13 @@ interface Props {
   selectedId: string | null
   onSelect(id: string): void
   onNew(): void
+  disabled?: boolean
 }
 
-export function WorkflowListPanel({ items, selectedId, onSelect, onNew }: Props) {
+export function WorkflowListPanel({ items, selectedId, onSelect, onNew, disabled }: Props) {
   return (
     <div className='w-60 border-r border-gray-300 bg-white flex flex-col h-full'>
-      <div className='px-3 py-2 text-sm font-medium border-b border-gray-300 text-gray-700 h-12 flex items-center'>
-        Workflows
-      </div>
+      <HeaderLayout>Workflows</HeaderLayout>
 
       <div className='flex-1 overflow-y-auto'>
         {items.map((item) => (
@@ -23,12 +23,17 @@ export function WorkflowListPanel({ items, selectedId, onSelect, onNew }: Props)
             item={item}
             selected={selectedId === item.id}
             onSelect={() => onSelect(item.id)}
+            disabled={disabled}
           />
         ))}
       </div>
 
       <div className='p-3 border-t border-gray-300'>
-        <Button variant='secondary' className='w-full justify-start' onClick={onNew}>
+        <Button
+          variant='secondary'
+          className='w-full justify-start'
+          onClick={onNew}
+          disabled={disabled}>
           + New workflow
         </Button>
       </div>
