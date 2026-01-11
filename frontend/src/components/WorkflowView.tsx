@@ -5,7 +5,7 @@ import { ChatInput } from '@/components/workflow/ChatInput'
 import { ChatMessageView } from '@/components/workflow/ChatMessageView'
 import { SolutionView } from '@/components/workflow/SolutionView'
 import { StepInput } from '@/components/workflow/StepInput'
-import { WorkflowHeader } from '@/components/workflow/WorkflowHeader'
+import { WorkflowInfo } from '@/components/workflow/WorkflowInfo'
 import { ChatRoleEnum, WorkflowPhaseEnum } from '@/types/enums'
 import type { UIChatMessage, UITicket, UIWorkflowData, UIWorkflowState } from '@/types/fe'
 import { useState } from 'react'
@@ -65,7 +65,7 @@ export function WorkflowView({
   return (
     <MainLayout>
       <TimelineLayout>
-        <WorkflowHeader ticket={ticket} workflowData={workflowData} workflowState={workflowState} />
+        <WorkflowInfo ticket={ticket} workflowData={workflowData} workflowState={workflowState} />
         <div className='flex flex-col gap-3'>
           {messages.map((message) => (
             <ChatMessageView

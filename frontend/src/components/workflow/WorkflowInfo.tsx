@@ -3,13 +3,13 @@ import { TicketSummary } from '@/components/workflow/TicketSummary'
 import { WorkflowPhaseBadge } from '@/components/workflow/WorkflowPhaseBadge'
 import type { UITicket, UIWorkflowData, UIWorkflowState } from '@/types/fe'
 
-interface WorkflowHeaderProps {
+interface Props {
   ticket: UITicket
   workflowData: UIWorkflowData
   workflowState: UIWorkflowState
 }
 
-export function WorkflowHeader({ ticket, workflowData, workflowState }: WorkflowHeaderProps) {
+export function WorkflowInfo({ ticket, workflowData, workflowState }: Props) {
   const title = workflowData.name?.trim() || ticket.title || 'Workflow'
 
   return (

@@ -12,7 +12,7 @@ interface Props {
 export function WorkflowListPanel({ items, selectedId, onSelect, onNew }: Props) {
   return (
     <div className='w-60 border-r border-gray-300 bg-white flex flex-col h-full'>
-      <div className='px-3 py-2 text-sm font-medium border-b border-gray-300 text-gray-700'>
+      <div className='px-3 py-2 text-sm font-medium border-b border-gray-300 text-gray-700 h-12 flex items-center'>
         Workflows
       </div>
 

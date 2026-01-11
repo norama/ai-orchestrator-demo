@@ -7,6 +7,7 @@ import { useWorkflowController } from '@/data/workflowController'
 import { useWorkflowHistoryController } from '@/data/workflowHistoryController'
 import { useWorkflowListController } from '@/data/workflowListController'
 import type { UICreateFromCatalog } from '@/types/fe'
+import { WorkflowHeader } from '@/WorkflowHeader'
 import { useEffect, useRef, useState } from 'react'
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
   const controller = useWorkflowController()
   const hasBootstrappedRef = useRef(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
 
   // Auto-load the first workflow when the list is loaded
   useEffect(() => {
@@ -98,20 +100,19 @@ function App() {
 
   return (
     <>
-      <div className='fixed top-0 inset-x-0 z-30 lg:hidden flex items-center gap-2 px-4 h-12 border-b border-gray-300 bg-white'>
-        <button
-          onClick={() => setDrawerOpen(true)}
-          className='text-sm px-2 py-1 rounded hover:bg-gray-100'>
-          ☰
-        </button>
-        <div className='text-sm font-medium text-gray-800 truncate'>
-          {controller.workflowData?.name || 'AI Orchestrator Demo'}
-        </div>
-      </div>
+      {/* Fixed header */}
+      <WorkflowHeader
+        workflowName={controller.workflowData?.name ?? null}
+        historyCount={historyController.history?.events.length ?? null}
+        isHistoryOpen={historyOpen}
+        onOpenWorkflows={() => setDrawerOpen(true)}
+        onToggleHistory={() => setHistoryOpen((v) => !v)}
+      />
 
-      <div className='flex h-screen pt-12 lg:pt-0'>
+      {/* Global layout wrapper */}
+      <div className='flex h-screen pt-12'>
         {/* Desktop rail */}
-        <div className='hidden lg:block h-screen'>
+        <div className='hidden lg:block h-[calc(100vh-3rem)]'>
           <WorkflowListPanel
             items={listController.items}
             selectedId={selectedWorkflowId}
