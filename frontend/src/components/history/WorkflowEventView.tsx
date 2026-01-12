@@ -59,19 +59,30 @@ function EventDisplayValue({ item }: { item: UIEventDisplayItem }) {
 interface Props {
   event: UIWorkflowEvent
   expanded?: boolean
+  previewing?: boolean
   onExpandCollapse: () => void
-  onPreview?: (snapshotId: string) => void
+  onPreview: () => void
 }
 
-export function WorkflowEventView({ event, expanded, onExpandCollapse, onPreview }: Props) {
+export function WorkflowEventView({
+  event,
+  expanded,
+  previewing,
+  onExpandCollapse,
+  onPreview,
+}: Props) {
   const style = EVENT_STYLE[event.type]
 
   return (
     <div
       className={[
-        'border rounded-md px-3 py-2 bg-white',
+        'border rounded-md px-3 py-2 ',
         'transition-colors',
-        event.isCurrent ? 'border-blue-400 bg-blue-50' : 'border-gray-200',
+        event.isCurrent
+          ? 'border-blue-400 bg-blue-50'
+          : previewing
+            ? 'border-yellow-400 bg-yellow-50'
+            : 'border-gray-200 bg-white',
       ].join(' ')}>
       {/* Header */}
       <div
@@ -88,6 +99,7 @@ export function WorkflowEventView({ event, expanded, onExpandCollapse, onPreview
         </div>
 
         {event.isCurrent && <Badge variant='info'>current</Badge>}
+        {previewing && <Badge variant='warning'>previewing</Badge>}
 
         <span className='text-gray-400 text-sm'>{expanded ? '▲' : '▼'}</span>
       </div>
@@ -99,9 +111,9 @@ export function WorkflowEventView({ event, expanded, onExpandCollapse, onPreview
           'duration-200 ease-out',
           expanded ? 'max-h-125 opacity-100 delay-80' : 'max-h-0 opacity-0 delay-80',
         ].join(' ')}>
-        {event.display && (
-          <div className='mt-3 space-y-3 text-sm'>
-            {event.display.map((item, i) => (
+        <div className='mt-3 space-y-3 text-sm'>
+          {event.display &&
+            event.display.map((item, i) => (
               <div key={i} className='space-y-1'>
                 {/* Label */}
                 <div className='text-xs font-medium text-gray-600'>{item.label}</div>
@@ -113,15 +125,12 @@ export function WorkflowEventView({ event, expanded, onExpandCollapse, onPreview
               </div>
             ))}
 
-            {onPreview && (
-              <div className='pt-2'>
-                <Button variant='secondary' onClick={() => onPreview(event.snapshotId)}>
-                  Preview snapshot
-                </Button>
-              </div>
-            )}
+          <div className='pb-1 flex justify-end'>
+            <Button variant='secondary' onClick={() => onPreview()}>
+              Preview snapshot
+            </Button>
           </div>
-        )}
+        </div>
       </div>
     </div>
   )

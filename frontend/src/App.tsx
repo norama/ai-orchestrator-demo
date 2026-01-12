@@ -57,6 +57,7 @@ function App() {
   const error =
     controller.error || listController.error || catalogController.error || historyController.error
   const selectedWorkflowId = controller.workflowData?.id ?? null
+  const previewing = controller.previewingSnapshotId !== null
 
   const startNewWorkflow = async (req: UICreateFromCatalog) => {
     const workflowId = await controller.start(req)
@@ -113,6 +114,7 @@ function App() {
         workflowName={controller.workflowData?.name ?? null}
         historyCount={historyController.history?.events.length ?? null}
         historyOpen={historyOpen}
+        isPreview={controller.previewingSnapshotId !== null}
         onMobileOpenWorkflows={() => {
           setMobileWorkflowListOpen(true)
           setHistoryOpen(false)
@@ -122,6 +124,7 @@ function App() {
           setMobileWorkflowListOpen(false)
         }}
       />
+      {previewing && <div className='pointer-events-none absolute inset-0 z-10 bg-stone-200/20' />}
 
       {/* Global layout wrapper */}
       <div className='flex h-screen pt-12'>
@@ -132,7 +135,7 @@ function App() {
             selectedId={selectedWorkflowId}
             onSelect={selectWorkflow}
             onNew={resetControllers}
-            disabled={loading || controller.isPreviewingSnapshot}
+            disabled={loading || controller.previewingSnapshotId !== null}
           />
         </div>
 
@@ -152,6 +155,7 @@ function App() {
               resetControllers()
               setMobileWorkflowListOpen(false)
             }}
+            disabled={loading || controller.previewingSnapshotId !== null}
           />
         </Drawer>
 
@@ -161,8 +165,8 @@ function App() {
         <div className='flex flex-1 overflow-hidden'>
           <div
             className={[
-              'flex-1 overflow-y-auto bg-gray-50 py-12',
-              'transition-[margin] duration-300 ease-in-out',
+              'flex-1 overflow-y-auto py-12 bg-gray-50',
+              'transition-[margin,background-color] duration-300 ease-in-out',
               historyOpen ? 'lg:mr-80' : 'lg:mr-0',
             ].join(' ')}>
             <WorkflowView
@@ -170,6 +174,7 @@ function App() {
               workflowData={controller.workflowData}
               workflowState={controller.workflowState}
               loading={loading}
+              previewing={previewing}
               onAnswer={withRefresh(controller.answerStream)}
               onSkip={withRefresh(controller.skipStream)}
               onSendChatMessage={withRefresh(controller.chat)}
@@ -188,7 +193,11 @@ function App() {
                 historyOpen ? 'translate-x-0' : 'translate-x-full',
               ].join(' ')}>
               {historyController.history && (
-                <WorkflowHistoryPanel history={historyController.history} />
+                <WorkflowHistoryPanel
+                  history={historyController.history}
+                  previewingSnapshotId={controller.previewingSnapshotId}
+                  onPreviewSnapshot={controller.previewSnapshot}
+                />
               )}
             </div>
           </div>
@@ -198,7 +207,11 @@ function App() {
         <div className='lg:hidden'>
           <Drawer open={historyOpen} onClose={() => setHistoryOpen(false)} placement='top'>
             {historyController.history && (
-              <WorkflowHistoryPanel history={historyController.history} />
+              <WorkflowHistoryPanel
+                history={historyController.history}
+                previewingSnapshotId={controller.previewingSnapshotId}
+                onPreviewSnapshot={controller.previewSnapshot}
+              />
             )}
           </Drawer>
         </div>

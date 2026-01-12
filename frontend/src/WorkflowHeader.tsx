@@ -1,9 +1,11 @@
+import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 
 interface WorkflowHeaderProps {
   workflowName: string | null
   historyCount: number | null
   historyOpen: boolean
+  isPreview: boolean
 
   onMobileOpenWorkflows(): void
   onToggleHistory(): void
@@ -13,11 +15,16 @@ export function WorkflowHeader({
   workflowName,
   historyCount,
   historyOpen,
+  isPreview,
   onMobileOpenWorkflows,
   onToggleHistory,
 }: WorkflowHeaderProps) {
   return (
-    <div className='fixed top-0 inset-x-0 z-30 flex items-center gap-3 px-4 h-12 border-b border-gray-300 bg-white'>
+    <div
+      className={[
+        'fixed top-0 inset-x-0 z-30 flex items-center gap-3 px-4 h-12 border-b',
+        isPreview ? 'bg-yellow-50 border-yellow-300' : 'bg-white border-gray-300',
+      ].join(' ')}>
       {/* Mobile: workflow list */}
       <button
         onClick={onMobileOpenWorkflows}
@@ -33,6 +40,12 @@ export function WorkflowHeader({
           {workflowName || 'AI Orchestrator Demo'}
         </div>
       </div>
+
+      {isPreview && (
+        <Badge variant='warning' className='ml-2'>
+          Preview
+        </Badge>
+      )}
 
       {/* History trigger */}
       <Button

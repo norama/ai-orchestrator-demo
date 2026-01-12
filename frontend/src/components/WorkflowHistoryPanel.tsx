@@ -5,9 +5,11 @@ import { useState } from 'react'
 
 interface Props {
   history: UIWorkflowHistory
+  previewingSnapshotId: string | null
+  onPreviewSnapshot: (snapshotId: string) => Promise<void>
 }
 
-export function WorkflowHistoryPanel({ history }: Props) {
+export function WorkflowHistoryPanel({ history, previewingSnapshotId, onPreviewSnapshot }: Props) {
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null)
 
   const handleExpandCollapse = (eventId: string) => {
@@ -25,7 +27,9 @@ export function WorkflowHistoryPanel({ history }: Props) {
             key={event.id}
             event={event}
             expanded={expandedEventId === event.id}
+            previewing={previewingSnapshotId === event.snapshotId}
             onExpandCollapse={() => handleExpandCollapse(event.id)}
+            onPreview={() => onPreviewSnapshot(event.snapshotId)}
           />
         ))}
       </div>

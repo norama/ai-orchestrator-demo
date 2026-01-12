@@ -21,7 +21,7 @@ export function ChatInput({ onSend, placeholder, disabled, loading }: Props) {
 
   return (
     <div className='relative px-4 pt-2 pb-6 bg-white'>
-      <div className={['space-y-4 transition-opacity', disabled ? 'opacity-60' : ''].join(' ')}>
+      <div className={['space-y-4 transition-opacity', disabled ? 'opacity-80' : ''].join(' ')}>
         <div className='text-base font-medium text-gray-900'>Continue the discussion</div>
         <div className='flex items-center gap-2'>
           <Input

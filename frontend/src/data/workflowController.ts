@@ -27,7 +27,7 @@ export interface WorkflowController {
   loading: boolean
   error: string | null
 
-  isPreviewingSnapshot: boolean
+  previewingSnapshotId: string | null
 
   isStreaming: boolean
   streamedText: string
@@ -284,7 +284,7 @@ export function useWorkflowController(): WorkflowController {
   const state = preview ? preview.state : workflow ? workflow.state : null
   const workflowState = state ? stateToWorkflowState(state) : null
 
-  const isPreviewingSnapshot = preview !== null
+  const previewingSnapshotId = preview !== null ? preview.snapshotId : null
 
   /* ----- exposed controller ----- */
 
@@ -294,7 +294,7 @@ export function useWorkflowController(): WorkflowController {
     workflowState,
     loading,
     error,
-    isPreviewingSnapshot,
+    previewingSnapshotId,
     isStreaming,
     streamedText,
     start,

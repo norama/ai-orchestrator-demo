@@ -15,6 +15,7 @@ interface WorkflowViewProps {
   workflowData: UIWorkflowData
   workflowState: UIWorkflowState
   loading: boolean
+  previewing: boolean
   onAnswer: (stepId: string, answer: string) => Promise<void>
   onSendChatMessage: (message: string) => Promise<void>
   onSkip: () => Promise<void>
@@ -27,6 +28,7 @@ export function WorkflowView({
   workflowData,
   workflowState,
   loading,
+  previewing,
   onAnswer,
   onSendChatMessage,
   onSkip,
@@ -95,17 +97,19 @@ export function WorkflowView({
             onSkip={onSkip}
             workflowConfidence={workflowState.workflowConfidence}
             loading={isStreaming || loading}
-            disabled={isStreaming || loading}
+            disabled={isStreaming || loading || previewing}
           />
         )}
 
         {workflowState.phase === WorkflowPhaseEnum.DISCUSSION && (
-          <ChatInput
-            placeholder='Enter your message...'
-            onSend={handleSendChatMessage}
-            loading={isStreaming || loading}
-            disabled={isStreaming || loading}
-          />
+          <div className='border-t border-gray-300 mt-4'>
+            <ChatInput
+              placeholder='Enter your message...'
+              onSend={handleSendChatMessage}
+              loading={isStreaming || loading}
+              disabled={isStreaming || loading || previewing}
+            />
+          </div>
         )}
       </BottomFixedLayout>
     </MainLayout>

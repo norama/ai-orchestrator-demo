@@ -33,7 +33,7 @@ export function StepInput({
   return (
     <div className='relative px-4 py-5 bg-white'>
       {/* Main interactive content */}
-      <div className={['space-y-4 transition-opacity', disabled ? 'opacity-60' : ''].join(' ')}>
+      <div className={['space-y-4 transition-opacity', disabled ? 'opacity-80' : ''].join(' ')}>
         {/* Prompt */}
         <div className='text-base font-medium text-gray-900'>{step.prompt}</div>
 
