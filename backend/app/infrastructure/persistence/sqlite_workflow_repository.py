@@ -180,8 +180,8 @@ class SqliteWorkflowRepository(WorkflowRepository):
 
             conn.execute(
                 """
-                INSERT INTO workflows (id, name, description, max_steps, ticket_json, domain_type, current_snapshot_id, parent_id, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO workflows (id, name, description, max_steps, ticket_json, domain_type, current_snapshot_id, parent_id, parent_snapshot_id, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     str(workflow.id),
@@ -192,6 +192,7 @@ class SqliteWorkflowRepository(WorkflowRepository):
                     workflow.domain_type.value,
                     str(current_snapshot_id),
                     str(workflow.parent_id) if workflow.parent_id else None,
+                    str(workflow.parent_snapshot_id) if workflow.parent_snapshot_id else None,
                     workflow.updated_at.isoformat(),
                 ),
             )

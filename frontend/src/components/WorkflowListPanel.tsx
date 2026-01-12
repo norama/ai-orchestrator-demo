@@ -8,10 +8,18 @@ interface Props {
   selectedId: string | null
   onSelect(id: string): void
   onNew(): void
+  onSelectParent(item: UIWorkflowListItem): Promise<void>
   disabled?: boolean
 }
 
-export function WorkflowListPanel({ items, selectedId, onSelect, onNew, disabled }: Props) {
+export function WorkflowListPanel({
+  items,
+  selectedId,
+  onSelect,
+  onNew,
+  onSelectParent,
+  disabled,
+}: Props) {
   return (
     <div className='w-60 border-r border-gray-300 bg-white flex flex-col h-full'>
       <HeaderLayout>Workflows</HeaderLayout>
@@ -23,6 +31,7 @@ export function WorkflowListPanel({ items, selectedId, onSelect, onNew, disabled
             item={item}
             selected={selectedId === item.id}
             onSelect={() => onSelect(item.id)}
+            onSelectParent={() => onSelectParent(item)}
             disabled={disabled}
           />
         ))}

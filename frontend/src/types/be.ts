@@ -67,6 +67,7 @@ export interface WorkflowState {
 export interface Workflow {
   id: string
   parent_id: string | null
+  parent_snapshot_id: string | null
   ticket: Ticket
   domain_type: DomainTypeEnum
   name: string

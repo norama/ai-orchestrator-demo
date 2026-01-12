@@ -12,6 +12,7 @@ interface WorkflowHeaderProps {
   onNewWorkflow(): void
   onBackToLive(): void
   onBranch(): void
+  disabled?: boolean
 }
 
 export function WorkflowHeader({
@@ -24,21 +25,23 @@ export function WorkflowHeader({
   onNewWorkflow,
   onBackToLive,
   onBranch,
+  disabled,
 }: WorkflowHeaderProps) {
   return (
     <div
       className={[
-        'fixed top-0 inset-x-0 z-30 flex items-center gap-3 px-4 h-16 border-b',
+        'fixed top-0 inset-x-0 z-30 flex items-center gap-4 px-4 h-16 border-b',
         isPreview ? 'bg-yellow-50 border-yellow-300' : 'bg-white border-gray-300',
       ].join(' ')}>
       {/* Mobile workflows */}
-      <button
+      <Button
+        variant='ghost'
         onClick={onMobileOpenWorkflows}
         className='lg:hidden text-sm px-2 py-1 rounded hover:bg-gray-100'
         aria-label='Open workflows'
-        disabled={historyOpen}>
+        disabled={historyOpen || disabled}>
         ☰
-      </button>
+      </Button>
 
       {/* Title */}
       <div className='flex-1 min-w-0 flex items-center gap-2'>
@@ -50,32 +53,32 @@ export function WorkflowHeader({
       </div>
 
       {/* Desktop actions */}
-      <div className='hidden lg:flex items-center gap-2'>
+      <div className='hidden lg:flex items-center gap-4'>
         {isPreview ? (
           <>
-            <Button variant='secondary' onClick={onBackToLive}>
+            <Button variant='secondary' onClick={onBackToLive} disabled={disabled}>
               ↩️ Back to live
             </Button>
 
-            <Button variant='primary' onClick={onBranch}>
+            <Button variant='primary' onClick={onBranch} disabled={disabled}>
               🌱 Branch from here
             </Button>
           </>
         ) : (
-          <Button variant='secondary' onClick={onNewWorkflow}>
+          <Button variant='secondary' onClick={onNewWorkflow} disabled={disabled}>
             🧩 New workflow
           </Button>
         )}
       </div>
 
       {/* Mobile actions */}
-      <div className='flex lg:hidden items-center gap-2'>
+      <div className='flex lg:hidden items-center gap-4'>
         {isPreview ? (
-          <Button variant='secondary' onClick={onBackToLive}>
+          <Button variant='secondary' onClick={onBackToLive} disabled={disabled}>
             ↩️ Live
           </Button>
         ) : (
-          <Button variant='secondary' onClick={onNewWorkflow}>
+          <Button variant='secondary' onClick={onNewWorkflow} disabled={disabled}>
             🧩 New
           </Button>
         )}
@@ -84,7 +87,7 @@ export function WorkflowHeader({
       {/* History */}
       <Button
         onClick={onToggleHistory}
-        disabled={!historyCount}
+        disabled={!historyCount || disabled}
         variant='ghost'
         aria-pressed={historyOpen}
         aria-expanded={historyOpen}>

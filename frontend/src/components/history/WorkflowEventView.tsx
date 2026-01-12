@@ -63,6 +63,7 @@ interface Props {
   onExpandCollapse: () => void
   onPreview: () => void
   onBranch: () => Promise<void>
+  disabled?: boolean
 }
 
 export function WorkflowEventView({
@@ -72,11 +73,13 @@ export function WorkflowEventView({
   onExpandCollapse,
   onPreview,
   onBranch,
+  disabled,
 }: Props) {
   const style = EVENT_STYLE[event.type]
 
   return (
     <div
+      data-snapshot-id={event.snapshotId}
       className={[
         'border rounded-md px-3 py-2 ',
         'transition-colors',
@@ -89,15 +92,16 @@ export function WorkflowEventView({
       {/* Header */}
       <div
         className={[
-          'flex items-center gap-2 cursor-pointer select-none',
+          'flex items-center gap-2 select-none',
           expanded ? 'pb-2 border-b border-gray-200' : '',
+          disabled ? 'cursor-default' : 'cursor-pointer',
         ].join(' ')}
-        onClick={() => onExpandCollapse()}>
+        onClick={!disabled ? () => onExpandCollapse() : undefined}>
         <span className='text-lg'>{style.icon}</span>
 
         <div className='flex-1 min-w-0'>
           <div className='text-sm font-medium text-gray-900 truncate'>{event.label}</div>
-          <div className='text-xs text-gray-500'>{event.createdAt.toLocaleTimeString()}</div>
+          <div className='text-xs text-gray-500'>{event.createdAt.toLocaleString()}</div>
         </div>
 
         {!previewing && event.isCurrent && <Badge variant='info'>Live</Badge>}
@@ -129,11 +133,11 @@ export function WorkflowEventView({
 
           <div className='pb-1 flex justify-end'>
             {previewing ? (
-              <Button variant='primary' onClick={() => onBranch()}>
+              <Button variant='primary' onClick={() => onBranch()} disabled={disabled}>
                 🌱 Branch from here
               </Button>
             ) : (
-              <Button variant='secondary' onClick={() => onPreview()}>
+              <Button variant='secondary' onClick={() => onPreview()} disabled={disabled}>
                 👁️ Preview snapshot
               </Button>
             )}

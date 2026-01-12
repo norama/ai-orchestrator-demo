@@ -39,7 +39,7 @@ export interface WorkflowController {
   skip(): Promise<void>
   skipStream(): Promise<void>
   refresh(): Promise<void>
-  load(workflowId: string): Promise<void>
+  load(workflowId: string, snapshotId: string | null): Promise<void>
   previewSnapshot(snapshotId: string): Promise<void>
   branch(): Promise<string | null>
   reset(): void
@@ -203,7 +203,7 @@ export function useWorkflowController(): WorkflowController {
     await stream(`${workflow.id}/skip/stream`, {})
   }
 
-  async function load(workflowId: string): Promise<void> {
+  async function load(workflowId: string, snapshotId: string | null = null): Promise<void> {
     setPreview(null)
     setLoading(true)
     setError(null)
@@ -211,6 +211,11 @@ export function useWorkflowController(): WorkflowController {
     try {
       const res = await getWorkflow(workflowId)
       applyWorkflowResponse(res)
+
+      if (snapshotId) {
+        const res = await getSnapshot(workflowId, snapshotId)
+        setPreview({ snapshotId, state: res.snapshot })
+      }
     } catch (e) {
       setError((e as Error).message)
     } finally {

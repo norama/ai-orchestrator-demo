@@ -72,6 +72,8 @@ export interface UIWorkflowCreateForm {
 
 export interface UIWorkflowListItem {
   id: string
+  parentId: string | null
+  parentSnapshotId: string | null
   name: string
   ticketTitle: string
   domainType: DomainTypeEnum

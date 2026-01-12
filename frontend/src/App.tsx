@@ -7,7 +7,7 @@ import { useCatalogController } from '@/data/catalogController'
 import { useWorkflowController } from '@/data/workflowController'
 import { useWorkflowHistoryController } from '@/data/workflowHistoryController'
 import { useWorkflowListController } from '@/data/workflowListController'
-import type { UICreateFromCatalog } from '@/types/fe'
+import type { UICreateFromCatalog, UIWorkflowListItem } from '@/types/fe'
 import { WorkflowHeader } from '@/WorkflowHeader'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
@@ -21,9 +21,9 @@ function App() {
   const [historyOpen, setHistoryOpen] = useState(false)
 
   const selectWorkflow = useCallback(
-    (id: string) => {
-      controller.load(id)
-      historyController.load(id)
+    async (id: string, snapshotId: string | null = null) => {
+      await controller.load(id, snapshotId)
+      await historyController.load(id)
     },
     [controller, historyController],
   )
@@ -53,7 +53,8 @@ function App() {
     controller.loading ||
     listController.loading ||
     catalogController.loading ||
-    historyController.loading
+    historyController.loading ||
+    controller.isStreaming
   const error =
     controller.error || listController.error || catalogController.error || historyController.error
   const selectedWorkflowId = controller.workflowData?.id ?? null
@@ -74,6 +75,7 @@ function App() {
     if (newWorkflowId) {
       await listController.refresh()
       await historyController.load(newWorkflowId)
+      setHistoryOpen(false)
     } else {
       historyController.reset()
     }
@@ -82,6 +84,15 @@ function App() {
   const resetControllers = () => {
     controller.reset()
     historyController.reset()
+    setHistoryOpen(false)
+  }
+
+  async function selectParentSnapshot(item: UIWorkflowListItem) {
+    if (!item.parentId || !item.parentSnapshotId) return
+
+    await selectWorkflow(item.parentId, item.parentSnapshotId)
+
+    setHistoryOpen(true)
   }
 
   /* ---------- initial loading state ---------- */
@@ -124,6 +135,7 @@ function App() {
         onNewWorkflow={resetControllers}
         onBackToLive={controller.refresh}
         onBranch={branchFromHistory}
+        disabled={loading}
       />
       {previewing && <div className='pointer-events-none absolute inset-0 z-10 bg-stone-200/20' />}
 
@@ -136,6 +148,7 @@ function App() {
             selectedId={selectedWorkflowId}
             onSelect={selectWorkflow}
             onNew={resetControllers}
+            onSelectParent={selectParentSnapshot}
             disabled={loading || controller.previewingSnapshotId !== null}
           />
         </div>
@@ -156,6 +169,10 @@ function App() {
               resetControllers()
               setMobileWorkflowListOpen(false)
             }}
+            onSelectParent={async (item: UIWorkflowListItem) => {
+              await selectParentSnapshot(item)
+              setMobileWorkflowListOpen(false)
+            }}
             disabled={loading || controller.previewingSnapshotId !== null}
           />
         </Drawer>
@@ -166,22 +183,31 @@ function App() {
         <div className='flex flex-1 overflow-hidden'>
           <div
             className={[
-              'flex-1 overflow-y-auto py-16 bg-gray-50',
+              'flex flex-col flex-1 min-h-0 bg-gray-50',
               'transition-[margin,background-color] duration-300 ease-in-out',
               historyOpen ? 'lg:mr-80' : 'lg:mr-0',
             ].join(' ')}>
-            <WorkflowView
-              ticket={controller.ticket}
-              workflowData={controller.workflowData}
-              workflowState={controller.workflowState}
-              loading={loading}
-              previewing={previewing}
-              onAnswer={withRefresh(controller.answerStream)}
-              onSkip={withRefresh(controller.skipStream)}
-              onSendChatMessage={withRefresh(controller.chat)}
-              isStreaming={controller.isStreaming}
-              streamedText={controller.streamedText}
-            />
+            <div className='flex-1 min-h-0 overflow-y-auto pt-4'>
+              <WorkflowView
+                ticket={controller.ticket}
+                workflowData={controller.workflowData}
+                workflowState={controller.workflowState}
+                loading={loading}
+                previewing={previewing}
+                onAnswer={withRefresh(controller.answerStream)}
+                onSkip={withRefresh(controller.skipStream)}
+                onSendChatMessage={withRefresh(controller.chat)}
+                isStreaming={controller.isStreaming}
+                streamedText={controller.streamedText}
+              />
+            </div>
+            <div className='h-16 px-6 flex items-center border-t border-gray-200 bg-gray-50'>
+              {error && (
+                <div className='mx-auto max-w-3xl rounded-md bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2 text-center'>
+                  {error}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Desktop History panel */}
@@ -199,6 +225,7 @@ function App() {
                   previewingSnapshotId={controller.previewingSnapshotId}
                   onPreviewSnapshot={controller.previewSnapshot}
                   onBranch={branchFromHistory}
+                  disabled={loading}
                 />
               )}
             </div>
@@ -214,13 +241,11 @@ function App() {
                 previewingSnapshotId={controller.previewingSnapshotId}
                 onPreviewSnapshot={controller.previewSnapshot}
                 onBranch={branchFromHistory}
+                disabled={loading}
               />
             )}
           </Drawer>
         </div>
-        {error && (
-          <div className='fixed bottom-2 inset-x-0 text-center text-sm text-red-600'>{error}</div>
-        )}
       </div>
     </>
   )

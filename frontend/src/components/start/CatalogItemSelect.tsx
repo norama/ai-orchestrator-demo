@@ -37,7 +37,7 @@ export function CatalogItemSelect({
                 selected
                   ? 'border-blue-500 bg-blue-50'
                   : 'border-gray-200 bg-white hover:bg-gray-50',
-                disabled ? 'opacity-60' : 'cursor-pointer',
+                disabled ? 'opacity-80' : 'cursor-pointer',
               ].join(' ')}>
               <div className='font-medium text-gray-900'>{item.name}</div>
 

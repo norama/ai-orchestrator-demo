@@ -1,13 +1,14 @@
 import { WorkflowEventView } from '@/components/history/WorkflowEventView'
 import { HeaderLayout } from '@/components/layout/HeaderLayout'
 import type { UIWorkflowHistory } from '@/types/fe'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface Props {
   history: UIWorkflowHistory
   previewingSnapshotId: string | null
   onPreviewSnapshot: (snapshotId: string) => Promise<void>
   onBranch: () => Promise<void>
+  disabled?: boolean
 }
 
 export function WorkflowHistoryPanel({
@@ -15,12 +16,20 @@ export function WorkflowHistoryPanel({
   previewingSnapshotId,
   onPreviewSnapshot,
   onBranch,
+  disabled,
 }: Props) {
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null)
 
   const handleExpandCollapse = (eventId: string) => {
     setExpandedEventId((prevId) => (prevId === eventId ? null : eventId))
   }
+
+  useEffect(() => {
+    if (!previewingSnapshotId) return
+
+    const el = document.querySelector(`[data-snapshot-id="${previewingSnapshotId}"]`)
+    el?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  }, [previewingSnapshotId])
 
   return (
     <div className='h-full flex flex-col overflow-hidden'>
@@ -37,6 +46,7 @@ export function WorkflowHistoryPanel({
             onExpandCollapse={() => handleExpandCollapse(event.id)}
             onPreview={() => onPreviewSnapshot(event.snapshotId)}
             onBranch={onBranch}
+            disabled={disabled}
           />
         ))}
       </div>

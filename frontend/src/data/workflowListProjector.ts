@@ -4,6 +4,8 @@ import type { UIWorkflowListItem } from '@/types/fe'
 export function workflowToListItem(w: Workflow): UIWorkflowListItem {
   return {
     id: w.id,
+    parentId: w.parent_id,
+    parentSnapshotId: w.parent_snapshot_id,
     name: w.name ?? '(unnamed)',
     ticketTitle: w.ticket.title,
     domainType: w.domain_type,
