@@ -11,10 +11,12 @@ rather than model performance or pixel-perfect UI.
 
 ## Status
 
-✅ **Day 7 complete** — Streaming SOLVING output (presentation-only)
+✅ **Day 8 complete** — Workflow history, snapshot preview & branching  
 🚧 Ongoing development
 
-### What is implemented
+---
+
+## What is implemented
 
 * Backend **workflow orchestration engine** with explicit phases
 * Static **ticket catalog** as a controlled workflow entry point
@@ -40,7 +42,7 @@ rather than model performance or pixel-perfect UI.
   * optimistic UI for chat and clarification answers
   * discussion chat driving solution updates
   * Markdown rendering for document-style solutions
-* Architecture intentionally preserved while adding AI and streaming UX
+* **Workflow history, snapshot preview, and branching (Day 8)**
 
 ---
 
@@ -59,6 +61,7 @@ rather than model performance or pixel-perfect UI.
 * Frontend as a **workflow driver**, not just an API client
 * Safe integration of probabilistic AI into deterministic control flow
 * **Streaming as a presentation concern, not a state concern**
+* **Time-aware workflows with inspectable history (Day 8)**
 
 ---
 
@@ -108,6 +111,60 @@ Clarifications are built **incrementally**, one step at a time.
 * Confidence is reported alongside decisions
 
 This mirrors real troubleshooting, reporting, and reasoning workflows.
+
+---
+
+### Workflow History & Snapshots (Day 8)
+
+Workflows now expose a **read-only history timeline** composed of semantic events.
+
+Key properties:
+
+* Each event references:
+  * a **snapshot ID**
+  * the **previous snapshot ID**
+* Snapshots represent immutable workflow states
+* One snapshot is always marked as the **current (live)** snapshot
+* History is used for **inspection only**, never mutation
+
+Snapshots enable:
+
+* previewing past workflow states
+* understanding how a solution evolved
+* branching new workflows without altering the original
+
+---
+
+### Snapshot Preview (Day 8)
+
+A snapshot can be loaded in **preview mode**:
+
+* The workflow state is rendered read-only
+* All mutating actions are disabled
+* The UI clearly distinguishes preview vs live mode
+* The user may:
+
+  * return to the live workflow
+  * branch a new workflow from the previewed snapshot
+
+Preview is treated as navigation, not state change.
+
+---
+
+### Branching (Day 8)
+
+A new workflow can be **branched from any snapshot**.
+
+Branching behavior:
+
+* Creates a new workflow ID
+* Preserves:
+  * parent workflow ID
+  * parent snapshot ID
+* Starts from the selected snapshot state
+* Leaves the parent workflow unchanged
+
+This enables safe experimentation and alternative solution paths.
 
 ---
 
@@ -242,20 +299,27 @@ Key characteristics:
   * shows all persisted workflows
   * phase badges for orientation
   * click to suspend / resume
+  * indication of branched workflows
+  * navigation to parent workflow / snapshot
   * responsive (drawer on mobile, rail on desktop)
 * Workflow session view:
 
   * clarification timeline
-  * **dedicated solution panel** (sticky, scrollable)
+  * **dedicated solution panel**
   * **incremental streaming of solutions during SOLVING**
-  * Markdown-rendered solutions (including reports)
+  * Markdown-rendered solutions
   * solution confidence display
   * discussion chat below the solution
-  * optimistic rendering for user messages and answers
-  * explicit “solution updated” indicators
-* Multiple workflows can be inspected and resumed freely
+* **Workflow history panel (Day 8)**:
 
-The UI is intentionally minimal and optimized for **clarity, calmness, and intent**.
+  * chronological event timeline
+  * expandable event details
+  * snapshot preview
+  * branch-from-snapshot actions
+  * automatic scroll to previewed snapshot
+* Multiple workflows can be inspected, previewed, and branched freely
+
+The UI remains intentionally minimal and optimized for **clarity and intent**.
 
 ---
 
@@ -286,11 +350,6 @@ frontend/
 
 SQLite is used for simplicity and inspectability.
 
-Each workflow is stored as a single JSON snapshot representing
-the current aggregate state.
-This allows easy inspection and prepares the system for
-event-based persistence later.
-
 ### Sync vs Async
 
 Persistence is currently **synchronous**.
@@ -302,6 +361,17 @@ The repository interface is intentionally synchronous to:
 
 An async repository can be introduced later without changing
 domain or orchestration code.
+
+### Storage
+
+Each workflow stores:
+
+* the current workflow snapshot
+* a list of semantic workflow events
+* snapshot IDs linking history to state
+
+This snapshot-based approach prepares the system for
+event-sourced persistence later.
 
 ---
 
@@ -382,12 +452,12 @@ state management, and architectural clarity**.
 
 ---
 
+
 ## Roadmap (Next Steps)
 
 * Read-only review / export views for reports
-* Event-based workflow history
-* Undo / redo and branching
+* Event-sourced persistence
+* Undo / redo
 * Background execution
-* Richer discussion controls
-* Multiple LLM provider support
+* Richer history diffing and comparison
 * Workflow analytics and cost attribution
