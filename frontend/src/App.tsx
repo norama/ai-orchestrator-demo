@@ -69,7 +69,6 @@ function App() {
     }
   }
 
-  /*
   const branchFromHistory = async () => {
     const newWorkflowId = await controller.branch()
     if (newWorkflowId) {
@@ -79,7 +78,6 @@ function App() {
       historyController.reset()
     }
   }
-  */
 
   const resetControllers = () => {
     controller.reset()
@@ -123,13 +121,16 @@ function App() {
           setHistoryOpen((v) => !v)
           setMobileWorkflowListOpen(false)
         }}
+        onNewWorkflow={resetControllers}
+        onBackToLive={controller.refresh}
+        onBranch={branchFromHistory}
       />
       {previewing && <div className='pointer-events-none absolute inset-0 z-10 bg-stone-200/20' />}
 
       {/* Global layout wrapper */}
-      <div className='flex h-screen pt-12'>
+      <div className='flex h-screen pt-16'>
         {/* Desktop rail */}
-        <div className='hidden lg:block h-[calc(100vh-3rem)]'>
+        <div className='hidden lg:block h-[calc(100vh-4rem)]'>
           <WorkflowListPanel
             items={listController.items}
             selectedId={selectedWorkflowId}
@@ -165,7 +166,7 @@ function App() {
         <div className='flex flex-1 overflow-hidden'>
           <div
             className={[
-              'flex-1 overflow-y-auto py-12 bg-gray-50',
+              'flex-1 overflow-y-auto py-16 bg-gray-50',
               'transition-[margin,background-color] duration-300 ease-in-out',
               historyOpen ? 'lg:mr-80' : 'lg:mr-0',
             ].join(' ')}>
@@ -184,7 +185,7 @@ function App() {
           </div>
 
           {/* Desktop History panel */}
-          <div className='hidden lg:block relative h-[calc(100vh-3rem)]'>
+          <div className='hidden lg:block relative h-[calc(100vh-4rem)]'>
             <div
               className={[
                 'absolute top-0 right-0 h-full w-80',
@@ -197,6 +198,7 @@ function App() {
                   history={historyController.history}
                   previewingSnapshotId={controller.previewingSnapshotId}
                   onPreviewSnapshot={controller.previewSnapshot}
+                  onBranch={branchFromHistory}
                 />
               )}
             </div>
@@ -204,13 +206,14 @@ function App() {
         </div>
 
         {/* Mobile History drawer */}
-        <div className='lg:hidden'>
+        <div className='lg:hidden top-16 h-[calc(100vh-4rem)]'>
           <Drawer open={historyOpen} onClose={() => setHistoryOpen(false)} placement='top'>
             {historyController.history && (
               <WorkflowHistoryPanel
                 history={historyController.history}
                 previewingSnapshotId={controller.previewingSnapshotId}
                 onPreviewSnapshot={controller.previewSnapshot}
+                onBranch={branchFromHistory}
               />
             )}
           </Drawer>

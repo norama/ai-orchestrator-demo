@@ -34,7 +34,7 @@ export function WorkflowListPanel({ items, selectedId, onSelect, onNew, disabled
           className='w-full justify-start'
           onClick={onNew}
           disabled={disabled}>
-          + New workflow
+          🧩 New workflow
         </Button>
       </div>
     </div>

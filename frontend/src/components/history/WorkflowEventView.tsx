@@ -62,6 +62,7 @@ interface Props {
   previewing?: boolean
   onExpandCollapse: () => void
   onPreview: () => void
+  onBranch: () => Promise<void>
 }
 
 export function WorkflowEventView({
@@ -70,6 +71,7 @@ export function WorkflowEventView({
   previewing,
   onExpandCollapse,
   onPreview,
+  onBranch,
 }: Props) {
   const style = EVENT_STYLE[event.type]
 
@@ -78,10 +80,10 @@ export function WorkflowEventView({
       className={[
         'border rounded-md px-3 py-2 ',
         'transition-colors',
-        event.isCurrent
-          ? 'border-blue-400 bg-blue-50'
-          : previewing
-            ? 'border-yellow-400 bg-yellow-50'
+        previewing
+          ? 'border-yellow-400 bg-yellow-50'
+          : event.isCurrent
+            ? 'border-blue-400 bg-blue-50'
             : 'border-gray-200 bg-white',
       ].join(' ')}>
       {/* Header */}
@@ -98,8 +100,8 @@ export function WorkflowEventView({
           <div className='text-xs text-gray-500'>{event.createdAt.toLocaleTimeString()}</div>
         </div>
 
-        {event.isCurrent && <Badge variant='info'>current</Badge>}
-        {previewing && <Badge variant='warning'>previewing</Badge>}
+        {!previewing && event.isCurrent && <Badge variant='info'>Live</Badge>}
+        {previewing && <Badge variant='warning'>Preview</Badge>}
 
         <span className='text-gray-400 text-sm'>{expanded ? '▲' : '▼'}</span>
       </div>
@@ -126,9 +128,15 @@ export function WorkflowEventView({
             ))}
 
           <div className='pb-1 flex justify-end'>
-            <Button variant='secondary' onClick={() => onPreview()}>
-              Preview snapshot
-            </Button>
+            {previewing ? (
+              <Button variant='primary' onClick={() => onBranch()}>
+                🌱 Branch from here
+              </Button>
+            ) : (
+              <Button variant='secondary' onClick={() => onPreview()}>
+                👁️ Preview snapshot
+              </Button>
+            )}
           </div>
         </div>
       </div>

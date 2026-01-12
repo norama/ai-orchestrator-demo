@@ -148,6 +148,7 @@ async def answer_step_stream(
     cmd: AnswerStepCommand,
     service: WorkflowService = Depends(get_workflow_service),
 ):
+    await asyncio.sleep(4)
     return stream_command(
         lambda stream: service.answer_step(
             workflow_id,

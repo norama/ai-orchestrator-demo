@@ -7,9 +7,15 @@ interface Props {
   history: UIWorkflowHistory
   previewingSnapshotId: string | null
   onPreviewSnapshot: (snapshotId: string) => Promise<void>
+  onBranch: () => Promise<void>
 }
 
-export function WorkflowHistoryPanel({ history, previewingSnapshotId, onPreviewSnapshot }: Props) {
+export function WorkflowHistoryPanel({
+  history,
+  previewingSnapshotId,
+  onPreviewSnapshot,
+  onBranch,
+}: Props) {
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null)
 
   const handleExpandCollapse = (eventId: string) => {
@@ -17,11 +23,11 @@ export function WorkflowHistoryPanel({ history, previewingSnapshotId, onPreviewS
   }
 
   return (
-    <div className='h-full flex flex-col'>
+    <div className='h-full flex flex-col overflow-hidden'>
       {/* Header */}
       <HeaderLayout>History · {history.events.length} events</HeaderLayout>
       {/* Timeline */}
-      <div className='flex-1 overflow-y-auto p-3 space-y-2'>
+      <div className='flex-1 overflow-y-auto overscroll-contain p-3 space-y-2'>
         {history.events.map((event) => (
           <WorkflowEventView
             key={event.id}
@@ -30,6 +36,7 @@ export function WorkflowHistoryPanel({ history, previewingSnapshotId, onPreviewS
             previewing={previewingSnapshotId === event.snapshotId}
             onExpandCollapse={() => handleExpandCollapse(event.id)}
             onPreview={() => onPreviewSnapshot(event.snapshotId)}
+            onBranch={onBranch}
           />
         ))}
       </div>

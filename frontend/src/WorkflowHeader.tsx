@@ -9,6 +9,9 @@ interface WorkflowHeaderProps {
 
   onMobileOpenWorkflows(): void
   onToggleHistory(): void
+  onNewWorkflow(): void
+  onBackToLive(): void
+  onBranch(): void
 }
 
 export function WorkflowHeader({
@@ -18,14 +21,17 @@ export function WorkflowHeader({
   isPreview,
   onMobileOpenWorkflows,
   onToggleHistory,
+  onNewWorkflow,
+  onBackToLive,
+  onBranch,
 }: WorkflowHeaderProps) {
   return (
     <div
       className={[
-        'fixed top-0 inset-x-0 z-30 flex items-center gap-3 px-4 h-12 border-b',
+        'fixed top-0 inset-x-0 z-30 flex items-center gap-3 px-4 h-16 border-b',
         isPreview ? 'bg-yellow-50 border-yellow-300' : 'bg-white border-gray-300',
       ].join(' ')}>
-      {/* Mobile: workflow list */}
+      {/* Mobile workflows */}
       <button
         onClick={onMobileOpenWorkflows}
         className='lg:hidden text-sm px-2 py-1 rounded hover:bg-gray-100'
@@ -35,19 +41,47 @@ export function WorkflowHeader({
       </button>
 
       {/* Title */}
-      <div className='flex-1 min-w-0'>
+      <div className='flex-1 min-w-0 flex items-center gap-2'>
         <div className='text-sm font-medium text-gray-800 truncate'>
           {workflowName || 'AI Orchestrator Demo'}
         </div>
+
+        {isPreview && <Badge variant='warning'>Preview</Badge>}
       </div>
 
-      {isPreview && (
-        <Badge variant='warning' className='ml-2'>
-          Preview
-        </Badge>
-      )}
+      {/* Desktop actions */}
+      <div className='hidden lg:flex items-center gap-2'>
+        {isPreview ? (
+          <>
+            <Button variant='secondary' onClick={onBackToLive}>
+              ↩️ Back to live
+            </Button>
 
-      {/* History trigger */}
+            <Button variant='primary' onClick={onBranch}>
+              🌱 Branch from here
+            </Button>
+          </>
+        ) : (
+          <Button variant='secondary' onClick={onNewWorkflow}>
+            🧩 New workflow
+          </Button>
+        )}
+      </div>
+
+      {/* Mobile actions */}
+      <div className='flex lg:hidden items-center gap-2'>
+        {isPreview ? (
+          <Button variant='secondary' onClick={onBackToLive}>
+            ↩️ Live
+          </Button>
+        ) : (
+          <Button variant='secondary' onClick={onNewWorkflow}>
+            🧩 New
+          </Button>
+        )}
+      </div>
+
+      {/* History */}
       <Button
         onClick={onToggleHistory}
         disabled={!historyCount}
