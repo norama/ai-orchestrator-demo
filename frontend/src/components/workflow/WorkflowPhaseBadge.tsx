@@ -1,11 +1,11 @@
 import { Badge } from '@/components/ui/Badge'
 import { WorkflowPhaseEnum } from '@/types/enums'
 
-interface WorkflowPhaseBadgeProps {
+interface Props {
   phase: WorkflowPhaseEnum
 }
 
-export function WorkflowPhaseBadge({ phase }: WorkflowPhaseBadgeProps) {
+export function WorkflowPhaseBadge({ phase }: Props) {
   const variant =
     phase === WorkflowPhaseEnum.DONE
       ? 'error'

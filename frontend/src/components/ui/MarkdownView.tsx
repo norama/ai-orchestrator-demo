@@ -11,8 +11,8 @@ export function MarkdownView({ content }: Props) {
         components={{
           h1: (props) => <h1 className='text-lg font-semibold my-2' {...props} />,
           h2: (props) => <h2 className='text-base font-semibold my-1' {...props} />,
-          p: (props) => <p className='text-sm leading-snug' {...props} />,
-          ul: (props) => <ul className='list-disc pl-5' {...props} />,
+          p: (props) => <p className='text-sm leading-snug my-1' {...props} />,
+          ul: (props) => <ul className='list-disc pl-5 my-1' {...props} />,
           li: (props) => <li className='leading-snug' {...props} />,
         }}>
         {content}
