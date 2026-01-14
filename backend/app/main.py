@@ -19,17 +19,18 @@ from app.application.exceptions import (
     WorkflowNotFound,
 )
 from app.logging_utils import get_logger, setup_logging
+from app.settings import EnvSettings
 
 setup_logging()
 
+
 app = FastAPI(title="AI Orchestrator Demo")
+
+settings = EnvSettings()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=settings.cors_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

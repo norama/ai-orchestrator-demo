@@ -31,6 +31,7 @@ lint.ignore = [
   "D102",     # docstring for functions
   "D103",     # docstring for FastAPI
   "D105",     # docstring
+  "D106",     # docstring
   "D107",     # docstring for __init__
   "D100",
     "D104",
