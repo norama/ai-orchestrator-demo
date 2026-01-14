@@ -14,6 +14,18 @@ dependencies = [
     "openai (>=2.14.0,<3.0.0)"
 ]
 
+[tool.poetry]
+name = "ai-orchestrator-backend"
+version = "0.1.0"
+description = "ai_orchestrator_backend"
+authors = ["norama <norama.matema@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = ">=3.13"
+fastapi = ">=0.124.4,<0.125.0"
+uvicorn = ">=0.38.0,<0.39.0"
+pydantic-settings = ">=2.12.0,<3.0.0"
+openai = ">=2.14.0,<3.0.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
