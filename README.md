@@ -65,6 +65,13 @@ rather than model performance or pixel-perfect UI.
 
 ---
 
+## Live Demo
+
+- Frontend: https://ai-orchestrator-demo-fe.vercel.app
+- Backend API: https://ai-orchestrator-demo.fly.dev/docs
+
+---
+
 ## Core Concepts
 
 ### Workflow
