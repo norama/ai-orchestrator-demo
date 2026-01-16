@@ -1,3 +1,4 @@
+import { ResetDemoButton } from '@/components/ResetDemoButton'
 import { StartWorkflowForm } from '@/components/StartWorkflowForm'
 import { Drawer } from '@/components/ui/Drawer'
 import { WorkflowHeader } from '@/components/WorkflowHeader'
@@ -207,6 +208,7 @@ function App() {
                   {error}
                 </div>
               )}
+              <ResetDemoButton />
             </div>
           </div>
 
