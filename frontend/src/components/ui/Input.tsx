@@ -1,6 +1,12 @@
-export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
+import React from 'react'
+
+export const Input = React.forwardRef<
+  HTMLInputElement,
+  React.InputHTMLAttributes<HTMLInputElement>
+>(function Input(props, ref) {
   return (
     <input
+      ref={ref}
       {...props}
       className={[
         'w-full px-3 py-2 text-sm rounded',
@@ -10,4 +16,4 @@ export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
       ].join(' ')}
     />
   )
-}
+})

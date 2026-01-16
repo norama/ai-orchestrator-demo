@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { StatusMarker } from '@/components/ui/StatusMarker'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface Props {
   onSend: (text: string) => void
@@ -12,6 +12,11 @@ interface Props {
 
 export function ChatInput({ onSend, placeholder, disabled, loading }: Props) {
   const [text, setText] = useState('')
+  const ref = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    ref.current?.focus()
+  }, [disabled])
 
   function submit() {
     if (!text.trim() || disabled) return
@@ -25,6 +30,7 @@ export function ChatInput({ onSend, placeholder, disabled, loading }: Props) {
         <div className='text-base font-medium text-gray-900'>Continue the discussion</div>
         <div className='flex items-center gap-2'>
           <Input
+            ref={ref}
             value={text}
             placeholder={placeholder}
             disabled={disabled}

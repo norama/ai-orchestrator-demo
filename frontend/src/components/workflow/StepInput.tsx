@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/Input'
 import { StatusMarker } from '@/components/ui/StatusMarker'
 import { Confidence } from '@/components/workflow/Confidence'
 import type { UICurrentStep } from '@/types/fe'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface StepInputProps {
   step: UICurrentStep
@@ -23,6 +23,11 @@ export function StepInput({
   loading = false,
 }: StepInputProps) {
   const [value, setValue] = useState('')
+  const ref = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    ref.current?.focus()
+  }, [disabled])
 
   function submit() {
     if (!value.trim() || disabled) return
@@ -39,6 +44,7 @@ export function StepInput({
 
         {/* Input */}
         <Input
+          ref={ref}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder='Type your answer…'
