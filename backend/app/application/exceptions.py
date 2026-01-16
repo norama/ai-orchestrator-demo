@@ -16,3 +16,11 @@ class SnapshotNotFound(Exception):
 
 class SnapshotWorkflowMismatch(Exception):
     pass
+
+
+class MissingWorkspaceId(Exception):
+    pass
+
+
+class InvalidWorkspaceId(Exception):
+    pass

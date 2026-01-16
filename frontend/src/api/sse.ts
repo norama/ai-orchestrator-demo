@@ -1,3 +1,4 @@
+import { apiPostRaw } from '@/api/api'
 import { API_WORKFLOWS_URL } from '@/api/constants'
 
 interface SSEHandlers {
@@ -7,11 +8,7 @@ interface SSEHandlers {
 }
 
 export async function postSSE(path: string, body: unknown, handlers: SSEHandlers) {
-  const res = await fetch(`${API_WORKFLOWS_URL}/${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
+  const res = await apiPostRaw(`${API_WORKFLOWS_URL}/${path}`, body)
 
   if (!res.ok || !res.body) {
     handlers.onError?.(`HTTP ${res.status}`)

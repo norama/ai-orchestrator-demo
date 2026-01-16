@@ -20,12 +20,12 @@ from app.infrastructure.persistence.workflow_repository import (
     WorkflowRepository,
 )
 
-DB_PATH = "app/infrastructure/persistence/ai_orchestrator.db"
+DB_PATH = "app/infrastructure/persistence"
 
 
 class SqliteWorkflowRepository(WorkflowRepository):
-    def __init__(self, db_path: str = DB_PATH):
-        self.db_path = db_path
+    def __init__(self, workspace_id: str = "ai_orchestrator"):
+        self.db_path = f"{DB_PATH}/{workspace_id}.db"
         self._last_ts: datetime | None = None
 
         self._ensure_db()

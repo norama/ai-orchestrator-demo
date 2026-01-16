@@ -1,8 +1,9 @@
+import re
 from uuid import UUID
 
-from fastapi import Depends
+from fastapi import Depends, Header
 
-from app.application.exceptions import WorkflowNotFound
+from app.application.exceptions import InvalidWorkspaceId, MissingWorkspaceId, WorkflowNotFound
 from app.application.registry import domain_registry
 from app.application.workflow_service import WorkflowService
 from app.domain.workflow import WorkflowCreate
@@ -11,12 +12,25 @@ from app.infrastructure.persistence.sqlite_workflow_repository import (
 )
 from app.infrastructure.persistence.workflow_repository import WorkflowRepository
 
-# Singleton-ish repo (OK for SQLite demo)
-_repo = SqliteWorkflowRepository()
+WORKSPACE_RE = re.compile(r"^ws_[a-zA-Z0-9\-]+$")
 
 
-def get_workflow_repository() -> WorkflowRepository:
-    return _repo
+def get_workspace_id(
+    x_workspace_id: str | None = Header(default=None),
+) -> str:
+    if not x_workspace_id:
+        raise MissingWorkspaceId("Missing workspace id")
+
+    if not WORKSPACE_RE.match(x_workspace_id):
+        raise InvalidWorkspaceId("Invalid workspace id")
+
+    return x_workspace_id
+
+
+def get_workflow_repository(
+    workspace_id: str = Depends(get_workspace_id),
+) -> WorkflowRepository:
+    return SqliteWorkflowRepository(workspace_id=workspace_id)
 
 
 def get_workflow_service(

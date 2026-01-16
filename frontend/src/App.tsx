@@ -1,5 +1,6 @@
 import { StartWorkflowForm } from '@/components/StartWorkflowForm'
 import { Drawer } from '@/components/ui/Drawer'
+import { WorkflowHeader } from '@/components/WorkflowHeader'
 import { WorkflowHistoryPanel } from '@/components/WorkflowHistoryPanel'
 import { WorkflowListPanel } from '@/components/WorkflowListPanel'
 import { WorkflowView } from '@/components/WorkflowView'
@@ -8,7 +9,6 @@ import { useWorkflowController } from '@/data/workflowController'
 import { useWorkflowHistoryController } from '@/data/workflowHistoryController'
 import { useWorkflowListController } from '@/data/workflowListController'
 import type { UICreateFromCatalog, UIWorkflowListItem } from '@/types/fe'
-import { WorkflowHeader } from '@/WorkflowHeader'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 function App() {

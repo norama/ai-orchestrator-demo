@@ -30,6 +30,7 @@ export function ChatInput({ onSend, placeholder, disabled, loading }: Props) {
             disabled={disabled}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && submit()}
+            autoFocus
           />
 
           <Button disabled={disabled || !text.trim()} onClick={submit}>

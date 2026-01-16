@@ -1,4 +1,3 @@
-import asyncio
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -130,7 +129,6 @@ async def answer_step(
     cmd: AnswerStepCommand,
     service: WorkflowService = Depends(get_workflow_service),
 ):
-    await asyncio.sleep(4)
     workflow = service.answer_step(workflow_id, cmd)
 
     return WorkflowDetailResponse(
@@ -148,7 +146,6 @@ async def answer_step_stream(
     cmd: AnswerStepCommand,
     service: WorkflowService = Depends(get_workflow_service),
 ):
-    await asyncio.sleep(4)
     return stream_command(
         lambda stream: service.answer_step(
             workflow_id,
@@ -163,7 +160,6 @@ async def skip_to_solution(
     workflow_id: UUID,
     service: WorkflowService = Depends(get_workflow_service),
 ):
-    await asyncio.sleep(4)
     workflow = service.skip_to_solution(workflow_id)
 
     return WorkflowDetailResponse(
@@ -194,7 +190,6 @@ async def send_chat_message(
     cmd: AddChatMessageCommand,
     service: WorkflowService = Depends(get_workflow_service),
 ):
-    await asyncio.sleep(4)
     workflow = service.add_chat_message(workflow_id, cmd)
 
     return WorkflowDetailResponse(

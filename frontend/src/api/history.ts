@@ -1,5 +1,5 @@
+import { apiGet, apiPost } from '@/api/api'
 import { API_WORKFLOWS_URL } from '@/api/constants'
-import { handleResponse } from '@/api/utils'
 import type {
   SnapshotDetailResponse,
   WorkflowDetailResponse,
@@ -10,11 +10,7 @@ import type {
  * Fetch snapshots for a workflow
  */
 export async function getWorkflowHistory(workflowId: string): Promise<WorkflowHistoryResponse> {
-  const res = await fetch(`${API_WORKFLOWS_URL}/${workflowId}/history`, {
-    method: 'GET',
-  })
-
-  return handleResponse<WorkflowHistoryResponse>(res)
+  return apiGet<WorkflowHistoryResponse>(`${API_WORKFLOWS_URL}/${workflowId}/history`)
 }
 
 /**
@@ -24,11 +20,9 @@ export async function getSnapshot(
   workflowId: string,
   snapshotId: string,
 ): Promise<SnapshotDetailResponse> {
-  const res = await fetch(`${API_WORKFLOWS_URL}/${workflowId}/snapshots/${snapshotId}`, {
-    method: 'GET',
-  })
-
-  return handleResponse<SnapshotDetailResponse>(res)
+  return apiGet<SnapshotDetailResponse>(
+    `${API_WORKFLOWS_URL}/${workflowId}/snapshots/${snapshotId}`,
+  )
 }
 
 /**
@@ -38,9 +32,7 @@ export async function branchFromSnapshot(
   workflowId: string,
   snapshotId: string,
 ): Promise<WorkflowDetailResponse> {
-  const res = await fetch(`${API_WORKFLOWS_URL}/${workflowId}/snapshots/${snapshotId}/branch`, {
-    method: 'POST',
-  })
-
-  return handleResponse<WorkflowDetailResponse>(res)
+  return apiPost<WorkflowDetailResponse>(
+    `${API_WORKFLOWS_URL}/${workflowId}/snapshots/${snapshotId}/branch`,
+  )
 }

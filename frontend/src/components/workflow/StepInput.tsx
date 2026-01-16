@@ -44,6 +44,7 @@ export function StepInput({
           placeholder='Type your answer…'
           disabled={disabled}
           onKeyDown={(e) => e.key === 'Enter' && submit()}
+          autoFocus
         />
 
         {/* Confidence */}

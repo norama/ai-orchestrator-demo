@@ -2,8 +2,8 @@ import { useState } from 'react'
 
 import { createWorkflowFromCatalog } from '@/api/catalog'
 import { branchFromSnapshot, getSnapshot } from '@/api/history'
+import { postSSE } from '@/api/sse'
 import { answerStep, getWorkflow, sendChatMessage, skipToSolution } from '@/api/workflows'
-import { postSSE } from '@/data/sse'
 import {
   stateToWorkflowState,
   workflowToTicket,
