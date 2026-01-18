@@ -12,6 +12,8 @@ import { useWorkflowListController } from '@/data/workflowListController'
 import type { UICreateFromCatalog, UIWorkflowListItem } from '@/types/fe'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+type AppMode = 'start' | 'workflow'
+
 function App() {
   const catalogController = useCatalogController()
   const listController = useWorkflowListController()
@@ -20,6 +22,7 @@ function App() {
   const hasBootstrappedRef = useRef(false)
   const [mobileWorkflowListOpen, setMobileWorkflowListOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [appMode, setAppMode] = useState<AppMode>('start')
 
   const selectWorkflow = useCallback(
     async (id: string, snapshotId: string | null = null) => {
@@ -69,6 +72,7 @@ function App() {
     } else {
       historyController.reset()
     }
+    setAppMode('workflow')
   }
 
   const branchFromHistory = async () => {
@@ -82,7 +86,8 @@ function App() {
     }
   }
 
-  const resetControllers = () => {
+  const reset = () => {
+    setAppMode('start')
     controller.reset()
     historyController.reset()
     setHistoryOpen(false)
@@ -104,7 +109,7 @@ function App() {
 
   /* ---------- initial screen ---------- */
 
-  if (!controller.workflowData || !controller.ticket || !controller.workflowState) {
+  if (appMode === 'start') {
     return (
       <StartWorkflowForm
         loading={loading}
@@ -133,7 +138,7 @@ function App() {
           setHistoryOpen((v) => !v)
           setMobileWorkflowListOpen(false)
         }}
-        onNewWorkflow={resetControllers}
+        onNewWorkflow={reset}
         onBackToLive={controller.refresh}
         onBranch={branchFromHistory}
         disabled={loading}
@@ -148,7 +153,7 @@ function App() {
             items={listController.items}
             selectedId={selectedWorkflowId}
             onSelect={selectWorkflow}
-            onNew={resetControllers}
+            onNew={reset}
             onSelectParent={selectParentSnapshot}
             disabled={loading || controller.previewingSnapshotId !== null}
           />
@@ -167,7 +172,7 @@ function App() {
               setMobileWorkflowListOpen(false)
             }}
             onNew={() => {
-              resetControllers()
+              reset()
               setMobileWorkflowListOpen(false)
             }}
             onSelectParent={async (item: UIWorkflowListItem) => {
@@ -189,18 +194,20 @@ function App() {
               historyOpen ? 'lg:mr-80' : 'lg:mr-0',
             ].join(' ')}>
             <div className='flex-1 min-h-0 overflow-y-auto pt-4'>
-              <WorkflowView
-                ticket={controller.ticket}
-                workflowData={controller.workflowData}
-                workflowState={controller.workflowState}
-                loading={loading}
-                previewing={previewing}
-                onAnswer={withRefresh(controller.answerStream)}
-                onSkip={withRefresh(controller.skipStream)}
-                onSendChatMessage={withRefresh(controller.chat)}
-                isStreaming={controller.isStreaming}
-                streamedText={controller.streamedText}
-              />
+              {controller.ticket && controller.workflowData && controller.workflowState && (
+                <WorkflowView
+                  ticket={controller.ticket}
+                  workflowData={controller.workflowData}
+                  workflowState={controller.workflowState}
+                  loading={loading}
+                  previewing={previewing}
+                  onAnswer={withRefresh(controller.answerStream)}
+                  onSkip={withRefresh(controller.skipStream)}
+                  onSendChatMessage={withRefresh(controller.chat)}
+                  isStreaming={controller.isStreaming}
+                  streamedText={controller.streamedText}
+                />
+              )}
             </div>
             <div className='h-16 px-6 flex items-center border-t border-gray-200 bg-gray-50'>
               {error && (
