@@ -12,8 +12,6 @@ import { useWorkflowListController } from '@/data/workflowListController'
 import type { UICreateFromCatalog, UIWorkflowListItem } from '@/types/fe'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-type AppMode = 'start' | 'workflow'
-
 function App() {
   const catalogController = useCatalogController()
   const listController = useWorkflowListController()
@@ -22,7 +20,6 @@ function App() {
   const hasBootstrappedRef = useRef(false)
   const [mobileWorkflowListOpen, setMobileWorkflowListOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
-  const [appMode, setAppMode] = useState<AppMode>('start')
 
   const selectWorkflow = useCallback(
     async (id: string, snapshotId: string | null = null) => {
@@ -39,7 +36,7 @@ function App() {
       hasBootstrappedRef.current = true
       selectWorkflow(listController.items[0].id)
     }
-  }, [controller, listController.items, selectWorkflow])
+  }, [controller.workflowData, controller.loading, listController.items, selectWorkflow])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const withRefresh = <T extends (...args: any[]) => Promise<void>>(fn: T): T =>
@@ -72,7 +69,6 @@ function App() {
     } else {
       historyController.reset()
     }
-    setAppMode('workflow')
   }
 
   const branchFromHistory = async () => {
@@ -87,7 +83,6 @@ function App() {
   }
 
   const reset = () => {
-    setAppMode('start')
     controller.reset()
     historyController.reset()
     setHistoryOpen(false)
@@ -109,7 +104,7 @@ function App() {
 
   /* ---------- initial screen ---------- */
 
-  if (appMode === 'start') {
+  if (!controller.workflowData && !loading) {
     return (
       <StartWorkflowForm
         loading={loading}
