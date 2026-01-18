@@ -4,8 +4,6 @@ from fastapi.responses import JSONResponse
 from app.application.exceptions import (
     CatalogItemNotFound,
     InvalidWorkflowOperation,
-    InvalidWorkspaceId,
-    MissingWorkspaceId,
     SnapshotNotFound,
     SnapshotWorkflowMismatch,
     WorkflowNotFound,
@@ -69,28 +67,4 @@ def snapshot_workflow_mismatch_handler(
     return JSONResponse(
         status_code=409,
         content={"detail": str(exc)},
-    )
-
-
-def missing_workspace_id_handler(
-    request: Request,
-    exc: Exception,
-) -> Response:
-    assert isinstance(exc, MissingWorkspaceId)
-
-    return JSONResponse(
-        status_code=400,
-        content={"detail": "Missing workspace ID."},
-    )
-
-
-def invalid_workspace_id_handler(
-    request: Request,
-    exc: Exception,
-) -> Response:
-    assert isinstance(exc, InvalidWorkspaceId)
-
-    return JSONResponse(
-        status_code=400,
-        content={"detail": "Invalid workspace ID."},
     )

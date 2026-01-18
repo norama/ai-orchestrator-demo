@@ -1,9 +1,8 @@
-import re
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from fastapi import Depends, Header
+from fastapi import Depends, Request, Response
 
-from app.application.exceptions import InvalidWorkspaceId, MissingWorkspaceId, WorkflowNotFound
+from app.application.exceptions import WorkflowNotFound
 from app.application.registry import domain_registry
 from app.application.workflow_service import WorkflowService
 from app.domain.workflow import WorkflowCreate
@@ -12,25 +11,34 @@ from app.infrastructure.persistence.sqlite_workflow_repository import (
 )
 from app.infrastructure.persistence.workflow_repository import WorkflowRepository
 
-WORKSPACE_RE = re.compile(r"^ws_[a-zA-Z0-9\-]+$")
+WORKSPACE_COOKIE = "ai_orchestrator_ws"
 
 
-def get_workspace_id(
-    x_workspace_id: str | None = Header(default=None),
-) -> str:
-    if not x_workspace_id:
-        raise MissingWorkspaceId("Missing workspace id")
+def set_workspace_cookie(response: Response) -> str:
+    ws = f"ws_{uuid4()}"
+    response.set_cookie(
+        key=WORKSPACE_COOKIE,
+        value=ws,
+        path="/",
+        httponly=False,  # OK for demo
+        samesite="none",  # cross-site
+        secure=True,  # required with samesite=none
+    )
+    return ws
 
-    if not WORKSPACE_RE.match(x_workspace_id):
-        raise InvalidWorkspaceId("Invalid workspace id")
 
-    return x_workspace_id
+def get_workspace_name(request: Request, response: Response) -> str:
+    ws = request.cookies.get(WORKSPACE_COOKIE)
+    if ws:
+        return ws
+
+    return set_workspace_cookie(response)
 
 
 def get_workflow_repository(
-    workspace_id: str = Depends(get_workspace_id),
+    workspace_name: str = Depends(get_workspace_name),
 ) -> WorkflowRepository:
-    return SqliteWorkflowRepository(workspace_id=workspace_id)
+    return SqliteWorkflowRepository(workspace_name=workspace_name)
 
 
 def get_workflow_service(

@@ -1,20 +1,3 @@
-import { v4 as uuidv4 } from 'uuid'
-
-const STORAGE_KEY = 'ai_orchestrator_workspace_id'
-
-export function getWorkspaceId(): string {
-  let ws = localStorage.getItem(STORAGE_KEY)
-  if (!ws) {
-    ws = `ws_${uuidv4()}`
-    localStorage.setItem(STORAGE_KEY, ws)
-  }
-  return ws
-}
-
-export function resetWorkspace() {
-  localStorage.removeItem(STORAGE_KEY)
-}
-
 export async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
     const text = await res.text()
@@ -25,13 +8,9 @@ export async function handleResponse<T>(res: Response): Promise<T> {
 }
 
 export async function apiGetRaw(path: string): Promise<Response> {
-  const ws = getWorkspaceId()
-
   return await fetch(path, {
     method: 'GET',
-    headers: {
-      'X-Workspace-Id': ws,
-    },
+    credentials: 'include',
   })
 }
 
@@ -42,12 +21,10 @@ export async function apiGet<T>(path: string): Promise<T> {
 }
 
 export async function apiPostRaw(path: string, body?: unknown): Promise<Response> {
-  const ws = getWorkspaceId()
-
   return await fetch(path, {
     method: 'POST',
+    credentials: 'include',
     headers: {
-      'X-Workspace-Id': ws,
       'Content-Type': 'application/json',
     },
     body: body ? JSON.stringify(body) : undefined,

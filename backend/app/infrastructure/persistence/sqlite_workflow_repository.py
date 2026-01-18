@@ -1,3 +1,4 @@
+import os
 import sqlite3
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -24,8 +25,8 @@ DB_PATH = "app/infrastructure/persistence"
 
 
 class SqliteWorkflowRepository(WorkflowRepository):
-    def __init__(self, workspace_id: str = "ai_orchestrator"):
-        self.db_path = f"{DB_PATH}/{workspace_id}.db"
+    def __init__(self, workspace_name: str = "ai_orchestrator"):
+        self.db_path = os.path.join(DB_PATH, f"{workspace_name}.db")
         self._last_ts: datetime | None = None
 
         self._ensure_db()

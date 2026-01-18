@@ -40,3 +40,8 @@ class WorkflowHistoryResponse(BaseModel):
     current_snapshot_id: UUID
     events: list[WorkflowEventView] = Field(default_factory=list)
     status: str
+
+
+class ResetWorkspaceResponse(BaseModel):
+    workspace_name: str
+    status: str

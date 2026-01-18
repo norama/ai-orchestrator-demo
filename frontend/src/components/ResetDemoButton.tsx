@@ -1,4 +1,4 @@
-import { resetWorkspace } from '@/api/api'
+import { resetWorkspace } from '@/api/reset'
 import { Button } from '@/components/ui/Button'
 
 export function ResetDemoButton() {
@@ -7,10 +7,10 @@ export function ResetDemoButton() {
       <Button
         variant='ghost'
         className='text-xs text-gray-500'
-        onClick={() => {
+        onClick={async () => {
           const ok = window.confirm('Reset demo and start with a fresh workspace?')
           if (ok) {
-            resetWorkspace()
+            await resetWorkspace()
             window.location.reload()
           }
         }}>
