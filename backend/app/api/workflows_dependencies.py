@@ -23,6 +23,7 @@ def set_workspace_cookie(response: Response) -> str:
         httponly=False,  # OK for demo
         samesite="none",  # cross-site
         secure=True,  # required with samesite=none
+        max_age=60 * 60 * 24 * 7,  # 7 days
     )
     return ws
 
