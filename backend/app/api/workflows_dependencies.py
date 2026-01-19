@@ -1,3 +1,4 @@
+import logging
 from uuid import UUID, uuid4
 
 from fastapi import Depends, Request, Response
@@ -10,6 +11,8 @@ from app.infrastructure.persistence.sqlite_workflow_repository import (
     SqliteWorkflowRepository,
 )
 from app.infrastructure.persistence.workflow_repository import WorkflowRepository
+
+logger = logging.getLogger(__name__)
 
 WORKSPACE_COOKIE = "ai_orchestrator_ws"
 
@@ -30,6 +33,7 @@ def set_workspace_cookie(response: Response) -> str:
 
 def get_workspace_name(request: Request, response: Response) -> str:
     ws = request.cookies.get(WORKSPACE_COOKIE)
+    logger.info("Workspace cookie seen: %s", ws)
     if ws:
         return ws
 
