@@ -14,7 +14,7 @@ AI is treated as a *component inside a controlled process*, not as the process i
 ## Live Demo
 
 **Try the demo here:**  
-**https://ai-orchestrator-demo.vercel.app/**
+**https://ai-orchestrator-demo.fly.dev/**
 
 The demo runs without authentication and supports:
 - multiple workflows
