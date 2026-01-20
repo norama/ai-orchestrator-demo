@@ -210,7 +210,7 @@ function App() {
                   {error}
                 </div>
               )}
-              <ResetDemoButton />
+              <ResetDemoButton disabled={loading} />
             </div>
           </div>
 

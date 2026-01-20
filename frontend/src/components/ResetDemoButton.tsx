@@ -1,7 +1,11 @@
 import { resetWorkspace } from '@/api/reset'
 import { Button } from '@/components/ui/Button'
 
-export function ResetDemoButton() {
+interface Props {
+  disabled?: boolean
+}
+
+export function ResetDemoButton({ disabled = false }: Props) {
   return (
     <div className='flex-1 flex justify-end'>
       <Button
@@ -13,7 +17,8 @@ export function ResetDemoButton() {
             await resetWorkspace()
             window.location.reload()
           }
-        }}>
+        }}
+        disabled={disabled}>
         Reset demo
       </Button>
     </div>
