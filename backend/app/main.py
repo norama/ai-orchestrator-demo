@@ -89,15 +89,18 @@ app.include_router(workspace_router, prefix="/api")
 # Frontend static files serving (deployment) #
 ##############################################
 
-FRONTEND_DIR = Path(__file__).parent / "frontend_dist"
+# Only serve frontend in production (same-origin)
+if not env_settings.cors_origins_list:
+    BASE_DIR = Path(__file__).resolve().parent.parent.parent  # /srv
+    FRONTEND_DIR = BASE_DIR / "frontend"
 
-if FRONTEND_DIR.exists():
-    app.mount(
-        "/assets",
-        StaticFiles(directory=FRONTEND_DIR / "assets"),
-        name="assets",
-    )
+    if FRONTEND_DIR.exists():
+        app.mount(
+            "/assets",
+            StaticFiles(directory=FRONTEND_DIR / "assets"),
+            name="assets",
+        )
 
-    @app.get("/", include_in_schema=False)
-    def serve_frontend():
-        return FileResponse(FRONTEND_DIR / "index.html")
+        @app.get("/", include_in_schema=False)
+        def serve_frontend():
+            return FileResponse(FRONTEND_DIR / "index.html")
