@@ -1,5 +1,9 @@
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api.catalog_router import catalog_router
 from app.api.error_handlers import (
@@ -20,22 +24,29 @@ from app.application.exceptions import (
     WorkflowNotFound,
 )
 from app.logging_utils import get_logger, setup_logging
-from app.settings import EnvSettings
+from app.settings import env_settings
 
 setup_logging()
 
+logger = get_logger(__name__)
 
 app = FastAPI(title="AI Orchestrator Demo")
 
-settings = EnvSettings()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+if env_settings.cors_origins_list:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=env_settings.cors_origins_list,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+if env_settings.cors_origins_list:
+    logger.info("CORS enabled for origins: %s", env_settings.cors_origins_list)
+else:
+    logger.info("CORS disabled (same-origin mode)")
+
 
 app.add_exception_handler(
     WorkflowNotFound,
@@ -62,8 +73,6 @@ app.add_exception_handler(
     snapshot_workflow_mismatch_handler,
 )
 
-logger = get_logger(__name__)
-
 
 @app.get("/health")
 def health():
@@ -71,7 +80,24 @@ def health():
     return {"status": "ok"}
 
 
-app.include_router(workflows_router)
-app.include_router(catalog_router)
-app.include_router(llm_router)
-app.include_router(workspace_router)
+app.include_router(workflows_router, prefix="/api")
+app.include_router(catalog_router, prefix="/api")
+app.include_router(llm_router, prefix="/api")
+app.include_router(workspace_router, prefix="/api")
+
+##############################################
+# Frontend static files serving (deployment) #
+##############################################
+
+FRONTEND_DIR = Path(__file__).parent / "frontend_dist"
+
+if FRONTEND_DIR.exists():
+    app.mount(
+        "/assets",
+        StaticFiles(directory=FRONTEND_DIR / "assets"),
+        name="assets",
+    )
+
+    @app.get("/", include_in_schema=False)
+    def serve_frontend():
+        return FileResponse(FRONTEND_DIR / "index.html")
