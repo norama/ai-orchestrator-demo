@@ -21,6 +21,7 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
 WORKDIR /srv
+ENV PYTHONPATH=/srv/backend
 
 # install poetry
 RUN pip install --no-cache-dir poetry
