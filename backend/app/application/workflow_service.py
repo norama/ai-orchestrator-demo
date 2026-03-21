@@ -67,58 +67,62 @@ class WorkflowService:
 
     # ------- Engine loop --------
 
+    def _process_collecting_phase(self, workflow: Workflow) -> Workflow:
+        state = workflow.state
+
+        if state.skipped or len(state.steps) >= workflow.max_steps:
+            # move to SOLVING phase if max steps reached or skipped
+            state.phase = WorkflowPhase.SOLVING
+            return workflow
+
+        ctx = self._build_context(workflow)
+        decision = self.domain.step_generator.propose_next(ctx)
+
+        state.last_decision = decision
+        if decision.next_step:
+            state.steps.append(decision.next_step)
+            return workflow
+
+        state.phase = WorkflowPhase.SOLVING
+        return workflow
+
+    def _process_solving_phase(self, workflow: Workflow, stream: StreamSink | None = None) -> Workflow:
+        ctx = self._build_context(workflow)
+        workflow.state.solution = self.domain.solution_service.generate_solution(ctx, stream)
+        workflow.state.phase = WorkflowPhase.DISCUSSION if self.domain.chat_service else WorkflowPhase.DONE
+        return workflow
+
+    def _process_discussion_phase(self, workflow: Workflow) -> Workflow:
+        state = workflow.state
+        discussion_result = ChatMutationResult(solution_updated=False)
+        if self.domain.chat_service and state.chat_history.messages:
+            last_msg = state.chat_history.messages[-1]
+            if last_msg.role == ChatRole.USER:
+                ctx = self._build_context(workflow)
+                reply = self.domain.chat_service.reply(ctx, last_msg)
+                state.chat_history.add_message(reply.message)
+                if reply.requires_solution_update:
+                    ctx = self._build_context(workflow)
+                    state.solution = self.domain.solution_service.generate_solution(ctx)
+                    discussion_result = ChatMutationResult(solution_updated=True)
+        state.discussion_result = discussion_result
+        return workflow
+
     def _process_workflow(self, workflow: Workflow, stream: StreamSink | None = None) -> Workflow:
         # Clear phase-local outcomes
         state = workflow.state
         state.last_decision = None
         state.discussion_result = None
 
-        # hard stop
-        if state.phase == WorkflowPhase.DONE:
-            return workflow
-
-        # process COLLECTING phase
-        if state.phase == WorkflowPhase.COLLECTING:
-            if state.skipped or len(state.steps) >= workflow.max_steps:
-                # move to SOLVING phase if max steps reached
-                state.phase = WorkflowPhase.SOLVING
+        match state.phase:
+            case WorkflowPhase.DONE:
                 return workflow
-
-            ctx = self._build_context(workflow)
-            decision = self.domain.step_generator.propose_next(ctx)
-
-            state.last_decision = decision
-            if decision.next_step:
-                state.steps.append(decision.next_step)
-                return workflow
-
-            state.phase = WorkflowPhase.SOLVING
-            return workflow
-
-        # process SOLVING phase
-        if state.phase == WorkflowPhase.SOLVING:
-            ctx = self._build_context(workflow)
-            state.solution = self.domain.solution_service.generate_solution(ctx, stream)
-            state.phase = WorkflowPhase.DISCUSSION if self.domain.chat_service else WorkflowPhase.DONE
-            return workflow
-
-        # process DISCUSSION phase
-        if state.phase == WorkflowPhase.DISCUSSION:
-            discussion_result = ChatMutationResult(solution_updated=False)
-            if self.domain.chat_service and state.chat_history.messages:
-                last_msg = state.chat_history.messages[-1]
-                if last_msg.role == ChatRole.USER:
-                    ctx = self._build_context(workflow)
-                    reply = self.domain.chat_service.reply(ctx, last_msg)
-                    state.chat_history.add_message(reply.message)
-                    if reply.requires_solution_update:
-                        ctx = self._build_context(workflow)
-                        state.solution = self.domain.solution_service.generate_solution(ctx)
-                        discussion_result = ChatMutationResult(solution_updated=True)
-            state.discussion_result = discussion_result
-            return workflow
-
-        return workflow
+            case WorkflowPhase.COLLECTING:
+                return self._process_collecting_phase(workflow)
+            case WorkflowPhase.SOLVING:
+                return self._process_solving_phase(workflow, stream)
+            case WorkflowPhase.DISCUSSION:
+                return self._process_discussion_phase(workflow)
 
     def _process_until_waiting_or_done(self, workflow: Workflow, stream: StreamSink | None = None) -> Workflow:
         while not is_waiting_for_user(workflow.state) and workflow.state.phase != WorkflowPhase.DONE:
