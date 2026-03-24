@@ -84,6 +84,47 @@ This project explores how to design such systems explicitly.
 
 ---
 
+## Workflow Lifecycle
+
+```mermaid
+flowchart TD
+
+    A[Ticket Catalog: PARROT, PRINTER, SUPPORT, REPORT]
+    B[Start Workflow]
+
+    A --> B
+    B --> C[COLLECTING]
+
+    C --> C1[StepGenerator: Generate next question]
+    C1 --> C2[User Answer]
+    C2 --> C3[AnswerParser: optional structured parse]
+
+    C3 --> D{More questions?}
+    D -->|Yes| C1
+    D -->|No| E[SOLVING]
+    D -->|Skip to solution| E
+
+    E --> E1[Initial Solution Generation]
+    E1 --> E2[SolutionService]
+    E2 --> E3[Optional Streaming with SSE: initial generation only]
+
+    E3 --> F{ChatService exists?}
+    F -->|Yes| G[DISCUSSION]
+    F -->|No| H[DONE]
+
+    G --> G1[ChatService: generate reply]
+    G1 --> G2[User Message]
+    G2 --> G3[Evaluate need for update]
+
+    G3 --> G4{Update solution?}
+    G4 -->|Yes| G5[Regenerate Solution via SolutionService without streaming]
+    G4 -->|No| G1
+
+    G5 --> G1
+
+    H[DONE]
+```
+
 ## Documentation
 
 - **Architecture & Design** → [ARCHITECTURE.md](ARCHITECTURE.md)  
