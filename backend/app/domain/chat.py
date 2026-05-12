@@ -24,7 +24,7 @@ class ChatReply(BaseModel):
 
 
 class ChatHistory(BaseModel):
-    messages: list[ChatMessage] = Field(default_factory=list)
+    messages: list[ChatMessage] = []
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     def add_message(self, message: ChatMessage) -> None:

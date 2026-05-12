@@ -56,7 +56,7 @@ class WorkflowCreate(BaseModel):
 
 class WorkflowState(BaseModel):
     phase: WorkflowPhase = WorkflowPhase.COLLECTING
-    steps: list[ClarificationStep] = Field(default_factory=list)
+    steps: list[ClarificationStep] = []
     last_decision: NextStepDecision | None = None
     solution: Solution | None = None
     chat_history: ChatHistory = Field(default_factory=ChatHistory)

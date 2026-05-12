@@ -1,7 +1,7 @@
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from app.api.event_view import WorkflowEventView
 from app.domain.workflow import WaitingReason, Workflow, WorkflowState
@@ -38,7 +38,7 @@ class WorkflowHistoryResponse(BaseModel):
     workflow_id: UUID
     parent_workflow_id: UUID | None = None
     current_snapshot_id: UUID
-    events: list[WorkflowEventView] = Field(default_factory=list)
+    events: list[WorkflowEventView] = []
     status: str
 
 
