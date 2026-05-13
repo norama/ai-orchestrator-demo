@@ -1,16 +1,31 @@
 type LoaderProps = {
-  className?: string
+  size?: 'small' | 'medium' | 'large'
   label?: string
 }
 
-export function Loader({ className = '', label = 'Loading' }: LoaderProps) {
+const SIZE_CLASS: Record<NonNullable<LoaderProps['size']>, string> = {
+  small: 'gap-2 text-xs',
+  medium: 'gap-3 text-sm',
+  large: 'gap-3.5 text-base',
+}
+
+const SPINNER_SIZE_CLASS: Record<NonNullable<LoaderProps['size']>, string> = {
+  small: 'h-4 w-4 border-2',
+  medium: 'h-8 w-8 border-3',
+  large: 'h-12 w-12 border-4',
+}
+
+export function Loader({ size = 'medium', label = 'Loading' }: LoaderProps) {
   return (
-    <div className={['inline-flex items-center gap-3 text-gray-500', className].join(' ')}>
+    <div className={['inline-flex items-center text-blue-700', SIZE_CLASS[size]].join(' ')}>
       <span
-        className='h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600'
+        className={[
+          'animate-spin rounded-full border-blue-200 border-t-blue-700',
+          SPINNER_SIZE_CLASS[size],
+        ].join(' ')}
         aria-hidden='true'
       />
-      <span className='text-sm'>{label}</span>
+      <span>{label}</span>
     </div>
   )
 }

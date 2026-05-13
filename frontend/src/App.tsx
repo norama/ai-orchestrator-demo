@@ -193,7 +193,7 @@ function App() {
             <div className='flex-1 min-h-0 overflow-y-auto pt-4'>
               {showInitialWorkflowLoading && (
                 <div className='flex min-h-full items-center justify-center text-sm text-gray-500'>
-                  <Loader label='Loading workflow' />
+                  <Loader size='large' label='Loading workflow' />
                 </div>
               )}
               {controller.ticket && controller.workflowData && controller.workflowState && (
