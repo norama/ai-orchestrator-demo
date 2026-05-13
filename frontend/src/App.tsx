@@ -1,6 +1,7 @@
 import { ResetDemoButton } from '@/components/ResetDemoButton'
 import { StartWorkflowForm } from '@/components/StartWorkflowForm'
 import { Drawer } from '@/components/ui/Drawer'
+import { Loader } from '@/components/ui/Loader'
 import { WorkflowHeader } from '@/components/WorkflowHeader'
 import { WorkflowHistoryPanel } from '@/components/WorkflowHistoryPanel'
 import { WorkflowListPanel } from '@/components/WorkflowListPanel'
@@ -60,6 +61,7 @@ function App() {
     controller.error || listController.error || catalogController.error || historyController.error
   const selectedWorkflowId = controller.workflowData?.id ?? null
   const previewing = controller.previewingSnapshotId !== null
+  const showInitialWorkflowLoading = controller.loading && !controller.workflowData
 
   const startNewWorkflow = async (req: UICreateFromCatalog) => {
     const workflowId = await controller.start(req)
@@ -189,6 +191,11 @@ function App() {
               historyOpen ? 'lg:mr-80' : 'lg:mr-0',
             ].join(' ')}>
             <div className='flex-1 min-h-0 overflow-y-auto pt-4'>
+              {showInitialWorkflowLoading && (
+                <div className='flex min-h-full items-center justify-center text-sm text-gray-500'>
+                  <Loader label='Loading workflow' />
+                </div>
+              )}
               {controller.ticket && controller.workflowData && controller.workflowState && (
                 <WorkflowView
                   ticket={controller.ticket}
