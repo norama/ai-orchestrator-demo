@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from app.application.exceptions import InvalidWorkflowOperation
 from app.domain.chat import ChatMessage
 from app.domain.event import (
     ChatRepliedEventData,
@@ -42,8 +43,8 @@ class WorkflowEventFactory:
 
     @staticmethod
     def clarification_updated(workflow: Workflow) -> WorkflowEventCreate:
-        assert workflow.state.last_decision is not None
-        assert workflow.state.last_decision.next_step is not None
+        if workflow.state.last_decision is None or workflow.state.last_decision.next_step is None:
+            raise InvalidWorkflowOperation("Cannot emit clarification update without a next step decision")
         return WorkflowEventCreate(
             type=WorkflowEventType.CLARIFICATION_UPDATED,
             data=ClarificationUpdatedEventData(
@@ -58,7 +59,8 @@ class WorkflowEventFactory:
         workflow: Workflow,
         reason: SolutionGeneratedReason | None = None,
     ) -> WorkflowEventCreate:
-        assert workflow.state.solution is not None
+        if workflow.state.solution is None:
+            raise InvalidWorkflowOperation("Cannot emit solution generated event without a solution")
         generated_reason = reason or (
             SolutionGeneratedReason.HIGH_CONFIDENCE
             if len(workflow.state.steps) < workflow.max_steps

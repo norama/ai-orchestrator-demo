@@ -6,6 +6,15 @@ from app.domain.workflow import ChatMutationResult, Workflow, WorkflowContext, W
 
 
 class WorkflowEngine:
+    """
+    Phase-by-phase state machine for workflow execution.
+
+    COLLECTING  – steps allowed; chat_history ignored
+    SOLVING     – no new steps; solution generated
+    DISCUSSION  – chat_history active; no new steps; solution immutable (for now)
+    DONE        – immutable terminal state; set when no chat service is configured
+    """
+
     def __init__(self, domain: WorkflowDomain):
         self.domain = domain
 

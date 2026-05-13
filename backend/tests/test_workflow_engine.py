@@ -253,9 +253,26 @@ def test_add_chat_message_emits_chat_replied_and_solution_updated(chat_workflow_
     assert chat_data.requires_solution_update is True
 
 
-def test_add_chat_message_rejects_empty_message(workflow_service: WorkflowService, workflow: Workflow):
+def test_add_chat_message_rejects_empty_message(chat_workflow_service: WorkflowService):
+    workflow = chat_workflow_service.create(
+        WorkflowCreate(
+            ticket=Ticket(id=uuid4(), title="chat-empty", description="x", source=TicketSource.RESTFUL_API_DEV),
+            max_steps=0,
+        )
+    )
+
+    assert workflow.state.phase == WorkflowPhase.DISCUSSION
+
     with pytest.raises(InvalidWorkflowOperation, match="cannot be empty"):
-        workflow_service.add_chat_message(
+        chat_workflow_service.add_chat_message(
             workflow.id,
             AddChatMessageCommand(role=ChatRole.USER, content="   "),
+        )
+
+
+def test_add_chat_message_rejects_non_discussion_phase(workflow_service: WorkflowService, workflow: Workflow):
+    with pytest.raises(InvalidWorkflowOperation, match="DISCUSSION"):
+        workflow_service.add_chat_message(
+            workflow.id,
+            AddChatMessageCommand(role=ChatRole.USER, content="hello"),
         )

@@ -21,22 +21,6 @@ from app.domain.workflow import (
 )
 from app.infrastructure.persistence.workflow_repository import WorkflowRepository
 
-#  ------------- Behavior / Use Cases ----------------
-#
-# COLLECTING
-# - steps allowed
-# - chat_history ignored
-# SOLVING
-# - no new steps
-# - solution generated
-# DISCUSSION
-# - chat_history active
-# - no new steps
-# - solution immutable (for now)
-# DONE
-# - immutable, final state
-# - set when solution shown and no chat service is set
-
 
 class WorkflowService:
     def __init__(self, repo: WorkflowRepository, domain: WorkflowDomain):
@@ -48,25 +32,35 @@ class WorkflowService:
     def _process_until_waiting_or_done(self, workflow: Workflow, stream: StreamSink | None = None) -> Workflow:
         return self.engine.run_until_waiting_or_done(workflow, stream)
 
+    @staticmethod
+    def _ensure_phase(workflow: Workflow, phase: WorkflowPhase, message: str) -> None:
+        if workflow.state.phase != phase:
+            raise InvalidWorkflowOperation(message)
+
+    @staticmethod
+    def _next_unanswered_step(workflow: Workflow, step_id: UUID):
+        step = next((s for s in workflow.state.steps if s.id == step_id), None)
+        if step is None:
+            raise InvalidWorkflowOperation("Step not found")
+        if step.answer is not None:
+            raise InvalidWorkflowOperation("Step already answered")
+        return step
+
+    def _events_after_engine_run(self, workflow: Workflow) -> list[WorkflowEventCreate]:
+        events: list[WorkflowEventCreate] = []
+        if workflow.state.phase == WorkflowPhase.COLLECTING:
+            events.append(self.event_factory.clarification_updated(workflow))
+        if workflow.state.phase in (WorkflowPhase.DISCUSSION, WorkflowPhase.DONE):
+            events.append(self.event_factory.solution_generated(workflow))
+        return events
+
     # ------- Commands with processing --------
 
     def answer_step(self, workflow_id: UUID, cmd: AnswerStepCommand, stream: StreamSink | None = None) -> Workflow:
         workflow = self.get_workflow(workflow_id)
-        state = workflow.state
+        self._ensure_phase(workflow, WorkflowPhase.COLLECTING, "Answers can only be added in COLLECTING phase")
 
-        if state.phase != WorkflowPhase.COLLECTING:
-            raise InvalidWorkflowOperation("Answers can only be added in COLLECTING phase")
-
-        step = next(
-            (s for s in state.steps if s.id == cmd.step_id),
-            None,
-        )
-
-        if step is None:
-            raise InvalidWorkflowOperation("Step not found")
-
-        if step.answer is not None:
-            raise InvalidWorkflowOperation("Step already answered")
+        step = self._next_unanswered_step(workflow, cmd.step_id)
 
         step.answer = cmd.answer
 
@@ -75,23 +69,13 @@ class WorkflowService:
             self.domain.answer_parser.parse_answer(step)
 
         workflow = self._process_until_waiting_or_done(workflow, stream)
-
-        events: list[WorkflowEventCreate] = []
-        if workflow.state.phase == WorkflowPhase.COLLECTING:
-            events.append(self.event_factory.clarification_updated(workflow))
-        if workflow.state.phase == WorkflowPhase.DISCUSSION or workflow.state.phase == WorkflowPhase.DONE:
-            events.append(self.event_factory.solution_generated(workflow))
-
-        return self.repo.update_workflow(workflow, events)
+        return self.repo.update_workflow(workflow, self._events_after_engine_run(workflow))
 
     def skip_to_solution(self, workflow_id: UUID, stream: StreamSink | None = None) -> Workflow:
         workflow = self.get_workflow(workflow_id)
-        state = workflow.state
+        self._ensure_phase(workflow, WorkflowPhase.COLLECTING, "Can only skip to solution in COLLECTING phase")
 
-        if state.phase != WorkflowPhase.COLLECTING:
-            raise InvalidWorkflowOperation("Can only skip to solution in COLLECTING phase")
-
-        state.skipped = True
+        workflow.state.skipped = True
 
         workflow = self._process_until_waiting_or_done(workflow, stream)
 
@@ -163,6 +147,7 @@ class WorkflowService:
         cmd: AddChatMessageCommand,
     ) -> Workflow:
         workflow = self.get_workflow(workflow_id)
+        self._ensure_phase(workflow, WorkflowPhase.DISCUSSION, "Chat is only available in DISCUSSION phase")
 
         if not cmd.content.strip():
             raise InvalidWorkflowOperation("Chat message content cannot be empty")
