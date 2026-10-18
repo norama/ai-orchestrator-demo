@@ -4,6 +4,7 @@ from openai import OpenAI
 
 from app.application.services.probabilistic.llm.client.streaming_llm_client import StreamingLLMClient
 from app.application.services.probabilistic.llm.domain.llm_stats import LLMUsage
+from app.settings import env_settings
 
 
 class OpenAIClient(StreamingLLMClient):
@@ -14,7 +15,7 @@ class OpenAIClient(StreamingLLMClient):
         model: str = "gpt-4.1-mini",
         on_usage: Callable[[LLMUsage], None] | None = None,
     ) -> None:
-        self.client = client or OpenAI()
+        self.client = client or OpenAI(api_key=env_settings.openai_api_key)
         self.model = model
         self.on_usage = on_usage
 

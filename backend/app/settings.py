@@ -5,6 +5,7 @@ class EnvSettings(BaseSettings):
     app_name: str = "ai-orchestrator-demo"
     log_level: str = "WARNING"
     cors_origins: str = ""  # Comma-separated list of allowed CORS origins
+    openai_api_key: str = ""
 
     class Config:
         env_file = ".env"

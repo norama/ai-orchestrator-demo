@@ -74,11 +74,7 @@ Set this in `backend/.env`:
 ```bash
 LOG_LEVEL=INFO
 CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
-```
 
-Set this globally in your system, e.g. in `.bashrc`:
-
-```bash
 OPENAI_API_KEY=sk-...
 ```
 
@@ -151,5 +147,4 @@ http://localhost:3000
 
 ## Deployment
 
-- Backend: [Fly.io](https://fly.io/)
-- Frontend: [Vercel](https://vercel.com/)
+- [Fly.io](https://fly.io/)
